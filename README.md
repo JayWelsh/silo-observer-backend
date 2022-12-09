@@ -7,7 +7,7 @@
 
 ## A community-lead effort to put together useful metrics & analytics for silo.finance
 
-This project seeks to collect, cache, monitor and visualize data specifically for the silo.finance project, along with providing a Discord Bot to interface with the underlying silo.observer API.
+This project seeks to collect, cache, monitor and visualize data specifically for the [silo.finance](https://silo.finance) project, along with providing a Discord Bot to interface with the underlying silo.observer API (silo.observer is not officially associated with silo.finance).
 
 This project is in early stages, currently, the following functionality has been built out:
 

@@ -6,6 +6,7 @@ class RateTransformer extends BaseTransformer {
   transform(rateEntry: IRate) {
       return {
         rate: rateEntry.rate,
+        side: rateEntry.side,
         timestamp: rateEntry.timestamp,
         silo_address: rateEntry.silo_address,
         asset_address: rateEntry.asset_address,

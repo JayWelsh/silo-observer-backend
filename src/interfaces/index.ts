@@ -27,6 +27,7 @@ export interface IToken {
 
 export interface IRate {
   rate: number
+  side: string
   timestamp: string
   silo_address: string
   asset_address: string
