@@ -27,10 +27,10 @@ jobs:
             touch .env
             echo DISCORD_BOT_CLIENT_ID="${{secrets.DISCORD_BOT_CLIENT_ID}}" >> .env
             echo DISCORD_BOT_TOKEN="${{secrets.DISCORD_BOT_TOKEN}}" >> .env
-            echo DB_HOST=\"${{secrets.DB_HOST}}\" >> .env
-            echo DB_PORT=\"${{secrets.DB_PORT}}\" >> .env
-            echo DB_NAME=\"${{secrets.DB_NAME}}\" >> .env
-            echo DB_USER=\"${{secrets.DB_USER}}\" >> .env
-            echo DB_PASS=\"${{secrets.DB_PASS}}\" >> .env
+            echo DB_HOST=\"'${{secrets.DB_HOST}}'\" >> .env
+            echo DB_PORT=\"'${{secrets.DB_PORT}}'\" >> .env
+            echo DB_NAME=\"'${{secrets.DB_NAME}}'\" >> .env
+            echo DB_USER=\"'${{secrets.DB_USER}}'\" >> .env
+            echo DB_PASS=\"'${{secrets.DB_PASS}}'\" >> .env
             yarn run knex migrate:latest
             echo 'Deployment to digital ocean finished'
