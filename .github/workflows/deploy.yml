@@ -22,5 +22,6 @@ jobs:
             mkdir test
             cd test
             git clone https://github.com/JayWelsh/silo-observer-backend.git
+            cd silo-observer-backend
             yarn install
             echo 'Deployment to digital ocean finished'
