@@ -1,5 +1,4 @@
-class BaseTransformer {
-  transform?: (datum: any) => void;
+abstract class BaseTransformer {
   constructor() {
       //@ts-ignore
       if (this.transform === undefined) {

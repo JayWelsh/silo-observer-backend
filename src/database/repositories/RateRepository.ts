@@ -28,13 +28,32 @@ class RateRepository extends BaseRepository {
       return this.parserResult(result);
     }
 
-    async getRatesByAssetAddress(assetAddress: string, pagination: IPaginationRequest) {
+    async getRatesByAssetAddress(assetAddress: string, side: string | undefined, pagination: IPaginationRequest) {
 
       const { perPage, page } = pagination;
 
       const results = await this.model.query().where(function (this: QueryBuilder<RateModel>) {
-        this.where('asset.address', assetAddress);
-      }).page(page - 1, perPage);
+        this.where('asset_address', assetAddress);
+        if(side) {
+          this.where('side', side);
+        }
+      }).orderBy('timestamp', 'DESC').page(page - 1, perPage);
+
+      return this.parserResult(new Pagination(results, perPage, page));
+    }
+
+    async getRatesByAssetName(assetAddress: string, side: string | undefined, pagination: IPaginationRequest) {
+
+      const { perPage, page } = pagination;
+
+      const results = await this.model.query()
+      .withGraphJoined('asset')
+      .where(function (this: QueryBuilder<RateModel>) {
+        this.where('asset.symbol', assetAddress);
+        if(side) {
+          this.where('side', side);
+        }
+      }).orderBy('timestamp', 'DESC').page(page - 1, perPage);
 
       return this.parserResult(new Pagination(results, perPage, page));
     }
@@ -52,7 +71,7 @@ class RateRepository extends BaseRepository {
       const results = await this.model.query()
       .where(function (this: QueryBuilder<RateModel>) {
         this.where('silo_address', siloAddress);
-      }).page(page - 1, perPage);
+      }).orderBy('timestamp', 'DESC').page(page - 1, perPage);
 
       return this.parserResult(new Pagination(results, perPage, page));
     }
@@ -71,7 +90,7 @@ class RateRepository extends BaseRepository {
       .withGraphJoined('silo')
       .where(function (this: QueryBuilder<RateModel>) {
         this.where('silo.name', siloName);
-      }).page(page - 1, perPage);
+      }).orderBy('timestamp', 'DESC').page(page - 1, perPage);
 
       return this.parserResult(new Pagination(results, perPage, page));
     }

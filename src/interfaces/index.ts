@@ -25,4 +25,12 @@ export interface IToken {
   decimals: number
 }
 
+export interface IRate {
+  rate: number
+  timestamp: string
+  silo_address: string
+  asset_address: string
+  type: string
+}
+
 // Internal Interfaces Above
