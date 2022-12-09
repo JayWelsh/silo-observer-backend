@@ -39,6 +39,43 @@ class RateRepository extends BaseRepository {
       return this.parserResult(new Pagination(results, perPage, page));
     }
 
+    async getRatesBySiloAddress(
+      siloAddress: string,
+      pagination: IPaginationRequest
+    ) {
+
+      const { 
+        perPage,
+        page
+      } = pagination;
+
+      const results = await this.model.query()
+      .where(function (this: QueryBuilder<RateModel>) {
+        this.where('silo_address', siloAddress);
+      }).page(page - 1, perPage);
+
+      return this.parserResult(new Pagination(results, perPage, page));
+    }
+
+    async getRatesBySiloName(
+      siloName: string,
+      pagination: IPaginationRequest
+    ) {
+
+      const { 
+        perPage,
+        page
+      } = pagination;
+
+      const results = await this.model.query()
+      .withGraphJoined('silo')
+      .where(function (this: QueryBuilder<RateModel>) {
+        this.where('silo.name', siloName);
+      }).page(page - 1, perPage);
+
+      return this.parserResult(new Pagination(results, perPage, page));
+    }
+
     async getRateRecordCountByAssetOnSideInSilo(assetAddress: string, side: string, siloAddress: string) {
       const result = await this.model.query().where(function (this: QueryBuilder<RateModel>) {
         this.where('asset_address', assetAddress);

@@ -2,8 +2,10 @@
 
 import { Express } from "express";
 
-const ExampleRoutes = require('./example.routes')
+const SiloRoutes = require('./silo.routes');
+const RateRoutes = require('./rate.routes');
 
 export default function routes(app: Express) {
-    app.use("", ExampleRoutes);
+    app.use("", SiloRoutes);
+    app.use("", RateRoutes);
 }

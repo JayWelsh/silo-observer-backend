@@ -15,6 +15,14 @@ class SiloRepository extends BaseRepository {
 
       return this.parserResult(result)
     }
+    
+    async getSiloByName(siloName: string) {
+      const result = await this.model.query().where(function (this: QueryBuilder<SiloModel>) {
+        this.where('name', siloName);
+      }).first();
+
+      return this.parserResult(result)
+    }
 
     async getSilos(pagination: IPaginationRequest) {
 

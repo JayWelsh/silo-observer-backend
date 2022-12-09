@@ -1,18 +1,24 @@
 import { validationResult } from "express-validator";
-import { Request, Response } from 'express';
+import e, { Request, Response } from 'express';
+import { utils } from "ethers";
 
 import { SiloRepository } from '../database/repositories';
 
 import Controller from './Controller';
 
 class SiloController extends Controller {
-  async getSiloByAddress(req: Request, res: Response) {
+  async getSiloByAddressOrName(req: Request, res: Response) {
 
     const {
-      siloAddress,
+      siloAddressOrName,
     } = req.params;
 
-    let silo = await SiloRepository.getSiloByAddress(siloAddress);
+    let silo;
+    if(utils.isAddress(siloAddressOrName)) {
+      silo = await SiloRepository.getSiloByAddress(siloAddressOrName);
+    } else {
+      silo = await SiloRepository.getSiloByName(siloAddressOrName);
+    }
 
     this.sendResponse(res, silo);
   }
