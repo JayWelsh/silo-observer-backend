@@ -41,9 +41,9 @@ class RateController extends Controller {
 
     let rates;
     if(utils.isAddress(assetAddressOrName)) {
-      rates = await RateRepository.setTransformer(RateOutputTransformer).getRatesByAssetAddress(assetAddressOrName, side, pagination);
+      rates = await RateRepository.setTransformer(RateOutputTransformer).getRatesByAssetAddress(assetAddressOrName, side?.toUpperCase(), pagination);
     } else {
-      rates = await RateRepository.setTransformer(RateOutputTransformer).getRatesByAssetName(assetAddressOrName, side, pagination);
+      rates = await RateRepository.setTransformer(RateOutputTransformer).getRatesByAssetName(assetAddressOrName, side?.toUpperCase(), pagination);
     }
 
     this.sendResponse(res, rates);

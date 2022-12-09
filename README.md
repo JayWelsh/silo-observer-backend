@@ -16,14 +16,17 @@ This project is in early stages, currently, the following functionality has been
 - Caching the full list of silos & assets within silo.finance
 - Caching a 24-hour period of minutely data for rates of each asset within each silo.
 
-## Endpoints
+## API
 
-Currently, the following API endpoints are available
+The base URL for the silo.observer api is `https://api.silo.observer/`, the endpoints which are currently available are described below.
 
 ### Pagination
 
 All endpoints which are responsible for returning many records can be paginated by appending `page` & `perPage` query parameters onto the ends of the query e.g. you can fetching the last 10 minutes of borrower rate data for the BAL silo like [this](https://api.silo.observer/rates/asset/BAL?perPage=10) or you can skip the last 10 minutes of borrower rate data and fetch the last 10 minutes of data before that for the BAL silo like [this](https://api.silo.observer/rates/asset/BAL?perPage=10&page=2).
+
 ### Rates
+
+Rate data is currently recorded on a minutely basis and only the last 24 hours of data are kept. This will soon be adjusted to also keep hourly records for historical purposes.
 
 Fetching rates by asset, without specifying lending/borrowing ([example](https://api.silo.observer/rates/asset/BAL)):
 
