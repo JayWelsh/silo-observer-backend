@@ -35,5 +35,5 @@ jobs:
             echo DB_USER=\"'${{secrets.DB_USER}}'\" >> .env
             echo DB_PASS=\"'${{secrets.DB_PASS}}'\" >> .env
             yarn run knex migrate:latest
-            pm2 startOrReload ./config/ecosystem.json
+            yarn run pm2-reload
             echo 'Deployment to digital ocean finished'
