@@ -13,6 +13,7 @@ jobs:
         with:
           host: ${{secrets.HOST}}
           username: ${{secrets.USERNAME}}
+          password: ${{secrets.KEY_PASSWORD}}
           key: ${{secrets.KEY}}
           script: |
             export NVM_DIR=~/.nvm
