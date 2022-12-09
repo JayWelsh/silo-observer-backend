@@ -32,7 +32,7 @@ module.exports = {
     )
     .setDescription('Fetches the rates of the input token and bridge assets inside a silo'),
 	async execute(interaction: any) {
-    let silo = interaction.options.getString('silo').toUpperCase();
+    let silo = interaction.options.getString('silo');
     let result = await request(SUBGRAPH_ENDPOINT, rateQuery, {
       inputTokenSymbol: silo,
     });
