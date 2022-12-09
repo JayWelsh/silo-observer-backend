@@ -18,11 +18,13 @@ jobs:
           script: |
             export NVM_DIR=~/.nvm
             source ~/.nvm/nvm.sh
-            rm -rf test
-            mkdir test
-            cd test
+            rm -rf silo-observer
+            mkdir silo-observer
+            cd silo-observer
             git clone https://github.com/JayWelsh/silo-observer-backend.git
             cd silo-observer-backend
+            yarn global add dotenv
+            yarn global add pm2
             yarn install
             touch .env
             echo DISCORD_BOT_CLIENT_ID="${{secrets.DISCORD_BOT_CLIENT_ID}}" >> .env
@@ -33,4 +35,5 @@ jobs:
             echo DB_USER=\"'${{secrets.DB_USER}}'\" >> .env
             echo DB_PASS=\"'${{secrets.DB_PASS}}'\" >> .env
             yarn run knex migrate:latest
+            pm2 startOrReload ./config/ecosystem.json
             echo 'Deployment to digital ocean finished'

@@ -1,0 +1,12 @@
+{
+  "apps": [
+    {
+      "name": "silo-observer-backend",
+      "script": "./dist/app.js",
+      "cwd": "/home/deployer/silo-observer/silo-observer-backend",
+      "error_file": "/home/deployer/silo-observer-logs/server.err.log",
+      "out_file": "/home/deployer/silo-observer-logs/server.out.log",
+      "exec_mode": "cluster"
+    }
+  ]
+}
