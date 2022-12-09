@@ -24,4 +24,6 @@ jobs:
             git clone https://github.com/JayWelsh/silo-observer-backend.git
             cd silo-observer-backend
             yarn install
+            touch .env
+            echo ${{secrets.DISCORD_BOT_CLIENT_ID}} >> .env
             echo 'Deployment to digital ocean finished'
