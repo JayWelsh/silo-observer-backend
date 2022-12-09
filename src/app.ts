@@ -45,7 +45,7 @@ const runMinutelyDataTracker = new CronJob(
 	function() {
     let useTimestampUnix = Math.floor(new Date().setSeconds(0) / 1000);
     let startTime = new Date().getTime();
-    // periodicSiloDataTracker(useTimestampUnix, startTime);
+    periodicSiloDataTracker(useTimestampUnix, startTime);
 	},
 	null,
 	true,
