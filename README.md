@@ -19,19 +19,19 @@ This project is in early stages, currently, the following functionality has been
 
 All times are reported in UTC
 
-The base URL for the silo.observer api is `https://api.silo.observer/`, the endpoints which are currently available are described below.
+The base URL for the silo.observer api is `https://api.silo.observer/`, only `GET` requests are supported for the foreseeable future, the endpoints which are currently available are described below.
 
 ### Pagination
 
-All endpoints which are responsible for returning many records can be paginated by appending `page` & `perPage` query parameters onto the ends of the query.
+All endpoints which are responsible for returning many records can be paginated by appending `page` & `perPage` query parameters onto the ends of the query URL (`page` defaults to `1` if it is left out).
 
-Using `perPage` to fetch a 10 record (10 minute) page of the latest borrower rate data for the BAL silo ([example](https://api.silo.observer/rates/asset/BAL?perPage=10)):
+Using `page` & `perPage` to fetch a 10 record (10 minute) page of the latest borrower rate data for the BAL silo ([example](https://api.silo.observer/rates/asset/BAL?page=1&perPage=10)):
 
 ```
 https://api.silo.observer/rates/asset/BAL?perPage=10
 ```
 
-Using `perPage` & `page` to move to the 2nd page of 10 records ([example](https://api.silo.observer/rates/asset/BAL?perPage=10&page=2)):
+Using `page` & `perPage` to move to the 2nd page of 10 records ([example](https://api.silo.observer/rates/asset/BAL?perPage=10&page=2)):
 
 ```
 https://api.silo.observer/rates/asset/BAL?perPage=10&page=2
