@@ -5,15 +5,15 @@
 
 # silo.observer
 
-## A community-lead effort to put together useful metrics & analytics for silo.finance
+### A community-lead effort to put together useful metrics & analytics for [silo.finance](https://silo.finance)
 
-This project seeks to collect, cache, monitor and visualize data specifically for the [silo.finance](https://silo.finance) project, along with providing a Discord Bot to interface with the underlying silo.observer API (silo.observer is not officially associated with silo.finance).
+This project seeks to collect, cache, monitor & visualize data specifically for the silo.finance project, along with providing a [Discord Bot](https://discord.com/oauth2/authorize?client_id=1050077431454777447&scope=bot) to interface with the underlying silo.observer API (silo.observer is not officially associated with silo.finance).
 
 This project is in early stages, currently, the following functionality has been built out:
 
-- A [Discord Bot](https://discord.com/oauth2/authorize?client_id=1050077431454777447&scope=bot) which let's user's query basic data, e.g. rates, from the silo.finance subgraph (via Discord)
+- A [Discord Bot](https://discord.com/oauth2/authorize?client_id=1050077431454777447&scope=bot) which lets user's query basic data (e.g. rates, from the silo.finance subgraph, via Discord)
 - Caching the full list of silos & assets within silo.finance
-- Caching a 24-hour period of minutely data for rates of each asset within each silo.
+- Caching a 24-hour period of minutely data for rates of each asset within each silo
 
 ## API
 
