@@ -17,6 +17,8 @@ This project is in early stages, currently, the following functionality has been
 
 ## API
 
+All times are reported in UTC
+
 The base URL for the silo.observer api is `https://api.silo.observer/`, the endpoints which are currently available are described below.
 
 ### Pagination
