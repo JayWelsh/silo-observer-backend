@@ -26,6 +26,7 @@ export interface IToken {
 }
 
 export interface IRate {
+  id: number
   rate: number
   side: string
   timestamp: string
