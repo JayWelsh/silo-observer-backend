@@ -1,4 +1,5 @@
 import { request, gql } from 'graphql-request';
+import { raw } from 'objection';
 
 import { subgraphRequestWithRetry } from '../utils';
 
@@ -112,18 +113,21 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
         } = rateEntry.token;
 
         // Get current count of minutely rate records for this `silo` `asset` on this `side`, store a maximum of 1440 (24 hours of minutely data)
-        let currentRateCount = await RateRepository.getRateRecordCountByAssetOnSideInSilo(id, side, siloAddress);
+        
+        // Leading to poor performance, disabling for now and enabling a one-query delete at the end of this process to see how performance is impacted
 
-        if(currentRateCount >= MAX_MINUTELY_RATE_ENTRIES) {
-          // get record to delete
-          let oldestRecord = await RateRepository.getOldestRateByAssetOnSideInSilo(id, side, siloAddress);
-          if(oldestRecord?.id) {
-            // delete oldest record to keep minutely entries at MAX_MINUTELY_RATE_ENTRIES (1440, 24 hour resolution of minutely data)
-            await RateRepository.delete(oldestRecord.id);
-          } else {
-            console.error(`Can't find oldest record`, oldestRecord, {id, side, siloAddress});
-          }
-        }
+        // let currentRateCount = await RateRepository.getRateRecordCountByAssetOnSideInSilo(id, side, siloAddress);
+
+        // if(currentRateCount >= MAX_MINUTELY_RATE_ENTRIES) {
+        //   // get record to delete
+        //   let oldestRecord = await RateRepository.getOldestRateByAssetOnSideInSilo(id, side, siloAddress);
+        //   if(oldestRecord?.id) {
+        //     // delete oldest record to keep minutely entries at MAX_MINUTELY_RATE_ENTRIES (1440, 24 hour resolution of minutely data)
+        //     await RateRepository.delete(oldestRecord.id);
+        //   } else {
+        //     console.error(`Can't find oldest record`, oldestRecord, {id, side, siloAddress});
+        //   }
+        // }
 
         await RateRepository.create({
           silo_address: siloAddress,
@@ -135,7 +139,11 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
         });
       }
     }
-    console.log(`Successfully stored latest rates for silos (${useTimestampPostgres}), execution time: ${new Date().getTime() - startTime}ms`);
+    
+    // remove any records older than 1441 minutes in one query
+    let deletedExpiredRecordCount = await RateRepository.query().delete().where(raw("timestamp < now() - interval '1441 minutes'"));
+
+    console.log(`Successfully stored latest rates for silos (${useTimestampPostgres}),${deletedExpiredRecordCount > 0 ? ` Deleted ${deletedExpiredRecordCount} expired records,` : ''} execution time: ${new Date().getTime() - startTime}ms`);
   } catch (error) {
     console.error(`Unable to store latest rates for silos (${useTimestampPostgres})`, error);
   }
