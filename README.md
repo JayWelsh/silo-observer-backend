@@ -26,13 +26,13 @@ All endpoints which are responsible for returning many records can be paginated 
 Using `perPage` to fetch a 10 record (10 minute) page of the latest borrower rate data for the BAL silo ([example](https://api.silo.observer/rates/asset/BAL?perPage=10)):
 
 ```
-`https://api.silo.observer/rates/asset/BAL?perPage=10`
+https://api.silo.observer/rates/asset/BAL?perPage=10
 ```
 
 Using `perPage` & `page` to move to the 2nd page of 10 records ([example](https://api.silo.observer/rates/asset/BAL?perPage=10&page=2)):
 
 ```
-`https://api.silo.observer/rates/asset/BAL?perPage=10&page=2`
+https://api.silo.observer/rates/asset/BAL?perPage=10&page=2
 ```
 
 ### Rates
