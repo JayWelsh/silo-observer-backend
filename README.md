@@ -21,13 +21,25 @@ The base URL for the silo.observer api is `https://api.silo.observer/`, the endp
 
 ### Pagination
 
-All endpoints which are responsible for returning many records can be paginated by appending `page` & `perPage` query parameters onto the ends of the query e.g. you can fetching the last 10 minutes of borrower rate data for the BAL silo like [this](https://api.silo.observer/rates/asset/BAL?perPage=10) or you can skip the last 10 minutes of borrower rate data and fetch the last 10 minutes of data before that for the BAL silo like [this](https://api.silo.observer/rates/asset/BAL?perPage=10&page=2).
+All endpoints which are responsible for returning many records can be paginated by appending `page` & `perPage` query parameters onto the ends of the query.
+
+Using `perPage` to fetch a 10 record (10 minute) page of the latest borrower rate data for the BAL silo ([example](https://api.silo.observer/rates/asset/BAL?perPage=10)):
+
+```
+`https://api.silo.observer/rates/asset/BAL?perPage=10`
+```
+
+Using `perPage` & `page` to move to the 2nd page of 10 records ([example](https://api.silo.observer/rates/asset/BAL?perPage=10&page=2)):
+
+```
+`https://api.silo.observer/rates/asset/BAL?perPage=10&page=2`
+```
 
 ### Rates
 
-Rate data is currently recorded on a minutely basis and only the last 24 hours of data are kept. This will soon be adjusted to also keep hourly records for historical purposes.
+Rate data is currently recorded on a minutely basis and only the last 24 hours of data is kept in a minutely resolution. This will soon be adjusted to also keep hourly records for historical purposes.
 
-Fetching rates by asset, without specifying lending/borrowing ([example](https://api.silo.observer/rates/asset/BAL)):
+Fetch rates by asset, without specifying lending/borrowing ([example](https://api.silo.observer/rates/asset/BAL)):
 
 ```
 https://api.silo.observer/rates/asset/{asset-address-or-symbol}
