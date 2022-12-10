@@ -117,8 +117,12 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
         if(currentRateCount >= MAX_MINUTELY_RATE_ENTRIES) {
           // get record to delete
           let oldestRecord = await RateRepository.getOldestRateByAssetOnSideInSilo(id, side, siloAddress);
-          // delete oldest record to keep minutely entries at MAX_MINUTELY_RATE_ENTRIES (1440, 24 hour resolution of minutely data)
-          await RateRepository.delete(oldestRecord.id);
+          if(oldestRecord?.id) {
+            // delete oldest record to keep minutely entries at MAX_MINUTELY_RATE_ENTRIES (1440, 24 hour resolution of minutely data)
+            await RateRepository.delete(oldestRecord.id);
+          } else {
+            console.error(`Can't find oldest record`, oldestRecord, {id, side, siloAddress});
+          }
         }
 
         await RateRepository.create({
