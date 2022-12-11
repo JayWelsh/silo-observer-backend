@@ -114,9 +114,6 @@ class RateRepository extends BaseRepository {
       transformer: ITransformer,
     ) {
 
-      // temp log
-      console.log("Starting DB query for rates by silo name", Math.floor(new Date().getTime() / 1000));
-
       const { 
         perPage,
         page
@@ -129,12 +126,7 @@ class RateRepository extends BaseRepository {
         this.where('silo.name', siloName);
       }).orderBy('timestamp', 'DESC').page(page - 1, perPage);
 
-      // temp log
-      console.log("Done with DB query for rates by silo name, running transformers", Math.floor(new Date().getTime() / 1000));
-
-      let result = this.parserResult(new Pagination(results, perPage, page), transformer);
-
-      return result;
+      return this.parserResult(new Pagination(results, perPage, page), transformer);
     }
 
     async getRateRecordCountByAssetOnSideInSilo(assetAddress: string, side: string, siloAddress: string) {

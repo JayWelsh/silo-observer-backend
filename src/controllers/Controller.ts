@@ -38,13 +38,7 @@ class Controller implements IController {
 
         res.status(code)
 
-        // temp log
-        console.log("Sending response", Math.floor(new Date().getTime() / 1000))
-
         res.json(this._prepareResponse(message, data))
-
-        // temp log
-        console.log("Sent response", Math.floor(new Date().getTime() / 1000))
     }
 
     sendError(res: Response, error = "Error", code = HTTP_NOT_FOUND) {
