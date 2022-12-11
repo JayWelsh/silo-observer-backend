@@ -14,7 +14,10 @@ class RateRepository extends BaseRepository {
       side: string,
       siloAddress: string,
     ) {
-      const result = await this.model.query().where(function (this: QueryBuilder<RateModel>) {
+      const result = await this.model.query()
+      .withGraphJoined('asset')
+      .withGraphJoined('silo')
+      .where(function (this: QueryBuilder<RateModel>) {
         this.where('asset_address', assetAddress);
         this.where('side', side);
         this.where('silo_address', siloAddress);
@@ -28,7 +31,10 @@ class RateRepository extends BaseRepository {
       side: string,
       siloAddress: string,
     ) {
-      const result = await this.model.query().where(function (this: QueryBuilder<RateModel>) {
+      const result = await this.model.query()
+      .withGraphJoined('asset')
+      .withGraphJoined('silo')
+      .where(function (this: QueryBuilder<RateModel>) {
         this.where('asset_address', assetAddress);
         this.where('side', side);
         this.where('silo_address', siloAddress);
@@ -46,7 +52,10 @@ class RateRepository extends BaseRepository {
 
       const { perPage, page } = pagination;
 
-      const results = await this.model.query().where(function (this: QueryBuilder<RateModel>) {
+      const results = await this.model.query()
+      .withGraphJoined('asset')
+      .withGraphJoined('silo')
+      .where(function (this: QueryBuilder<RateModel>) {
         this.where('asset_address', assetAddress);
         if(side) {
           this.where('side', side);
@@ -67,6 +76,7 @@ class RateRepository extends BaseRepository {
 
       const results = await this.model.query()
       .withGraphJoined('asset')
+      .withGraphJoined('silo')
       .where(function (this: QueryBuilder<RateModel>) {
         this.where('asset.symbol', assetAddress);
         if(side) {
@@ -89,6 +99,8 @@ class RateRepository extends BaseRepository {
       } = pagination;
 
       const results = await this.model.query()
+      .withGraphJoined('silo')
+      .withGraphJoined('asset')
       .where(function (this: QueryBuilder<RateModel>) {
         this.where('silo_address', siloAddress);
       }).orderBy('timestamp', 'DESC').page(page - 1, perPage);
@@ -109,6 +121,7 @@ class RateRepository extends BaseRepository {
 
       const results = await this.model.query()
       .withGraphJoined('silo')
+      .withGraphJoined('asset')
       .where(function (this: QueryBuilder<RateModel>) {
         this.where('silo.name', siloName);
       }).orderBy('timestamp', 'DESC').page(page - 1, perPage);

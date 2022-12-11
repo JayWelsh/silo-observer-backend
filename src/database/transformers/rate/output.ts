@@ -9,8 +9,16 @@ class RateTransformer extends BaseTransformer {
         rate: rateEntry.rate,
         side: rateEntry.side,
         timestamp: rateEntry.timestamp,
-        silo_address: rateEntry.silo_address,
-        asset_address: rateEntry.asset_address,
+        silo: (rateEntry.silo ? {
+          name: rateEntry.silo.name,
+          address: rateEntry.silo.address,
+          input_token_address: rateEntry.silo.input_token_address
+        } : {}),
+        asset: (rateEntry.asset ? {
+          address: rateEntry.asset.address,
+          symbol: rateEntry.asset.symbol,
+          decimals: rateEntry.asset.decimals,
+        } : {}),
         type: rateEntry.type,
       }
   }
