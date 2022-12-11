@@ -2,13 +2,18 @@ import { RateModel } from "../models";
 import BaseRepository from "./BaseRepository";
 import { QueryBuilder } from "objection";
 import Pagination, { IPaginationRequest } from "../../utils/Pagination";
+import { ITransformer } from "../transformers";
 
 class RateRepository extends BaseRepository {
     getModel() {
       return RateModel
     }
 
-    async getLatestRateByAssetOnSideInSilo(assetAddress: string, side: string, siloAddress: string) {
+    async getLatestRateByAssetOnSideInSilo(
+      assetAddress: string,
+      side: string,
+      siloAddress: string,
+    ) {
       const result = await this.model.query().where(function (this: QueryBuilder<RateModel>) {
         this.where('asset_address', assetAddress);
         this.where('side', side);
@@ -18,7 +23,11 @@ class RateRepository extends BaseRepository {
       return this.parserResult(result);
     }
 
-    async getOldestRateByAssetOnSideInSilo(assetAddress: string, side: string, siloAddress: string) {
+    async getOldestRateByAssetOnSideInSilo(
+      assetAddress: string,
+      side: string,
+      siloAddress: string,
+    ) {
       const result = await this.model.query().where(function (this: QueryBuilder<RateModel>) {
         this.where('asset_address', assetAddress);
         this.where('side', side);
@@ -28,7 +37,12 @@ class RateRepository extends BaseRepository {
       return this.parserResult(result);
     }
 
-    async getRatesByAssetAddress(assetAddress: string, side: string | undefined, pagination: IPaginationRequest) {
+    async getRatesByAssetAddress(
+      assetAddress: string,
+      side: string | undefined,
+      pagination: IPaginationRequest,
+      transformer: ITransformer,
+    ) {
 
       const { perPage, page } = pagination;
 
@@ -39,10 +53,15 @@ class RateRepository extends BaseRepository {
         }
       }).orderBy('timestamp', 'DESC').page(page - 1, perPage);
 
-      return this.parserResult(new Pagination(results, perPage, page));
+      return this.parserResult(new Pagination(results, perPage, page), transformer);
     }
 
-    async getRatesByAssetName(assetAddress: string, side: string | undefined, pagination: IPaginationRequest) {
+    async getRatesByAssetName(
+      assetAddress: string,
+      side: string | undefined,
+      pagination: IPaginationRequest,
+      transformer: ITransformer,
+    ) {
 
       const { perPage, page } = pagination;
 
@@ -55,12 +74,13 @@ class RateRepository extends BaseRepository {
         }
       }).orderBy('timestamp', 'DESC').page(page - 1, perPage);
 
-      return this.parserResult(new Pagination(results, perPage, page));
+      return this.parserResult(new Pagination(results, perPage, page), transformer);
     }
 
     async getRatesBySiloAddress(
       siloAddress: string,
-      pagination: IPaginationRequest
+      pagination: IPaginationRequest,
+      transformer: ITransformer,
     ) {
 
       const { 
@@ -73,12 +93,13 @@ class RateRepository extends BaseRepository {
         this.where('silo_address', siloAddress);
       }).orderBy('timestamp', 'DESC').page(page - 1, perPage);
 
-      return this.parserResult(new Pagination(results, perPage, page));
+      return this.parserResult(new Pagination(results, perPage, page), transformer);
     }
 
     async getRatesBySiloName(
       siloName: string,
-      pagination: IPaginationRequest
+      pagination: IPaginationRequest,
+      transformer: ITransformer,
     ) {
 
       const { 
@@ -92,7 +113,7 @@ class RateRepository extends BaseRepository {
         this.where('silo.name', siloName);
       }).orderBy('timestamp', 'DESC').page(page - 1, perPage);
 
-      return this.parserResult(new Pagination(results, perPage, page));
+      return this.parserResult(new Pagination(results, perPage, page), transformer);
     }
 
     async getRateRecordCountByAssetOnSideInSilo(assetAddress: string, side: string, siloAddress: string) {

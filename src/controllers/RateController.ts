@@ -23,9 +23,9 @@ class RateController extends Controller {
 
     let rates;
     if(utils.isAddress(siloAddressOrName)) {
-      rates = await RateRepository.setTransformer(RateOutputTransformer).getRatesBySiloAddress(siloAddressOrName, pagination);
+      rates = await RateRepository.getRatesBySiloAddress(siloAddressOrName, pagination, RateOutputTransformer);
     } else {
-      rates = await RateRepository.setTransformer(RateOutputTransformer).getRatesBySiloName(siloAddressOrName, pagination);
+      rates = await RateRepository.getRatesBySiloName(siloAddressOrName, pagination, RateOutputTransformer);
     }
 
     this.sendResponse(res, rates);
@@ -41,9 +41,9 @@ class RateController extends Controller {
 
     let rates;
     if(utils.isAddress(assetAddressOrName)) {
-      rates = await RateRepository.setTransformer(RateOutputTransformer).getRatesByAssetAddress(assetAddressOrName, side?.toUpperCase(), pagination);
+      rates = await RateRepository.getRatesByAssetAddress(assetAddressOrName, side?.toUpperCase(), pagination, RateOutputTransformer);
     } else {
-      rates = await RateRepository.setTransformer(RateOutputTransformer).getRatesByAssetName(assetAddressOrName, side?.toUpperCase(), pagination);
+      rates = await RateRepository.getRatesByAssetName(assetAddressOrName, side?.toUpperCase(), pagination, RateOutputTransformer);
     }
 
     this.sendResponse(res, rates);

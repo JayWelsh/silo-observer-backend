@@ -1,14 +1,10 @@
 import Pagination from "../../utils/Pagination";
 import BaseTransformer from "./../transformers/BaseTransformer";
 
-interface ITransformer {
-  transform?: (datum: any) => void;
-}
+import { ITransformer } from "./../../interfaces";
 
 abstract class BaseRepository {
     model: any;
-    transformer?: ITransformer;
-    transformerSkipped?: boolean;
     abstract getModel(): void;
 
     constructor() {
@@ -22,8 +18,6 @@ abstract class BaseRepository {
         }
 
         this.model = this.getModel()
-        this.transformer = undefined;
-        this.transformerSkipped = false
     }
 
     async create(data: any) {
@@ -85,30 +79,20 @@ abstract class BaseRepository {
         return this.model.query()
     }
 
-    setTransformer(transformer: ITransformer) {
-        this.transformer = transformer
-
-        return this
-    }
-
-    skipTransformer(skip = true) {
-        this.transformerSkipped = skip
-    }
-
-    parserResult(data: any) {
-        if (this.transformerSkipped || !(this.transformer instanceof BaseTransformer)) {
+    parserResult(data: any, transformer?: ITransformer) {
+        if (!(transformer instanceof BaseTransformer)) {
             return data instanceof Pagination ? data.get() : data
         }
 
-        if (data instanceof Pagination && this.transformer) {
+        if (data instanceof Pagination && transformer) {
             const paginatedResults = data.get()
-            const results = paginatedResults.data.map((datum: any) => this.transformer && this.transformer.transform && this.transformer.transform(datum))
+            const results = paginatedResults.data.map((datum: any) => transformer && transformer.transform && transformer.transform(datum))
             return {paginatedData: results, meta: {pagination: paginatedResults.pagination}}
         }
 
         return Array.isArray(data)
-          ? data.map(datum => this.transformer && this.transformer.transform && this.transformer.transform(datum))
-          : this.transformer && this.transformer.transform && this.transformer.transform(data)
+          ? data.map(datum => transformer && transformer.transform && transformer.transform(datum))
+          : transformer && transformer.transform && transformer.transform(data)
     }
 }
 

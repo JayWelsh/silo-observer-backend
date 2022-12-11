@@ -19,6 +19,10 @@ export interface IRateEntrySubgraph {
 
 // Internal Interfaces Below
 
+export interface ITransformer {
+  transform?: (datum: any) => void;
+}
+
 export interface IToken {
   address: string
   symbol: string

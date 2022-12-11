@@ -1,4 +1,7 @@
 abstract class BaseTransformer {
+  transformer(data: any) {
+    
+  }
   constructor() {
       //@ts-ignore
       if (this.transform === undefined) {
