@@ -49,9 +49,8 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
     let result = await subgraphRequestWithRetry(siloQuery);
     for(let market of result?.markets) {
 
-      let siloAddress = market.id;
-      let inputTokenAddress = market.inputToken.id;
-      let inputTokenAddressChecksum = utils.getAddress(inputTokenAddress);
+      let siloChecksumAddress = utils.getAddress(market.id);
+      let inputTokenChecksumAddress = utils.getAddress(market.inputToken.id);
       let inputTokenSymbol = market.inputToken.symbol;
 
       // Load relevant assets to this silo into memory
@@ -63,7 +62,7 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
         } = rateEntry.token
         if(!acc.find((item: IToken) => item.address === id)) {
           acc.push({
-            address: id,
+            address: utils.getAddress(id),
             symbol,
             decimals
           })
@@ -80,15 +79,6 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
         } = siloAsset;
 
         let assetChecksumAddress = utils.getAddress(address);
-
-        // Update asset record to use checksum address
-        let assetUpdateCount = await AssetRepository.query().update({
-          address: assetChecksumAddress
-        }).where('address', address);
-
-        if(assetUpdateCount > 0) {
-          console.log(`Updated ${symbol} address from ${address} to ${assetChecksumAddress}`);
-        }
         
         let assetRecord = await AssetRepository.getAssetByAddress(assetChecksumAddress);
         if(!assetRecord) {
@@ -101,16 +91,6 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
         }
       }
 
-      // Update silo record to use checksum address
-      let siloChecksumAddress = utils.getAddress(siloAddress);
-      let siloUpdateCount = await SiloRepository.query().update({
-        address: siloChecksumAddress
-      }).where('address', siloAddress);
-
-      if(siloUpdateCount > 0) {
-        console.log(`Updated ${inputTokenSymbol} silo address from ${siloAddress} to ${siloChecksumAddress}`);
-      }
-
       // Ensure that silo already exists in DB, else create it.
       let siloRecord = await SiloRepository.getSiloByAddress(siloChecksumAddress);
       if(!siloRecord) {
@@ -118,9 +98,9 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
         await SiloRepository.create({
           name: inputTokenSymbol.toUpperCase(),
           address: siloChecksumAddress,
-          input_token_address: inputTokenAddressChecksum,
+          input_token_address: inputTokenChecksumAddress,
         });
-        console.log(`Created silo record for ${siloAddress} (${inputTokenSymbol})`);
+        console.log(`Created silo record for ${siloChecksumAddress} (${inputTokenSymbol})`);
       }
 
       // Store rates for each asset
