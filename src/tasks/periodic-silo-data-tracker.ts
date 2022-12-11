@@ -1,5 +1,6 @@
 import { request, gql } from 'graphql-request';
 import { raw } from 'objection';
+import { utils } from "ethers";
 
 import { subgraphRequestWithRetry } from '../utils';
 
@@ -50,6 +51,7 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
 
       let siloAddress = market.id;
       let inputTokenAddress = market.inputToken.id;
+      let inputTokenAddressChecksum = utils.getAddress(inputTokenAddress);
       let inputTokenSymbol = market.inputToken.symbol;
 
       // Load relevant assets to this silo into memory
@@ -77,25 +79,46 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
           decimals
         } = siloAsset;
 
-        let assetRecord = await AssetRepository.getAssetByAddress(address);
+        let assetChecksumAddress = utils.getAddress(address);
+
+        // Update asset record to use checksum address
+        let assetUpdateCount = await AssetRepository.query().update({
+          address: assetChecksumAddress
+        }).where('address', address);
+
+        if(assetUpdateCount > 0) {
+          console.log(`Updated ${symbol} address from ${address} to ${assetChecksumAddress}`);
+        }
+        
+        let assetRecord = await AssetRepository.getAssetByAddress(assetChecksumAddress);
         if(!assetRecord) {
           await AssetRepository.create({
-            address,
+            address: assetChecksumAddress,
             symbol,
             decimals,
           });
-          console.log(`Created asset record for ${address} (${symbol})`);
+          console.log(`Created asset record for ${assetChecksumAddress} (${symbol})`);
         }
       }
 
+      // Update silo record to use checksum address
+      let siloChecksumAddress = utils.getAddress(siloAddress);
+      let siloUpdateCount = await SiloRepository.query().update({
+        address: siloChecksumAddress
+      }).where('address', siloAddress);
+
+      if(siloUpdateCount > 0) {
+        console.log(`Updated ${inputTokenSymbol} silo address from ${siloAddress} to ${siloChecksumAddress}`);
+      }
+
       // Ensure that silo already exists in DB, else create it.
-      let siloRecord = await SiloRepository.getSiloByAddress(siloAddress);
+      let siloRecord = await SiloRepository.getSiloByAddress(siloChecksumAddress);
       if(!siloRecord) {
         // Create record for silo
         await SiloRepository.create({
           name: inputTokenSymbol.toUpperCase(),
-          address: siloAddress,
-          input_token_address: inputTokenAddress,
+          address: siloChecksumAddress,
+          input_token_address: inputTokenAddressChecksum,
         });
         console.log(`Created silo record for ${siloAddress} (${inputTokenSymbol})`);
       }
@@ -112,9 +135,11 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
           id,
         } = rateEntry.token;
 
+        let rateAssetChecksumAddress = utils.getAddress(id);
+
         await RateRepository.create({
-          silo_address: siloAddress,
-          asset_address: id,
+          silo_address: siloChecksumAddress,
+          asset_address: rateAssetChecksumAddress,
           rate: rate,
           side: side,
           type: type,
