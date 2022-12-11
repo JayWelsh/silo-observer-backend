@@ -2,7 +2,7 @@ import { RateModel } from "../models";
 import BaseRepository from "./BaseRepository";
 import { QueryBuilder } from "objection";
 import Pagination, { IPaginationRequest } from "../../utils/Pagination";
-import { ITransformer } from "../transformers";
+import { ITransformer } from "../../interfaces";
 
 class RateRepository extends BaseRepository {
     getModel() {

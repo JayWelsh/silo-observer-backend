@@ -20,7 +20,8 @@ export interface IRateEntrySubgraph {
 // Internal Interfaces Below
 
 export interface ITransformer {
-  transform?: (datum: any) => void;
+  transform: (arg0: any) => any;
+  constructor: any;
 }
 
 export interface IToken {
