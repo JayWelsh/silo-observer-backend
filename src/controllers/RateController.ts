@@ -28,6 +28,9 @@ class RateController extends Controller {
       rates = await RateRepository.getRatesBySiloName(siloAddressOrName, pagination, RateOutputTransformer);
     }
 
+    // temp log
+    console.log("Sending response from controller", Math.floor(new Date().getTime() / 1000));
+
     this.sendResponse(res, rates);
   }
   async getRatesByAsset(req: Request, res: Response) {
