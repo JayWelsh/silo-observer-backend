@@ -1,6 +1,9 @@
 import { request, gql } from 'graphql-request';
 import { raw } from 'objection';
 import { utils } from "ethers";
+import BigNumber from 'bignumber.js';
+
+BigNumber.config({ EXPONENTIAL_AT: [-1e+9, 1e+9] });
 
 import { subgraphRequestWithRetry } from '../utils';
 
@@ -17,12 +20,18 @@ import {
   SiloRepository,
   AssetRepository,
   RateRepository,
+  TvlMinutelyRepository,
+  TvlHourlyRepository,
+  BorrowedMinutelyRepository,
+  BorrowedHourlyRepository,
 } from '../database/repositories';
 
 const siloQuery = gql`
   {
     markets {
       id
+      totalValueLockedUSD
+    	totalBorrowBalanceUSD
       inputToken {
         id
         symbol
@@ -45,13 +54,60 @@ const siloQuery = gql`
 
 const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: number) => {
   let useTimestampPostgres = new Date(useTimestampUnix * 1000).toISOString();
+  let isHourlyMoment = (useTimestampUnix % 3600) === 0;
   try {
+
     let result = await subgraphRequestWithRetry(siloQuery);
+
+    let tvlUsdAllSilosBN = new BigNumber(0);
+    let borrowedUsdAllSilosBN = new BigNumber(0);
+
     for(let market of result?.markets) {
 
       let siloChecksumAddress = utils.getAddress(market.id);
       let inputTokenChecksumAddress = utils.getAddress(market.inputToken.id);
       let inputTokenSymbol = market.inputToken.symbol;
+
+      // --------------------------------------------------
+
+      // TVL HANDLING BELOW
+      
+      const tvlUsdSiloSpecificBN = new BigNumber(market.totalValueLockedUSD).minus(new BigNumber(market.totalBorrowBalanceUSD));
+      const borrowedUsdSiloSpecificBN = new BigNumber(market.totalBorrowBalanceUSD);
+
+      tvlUsdAllSilosBN = tvlUsdAllSilosBN.plus(tvlUsdSiloSpecificBN);
+      borrowedUsdAllSilosBN = borrowedUsdAllSilosBN.plus(borrowedUsdSiloSpecificBN);
+
+      await TvlMinutelyRepository.create({
+        silo_address: siloChecksumAddress,
+        tvl: tvlUsdSiloSpecificBN.toNumber(),
+        timestamp: useTimestampPostgres,
+      });
+
+      await BorrowedMinutelyRepository.create({
+        silo_address: siloChecksumAddress,
+        borrowed: borrowedUsdSiloSpecificBN.toNumber(),
+        timestamp: useTimestampPostgres,
+      });
+
+      if(isHourlyMoment) {
+        await TvlHourlyRepository.create({
+          silo_address: siloChecksumAddress,
+          tvl: tvlUsdSiloSpecificBN.toNumber(),
+          timestamp: useTimestampPostgres,
+        });
+        await BorrowedHourlyRepository.create({
+          silo_address: siloChecksumAddress,
+          borrowed: borrowedUsdSiloSpecificBN.toNumber(),
+          timestamp: useTimestampPostgres,
+        });
+      }
+
+      // TVL HANDLING ABOVE
+
+      // --------------------------------------------------
+
+      // RATE HANDLING BELOW
 
       // Load relevant assets to this silo into memory
       let siloAssets = market.rates.reduce((acc: IToken[], rateEntry: IRateEntrySubgraph) => {
@@ -126,12 +182,55 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
           timestamp: useTimestampPostgres
         });
       }
-    }
-    
-    // remove any records older than 1441 minutes in one query
-    let deletedExpiredRecordCount = await RateRepository.query().delete().where(raw("timestamp < now() - interval '1441 minutes'"));
 
-    console.log(`Successfully stored latest rates for silos (${useTimestampPostgres}),${deletedExpiredRecordCount > 0 ? ` Deleted ${deletedExpiredRecordCount} expired records,` : ''} execution time: ${new Date().getTime() - startTime}ms`);
+      // RATE HANDLING ABOVE
+
+      // --------------------------------------------------
+    }
+
+    // --------------------------------------------------
+
+    // MULTI-MARKET (WHOLE PLATFORM) RECORD HANDLING BELOW
+
+    await TvlMinutelyRepository.create({
+      tvl: tvlUsdAllSilosBN.toNumber(),
+      timestamp: useTimestampPostgres,
+      meta: 'all',
+    });
+
+    await BorrowedMinutelyRepository.create({
+      borrowed: borrowedUsdAllSilosBN.toNumber(),
+      timestamp: useTimestampPostgres,
+      meta: 'all',
+    });
+
+    if(isHourlyMoment) {
+      await TvlHourlyRepository.create({
+        tvl: tvlUsdAllSilosBN.toNumber(),
+        timestamp: useTimestampPostgres,
+        meta: 'all',
+      });
+      await BorrowedHourlyRepository.create({
+        borrowed: borrowedUsdAllSilosBN.toNumber(),
+        timestamp: useTimestampPostgres,
+        meta: 'all',
+      });
+    }
+
+    // MULTI-MARKET (WHOLE PLATFORM) RECORD HANDLING ABOVE
+    
+    // --------------------------------------------------
+
+    // RECORD EXPIRY HANDLING BELOW
+
+    // remove any minutely records older than 1441 minutes in one query
+    let deletedExpiredRecordCount = await RateRepository.query().delete().where(raw(`timestamp < now() - interval '${MAX_MINUTELY_RATE_ENTRIES} minutes'`));
+
+    // RECORD EXPIRY HANDLING ABOVE
+
+    // --------------------------------------------------
+
+    console.log(`Successfully stored latest rates & tvls for silos (${useTimestampPostgres}),${deletedExpiredRecordCount > 0 ? ` Deleted ${deletedExpiredRecordCount} expired rate records,` : ''} execution time: ${new Date().getTime() - startTime}ms`);
   } catch (error) {
     console.error(`Unable to store latest rates for silos (${useTimestampPostgres})`, error);
   }
