@@ -157,11 +157,6 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
           input_token_address: inputTokenChecksumAddress,
         });
         console.log(`Created silo record for ${siloChecksumAddress} (${inputTokenSymbol})`);
-      } else if (siloRecord.name !== inputTokenSymbol) {
-        if(siloRecord.id && inputTokenSymbol) {
-          await SiloRepository.update({ name: inputTokenSymbol }, siloRecord.id);
-          console.log(`Change Silo name from ${siloRecord.name} to ${inputTokenSymbol}`);
-        }
       }
 
       // Store rates for each asset
