@@ -54,4 +54,26 @@ export interface IRate {
   asset?: IAsset
 }
 
+export interface IBorrowedTotal {
+  id: number
+  borrowed: number
+  timestamp: string
+  silo_address: string
+  asset_address: string
+  meta: string
+  silo?: ISilo
+  asset?: IAsset
+}
+
+export interface ITvlTotal {
+  id: number
+  tvl: number
+  timestamp: string
+  silo_address: string
+  asset_address: string
+  meta: string
+  silo?: ISilo
+  asset?: IAsset
+}
+
 // Internal Interfaces Above

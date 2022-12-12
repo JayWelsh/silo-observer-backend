@@ -33,17 +33,17 @@ class RateController extends Controller {
   async getRatesByAsset(req: Request, res: Response) {
 
     const {
-      assetAddressOrName,
+      assetAddressOrSymbol,
       side,
     } = req.params;
 
     const pagination = this.extractPagination(req)
 
     let rates;
-    if(utils.isAddress(assetAddressOrName)) {
-      rates = await RateRepository.getRatesByAssetAddress(assetAddressOrName, side?.toUpperCase(), pagination, RateOutputTransformer);
+    if(utils.isAddress(assetAddressOrSymbol)) {
+      rates = await RateRepository.getRatesByAssetAddress(assetAddressOrSymbol, side?.toUpperCase(), pagination, RateOutputTransformer);
     } else {
-      rates = await RateRepository.getRatesByAssetName(assetAddressOrName, side?.toUpperCase(), pagination, RateOutputTransformer);
+      rates = await RateRepository.getRatesByAssetSymbol(assetAddressOrSymbol, side?.toUpperCase(), pagination, RateOutputTransformer);
     }
 
     this.sendResponse(res, rates);
