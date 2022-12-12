@@ -1,6 +1,7 @@
+import { QueryBuilder } from "objection";
+
 import { RateModel } from "../models";
 import BaseRepository from "./BaseRepository";
-import { QueryBuilder } from "objection";
 import Pagination, { IPaginationRequest } from "../../utils/Pagination";
 import { ITransformer } from "../../interfaces";
 
@@ -65,7 +66,7 @@ class RateRepository extends BaseRepository {
       return this.parserResult(new Pagination(results, perPage, page), transformer);
     }
 
-    async getRatesByAssetName(
+    async getRatesByAssetSymbol(
       assetAddress: string,
       side: string | undefined,
       pagination: IPaginationRequest,
