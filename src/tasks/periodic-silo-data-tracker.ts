@@ -51,7 +51,9 @@ const siloQuery = gql`
   }
 `;
 
-
+let enableRateSync = true;
+let enableTvlSync = false;
+let enableBorrowedSync = false;
 
 const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: number) => {
   let useTimestampPostgres = new Date(useTimestampUnix * 1000).toISOString();
@@ -135,29 +137,37 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
       tvlUsdAllSilosBN = tvlUsdAllSilosBN.plus(tvlUsdSiloSpecificBN);
       borrowedUsdAllSilosBN = borrowedUsdAllSilosBN.plus(borrowedUsdSiloSpecificBN);
 
-      await TvlMinutelyRepository.create({
-        silo_address: siloChecksumAddress,
-        tvl: tvlUsdSiloSpecificBN.toNumber(),
-        timestamp: useTimestampPostgres,
-      });
-
-      await BorrowedMinutelyRepository.create({
-        silo_address: siloChecksumAddress,
-        borrowed: borrowedUsdSiloSpecificBN.toNumber(),
-        timestamp: useTimestampPostgres,
-      });
-
-      if(isHourlyMoment) {
-        await TvlHourlyRepository.create({
+      if (enableTvlSync) {
+        await TvlMinutelyRepository.create({
           silo_address: siloChecksumAddress,
           tvl: tvlUsdSiloSpecificBN.toNumber(),
           timestamp: useTimestampPostgres,
         });
-        await BorrowedHourlyRepository.create({
+      }
+
+      if(enableBorrowedSync) {
+        await BorrowedMinutelyRepository.create({
           silo_address: siloChecksumAddress,
           borrowed: borrowedUsdSiloSpecificBN.toNumber(),
           timestamp: useTimestampPostgres,
         });
+      }
+
+      if(isHourlyMoment) {
+        if (enableTvlSync) {
+          await TvlHourlyRepository.create({
+            silo_address: siloChecksumAddress,
+            tvl: tvlUsdSiloSpecificBN.toNumber(),
+            timestamp: useTimestampPostgres,
+          });
+        }
+        if(enableBorrowedSync) {
+          await BorrowedHourlyRepository.create({
+            silo_address: siloChecksumAddress,
+            borrowed: borrowedUsdSiloSpecificBN.toNumber(),
+            timestamp: useTimestampPostgres,
+          });
+        }
       }
 
       // TVL HANDLING ABOVE
@@ -180,17 +190,9 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
 
         let rateAssetChecksumAddress = utils.getAddress(id);
 
-        await RateRepository.create({
-          silo_address: siloChecksumAddress,
-          asset_address: rateAssetChecksumAddress,
-          rate: rate,
-          side: side,
-          type: type,
-          timestamp: useTimestampPostgres
-        });
+        if(enableRateSync) {
 
-        if(isHourlyMoment) {
-          await RateHourlyRepository.create({
+          await RateRepository.create({
             silo_address: siloChecksumAddress,
             asset_address: rateAssetChecksumAddress,
             rate: rate,
@@ -198,6 +200,18 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
             type: type,
             timestamp: useTimestampPostgres
           });
+
+          if(isHourlyMoment) {
+            await RateHourlyRepository.create({
+              silo_address: siloChecksumAddress,
+              asset_address: rateAssetChecksumAddress,
+              rate: rate,
+              side: side,
+              type: type,
+              timestamp: useTimestampPostgres
+            });
+          }
+
         }
       }
 
@@ -210,29 +224,37 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
 
     // MULTI-MARKET (WHOLE PLATFORM) RECORD HANDLING BELOW
 
-    await TvlMinutelyRepository.create({
-      tvl: tvlUsdAllSilosBN.toNumber(),
-      timestamp: useTimestampPostgres,
-      meta: 'all',
-    });
-
-    await BorrowedMinutelyRepository.create({
-      borrowed: borrowedUsdAllSilosBN.toNumber(),
-      timestamp: useTimestampPostgres,
-      meta: 'all',
-    });
-
-    if(isHourlyMoment) {
-      await TvlHourlyRepository.create({
+    if (enableTvlSync) {
+      await TvlMinutelyRepository.create({
         tvl: tvlUsdAllSilosBN.toNumber(),
         timestamp: useTimestampPostgres,
         meta: 'all',
       });
-      await BorrowedHourlyRepository.create({
+    }
+
+    if(enableBorrowedSync) {
+      await BorrowedMinutelyRepository.create({
         borrowed: borrowedUsdAllSilosBN.toNumber(),
         timestamp: useTimestampPostgres,
         meta: 'all',
       });
+    }
+
+    if(isHourlyMoment) {
+      if (enableTvlSync) {
+        await TvlHourlyRepository.create({
+          tvl: tvlUsdAllSilosBN.toNumber(),
+          timestamp: useTimestampPostgres,
+          meta: 'all',
+        });
+      }
+      if(enableBorrowedSync) {
+        await BorrowedHourlyRepository.create({
+          borrowed: borrowedUsdAllSilosBN.toNumber(),
+          timestamp: useTimestampPostgres,
+          meta: 'all',
+        });
+      }
     }
 
     // MULTI-MARKET (WHOLE PLATFORM) RECORD HANDLING ABOVE
@@ -242,13 +264,16 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
     // RECORD EXPIRY HANDLING BELOW
 
     // remove any minutely records older than 1441 minutes in one query
-    let deletedExpiredRecordCount = await RateRepository.query().delete().where(raw(`timestamp < now() - interval '${MAX_MINUTELY_RATE_ENTRIES} minutes'`));
+    let deletedExpiredRecordCount = 0;
+    if(enableRateSync) {
+      deletedExpiredRecordCount = await RateRepository.query().delete().where(raw(`timestamp < now() - interval '${MAX_MINUTELY_RATE_ENTRIES} minutes'`));
+    }
 
     // RECORD EXPIRY HANDLING ABOVE
 
     // --------------------------------------------------
 
-    console.log(`Successfully stored latest rates & tvls for silos (${useTimestampPostgres}),${deletedExpiredRecordCount > 0 ? ` Deleted ${deletedExpiredRecordCount} expired rate records,` : ''} execution time: ${new Date().getTime() - startTime}ms`);
+    console.log(`Sync success (${useTimestampPostgres}),${deletedExpiredRecordCount > 0 ? ` Deleted ${deletedExpiredRecordCount} expired rate records,` : ''}, enableRateSync: ${enableRateSync}, enableTvlSync: ${enableTvlSync}, enableBorrowedSync: ${enableBorrowedSync}, exec time: ${new Date().getTime() - startTime}ms`);
   } catch (error) {
     console.error(`Unable to store latest rates for silos (${useTimestampPostgres})`, error);
   }
