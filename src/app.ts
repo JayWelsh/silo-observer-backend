@@ -12,7 +12,6 @@ import dbConfig from "./config/database";
 import registerBotCommands from './tasks/register-bot-commands';
 import botLoginAndReadyUp from './tasks/bot-login-and-ready-up';
 import { periodicSiloDataTracker } from './tasks/periodic-silo-data-tracker';
-import { runPatch } from './tasks/run-data-patch';
 
 let corsOptions = {
   origin: 'http://localhost:3000',
@@ -54,5 +53,3 @@ const runMinutelyDataTracker = new CronJob(
 );
 
 runMinutelyDataTracker.start();
-
-runPatch();
