@@ -3,7 +3,8 @@ import e, { Request, Response } from 'express';
 import { utils } from "ethers";
 
 import {
-  RateRepository
+  RateRepository,
+  RateHourlyRepository
 } from '../database/repositories';
 
 import {
@@ -19,13 +20,27 @@ class RateController extends Controller {
       siloAddressOrName,
     } = req.params;
 
+    const {
+      resolution = 'minutely'
+    } = req.query;
+
     const pagination = this.extractPagination(req)
 
     let rates;
     if(utils.isAddress(siloAddressOrName)) {
-      rates = await RateRepository.getRatesBySiloAddress(siloAddressOrName, pagination, RateOutputTransformer);
+      if(resolution === 'minutely') {
+        rates = await RateRepository.getRatesBySiloAddress(siloAddressOrName, pagination, RateOutputTransformer);
+      }
+      if(resolution === 'hourly') {
+        rates = await RateHourlyRepository.getRatesBySiloAddress(siloAddressOrName, pagination, RateOutputTransformer);
+      }
     } else {
-      rates = await RateRepository.getRatesBySiloName(siloAddressOrName, pagination, RateOutputTransformer);
+      if(resolution === 'minutely') {
+        rates = await RateRepository.getRatesBySiloName(siloAddressOrName, pagination, RateOutputTransformer);
+      }
+      if(resolution === 'hourly') {
+        rates = await RateHourlyRepository.getRatesBySiloName(siloAddressOrName, pagination, RateOutputTransformer);
+      }
     }
 
     this.sendResponse(res, rates);
@@ -37,13 +52,27 @@ class RateController extends Controller {
       side,
     } = req.params;
 
+    const {
+      resolution = 'minutely'
+    } = req.query;
+
     const pagination = this.extractPagination(req)
 
     let rates;
     if(utils.isAddress(assetAddressOrSymbol)) {
-      rates = await RateRepository.getRatesByAssetAddress(assetAddressOrSymbol, side?.toUpperCase(), pagination, RateOutputTransformer);
+      if(resolution === 'minutely') {
+        rates = await RateRepository.getRatesByAssetAddress(assetAddressOrSymbol, side?.toUpperCase(), pagination, RateOutputTransformer);
+      }
+      if(resolution === 'hourly') {
+        rates = await RateHourlyRepository.getRatesByAssetAddress(assetAddressOrSymbol, side?.toUpperCase(), pagination, RateOutputTransformer);
+      }
     } else {
-      rates = await RateRepository.getRatesByAssetSymbol(assetAddressOrSymbol, side?.toUpperCase(), pagination, RateOutputTransformer);
+      if(resolution === 'minutely') {
+        rates = await RateRepository.getRatesByAssetSymbol(assetAddressOrSymbol, side?.toUpperCase(), pagination, RateOutputTransformer);
+      }
+      if(resolution === 'hourly') {
+        rates = await RateHourlyRepository.getRatesByAssetSymbol(assetAddressOrSymbol, side?.toUpperCase(), pagination, RateOutputTransformer);
+      }
     }
 
     this.sendResponse(res, rates);

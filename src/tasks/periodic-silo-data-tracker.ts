@@ -20,6 +20,7 @@ import {
   SiloRepository,
   AssetRepository,
   RateRepository,
+  RateHourlyRepository,
   TvlMinutelyRepository,
   TvlHourlyRepository,
   BorrowedMinutelyRepository,
@@ -70,44 +71,7 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
 
       // --------------------------------------------------
 
-      // TVL HANDLING BELOW
-      
-      const tvlUsdSiloSpecificBN = new BigNumber(market.totalValueLockedUSD).minus(new BigNumber(market.totalBorrowBalanceUSD));
-      const borrowedUsdSiloSpecificBN = new BigNumber(market.totalBorrowBalanceUSD);
-
-      tvlUsdAllSilosBN = tvlUsdAllSilosBN.plus(tvlUsdSiloSpecificBN);
-      borrowedUsdAllSilosBN = borrowedUsdAllSilosBN.plus(borrowedUsdSiloSpecificBN);
-
-      await TvlMinutelyRepository.create({
-        silo_address: siloChecksumAddress,
-        tvl: tvlUsdSiloSpecificBN.toNumber(),
-        timestamp: useTimestampPostgres,
-      });
-
-      await BorrowedMinutelyRepository.create({
-        silo_address: siloChecksumAddress,
-        borrowed: borrowedUsdSiloSpecificBN.toNumber(),
-        timestamp: useTimestampPostgres,
-      });
-
-      if(isHourlyMoment) {
-        await TvlHourlyRepository.create({
-          silo_address: siloChecksumAddress,
-          tvl: tvlUsdSiloSpecificBN.toNumber(),
-          timestamp: useTimestampPostgres,
-        });
-        await BorrowedHourlyRepository.create({
-          silo_address: siloChecksumAddress,
-          borrowed: borrowedUsdSiloSpecificBN.toNumber(),
-          timestamp: useTimestampPostgres,
-        });
-      }
-
-      // TVL HANDLING ABOVE
-
-      // --------------------------------------------------
-
-      // RATE HANDLING BELOW
+      // PATCH MISSING SILOS / ASSETS BELOW
 
       // Load relevant assets to this silo into memory
       let siloAssets = market.rates.reduce((acc: IToken[], rateEntry: IRateEntrySubgraph) => {
@@ -159,6 +123,49 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
         console.log(`Created silo record for ${siloChecksumAddress} (${inputTokenSymbol})`);
       }
 
+      // PATCH MISSING SILOS / ASSETS ABOVE
+
+      // --------------------------------------------------
+
+      // TVL HANDLING BELOW
+      
+      const tvlUsdSiloSpecificBN = new BigNumber(market.totalValueLockedUSD).minus(new BigNumber(market.totalBorrowBalanceUSD));
+      const borrowedUsdSiloSpecificBN = new BigNumber(market.totalBorrowBalanceUSD);
+
+      tvlUsdAllSilosBN = tvlUsdAllSilosBN.plus(tvlUsdSiloSpecificBN);
+      borrowedUsdAllSilosBN = borrowedUsdAllSilosBN.plus(borrowedUsdSiloSpecificBN);
+
+      await TvlMinutelyRepository.create({
+        silo_address: siloChecksumAddress,
+        tvl: tvlUsdSiloSpecificBN.toNumber(),
+        timestamp: useTimestampPostgres,
+      });
+
+      await BorrowedMinutelyRepository.create({
+        silo_address: siloChecksumAddress,
+        borrowed: borrowedUsdSiloSpecificBN.toNumber(),
+        timestamp: useTimestampPostgres,
+      });
+
+      if(isHourlyMoment) {
+        await TvlHourlyRepository.create({
+          silo_address: siloChecksumAddress,
+          tvl: tvlUsdSiloSpecificBN.toNumber(),
+          timestamp: useTimestampPostgres,
+        });
+        await BorrowedHourlyRepository.create({
+          silo_address: siloChecksumAddress,
+          borrowed: borrowedUsdSiloSpecificBN.toNumber(),
+          timestamp: useTimestampPostgres,
+        });
+      }
+
+      // TVL HANDLING ABOVE
+
+      // --------------------------------------------------
+
+      // RATE HANDLING BELOW
+
       // Store rates for each asset
       for (let rateEntry of market.rates) {
         let {
@@ -181,6 +188,17 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
           type: type,
           timestamp: useTimestampPostgres
         });
+
+        if(isHourlyMoment) {
+          await RateHourlyRepository.create({
+            silo_address: siloChecksumAddress,
+            asset_address: rateAssetChecksumAddress,
+            rate: rate,
+            side: side,
+            type: type,
+            timestamp: useTimestampPostgres
+          });
+        }
       }
 
       // RATE HANDLING ABOVE
