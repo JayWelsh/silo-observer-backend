@@ -1,5 +1,5 @@
 import { TvlMinutelyModel } from "../models";
-import TvlBaseRepository from "./BaseRepository";
+import TvlBaseRepository from "./TvlBaseRepository";
 
 class TvlMinutelyRepository extends TvlBaseRepository {
   getModel() {
