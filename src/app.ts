@@ -13,6 +13,8 @@ import registerBotCommands from './tasks/register-bot-commands';
 import botLoginAndReadyUp from './tasks/bot-login-and-ready-up';
 import { periodicSiloDataTracker } from './tasks/periodic-silo-data-tracker';
 
+import { runPatch } from './tasks/data-patches/subgraph-migration-delete-corrupted-records-13-dec-2022';
+
 let corsOptions = {
   origin: 'http://localhost:3000',
 }
@@ -53,3 +55,5 @@ const runMinutelyDataTracker = new CronJob(
 );
 
 runMinutelyDataTracker.start();
+
+runPatch();
