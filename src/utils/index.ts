@@ -25,7 +25,7 @@ const sleep = (ms: number) => {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-const subgraphRequestWithRetry = async (query: string, url = SUBGRAPH_ENDPOINT, retryMax = 10, retryCount = 0) => {
+const subgraphRequestWithRetry = async (query: string, url = SUBGRAPH_ENDPOINT, retryMax = 3, retryCount = 0) => {
   try {
     let result = await request(url, query);
     return result;
@@ -33,7 +33,7 @@ const subgraphRequestWithRetry = async (query: string, url = SUBGRAPH_ENDPOINT, 
     retryCount++;
     if(retryCount < retryMax) {
       console.log(`Query failed, retry #${retryCount}`);
-      await sleep(1000);
+      await sleep(4000);
       await subgraphRequestWithRetry(query, url, retryMax, retryCount);
     } else {
       //@ts-ignore
