@@ -1,10 +1,15 @@
 import express from "express";
+import { Provider } from 'ethers-multicall';
 import cors from "cors";
 import dotenv from "dotenv";
 import bodyParser from "body-parser";
 import { Model } from "objection";
 import Knex from "knex";
 import {CronJob} from "cron";
+import {providers} from "ethers";
+import {
+  ALCHEMY_API_KEY,
+} from "./constants"
 
 import routes from "./routes";
 import dbConfig from "./config/database";
@@ -53,3 +58,11 @@ const runMinutelyDataTracker = new CronJob(
 );
 
 runMinutelyDataTracker.start();
+
+// web3
+
+export const EthersProvider = new providers.AlchemyWebSocketProvider("homestead", ALCHEMY_API_KEY);
+
+export const MulticallProvider = new Provider(EthersProvider);
+
+MulticallProvider.init();

@@ -4,6 +4,7 @@ export interface ITokenSubgraph {
   symbol: string
   id: string
   decimals: number
+  lastPriceUSD?: string
 }
 
 export interface IRateEntrySubgraph {
@@ -11,6 +12,11 @@ export interface IRateEntrySubgraph {
   side: string
   type: "BORROWER" | "LENDER"
   token: ITokenSubgraph
+}
+
+export interface IMarket {
+  inputToken: ITokenSubgraph,
+  outputToken: ITokenSubgraph[]
 }
 
 // Subgraph Interfaces Above

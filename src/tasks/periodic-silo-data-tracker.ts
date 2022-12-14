@@ -9,7 +9,8 @@ import { subgraphRequestWithRetry } from '../utils';
 
 import {
   IRateEntrySubgraph,
-  IToken
+  IToken,
+  IMarket,
 } from '../interfaces';
 
 import {
@@ -27,6 +28,10 @@ import {
   BorrowedHourlyRepository,
 } from '../database/repositories';
 
+import {
+  getAllSiloAssetBalances
+} from '../web3/jobs';
+
 const siloQuery = gql`
   {
     markets {
@@ -36,6 +41,11 @@ const siloQuery = gql`
       inputToken {
         id
         symbol
+        lastPriceUSD
+      }
+      outputToken {
+        id
+        lastPriceUSD
       }
       rates {
         rate
@@ -52,18 +62,42 @@ const siloQuery = gql`
 `;
 
 let enableRateSync = true;
-let enableTvlSync = false;
-let enableBorrowedSync = false;
+let enableTvlSync = true;
+let enableBorrowedSync = true;
+
+interface ITokenAddressToLastPrice {
+  [key: string]: string
+}
 
 const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: number) => {
+
   let useTimestampPostgres = new Date(useTimestampUnix * 1000).toISOString();
   let isHourlyMoment = (useTimestampUnix % 3600) === 0;
+
   try {
+
+    let siloAssetBalances = await getAllSiloAssetBalances();
 
     let result = await subgraphRequestWithRetry(siloQuery);
 
     let tvlUsdAllSilosBN = new BigNumber(0);
     let borrowedUsdAllSilosBN = new BigNumber(0);
+
+    let tokenAddressToLastPrice = result?.markets.reduce((acc: ITokenAddressToLastPrice, market: IMarket) => {
+      let inputTokenChecksumAddress = utils.getAddress(market.inputToken.id);
+      let inputTokenLastPrice = market.inputToken.lastPriceUSD;
+      if(!acc[inputTokenChecksumAddress] && inputTokenLastPrice) {
+        acc[inputTokenChecksumAddress] = inputTokenLastPrice;
+      }
+      for(let outputToken of market.outputToken) {
+        let outputTokenAddress = utils.getAddress(outputToken.id);
+        let outputTokenLastPrice = outputToken.lastPriceUSD;
+        if(!acc[outputTokenAddress] && outputTokenLastPrice) {
+          acc[outputTokenAddress] = outputTokenLastPrice;
+        }
+      }
+      return acc;
+    }, {});
 
     for(let market of result?.markets) {
 
@@ -131,7 +165,20 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
 
       // TVL HANDLING BELOW
       
-      const tvlUsdSiloSpecificBN = new BigNumber(market.totalValueLockedUSD).minus(new BigNumber(market.totalBorrowBalanceUSD));
+      // Method 1
+      // const tvlUsdSiloSpecificBN = new BigNumber(market.totalValueLockedUSD).minus(new BigNumber(market.totalBorrowBalanceUSD));
+      // const borrowedUsdSiloSpecificBN = new BigNumber(market.totalBorrowBalanceUSD);
+
+      // Method 2 (using info directly from chain for TVL to reduce reliance on off-chain data)
+      const tvlUsdSiloSpecificBN = Object.entries(siloAssetBalances[siloChecksumAddress]).reduce((acc, entry) => {
+        let tokenPrice = new BigNumber(tokenAddressToLastPrice[entry[1].tokenAddress]);
+        let tokenBalance = new BigNumber(entry[1].balance);
+        if(tokenPrice.isGreaterThan(0) && tokenBalance.isGreaterThan(0)) {
+          let usdValueOfAsset = tokenBalance.multipliedBy(tokenPrice);
+          acc = acc.plus(usdValueOfAsset);
+        }
+        return acc;
+      }, new BigNumber(0));
       const borrowedUsdSiloSpecificBN = new BigNumber(market.totalBorrowBalanceUSD);
 
       tvlUsdAllSilosBN = tvlUsdAllSilosBN.plus(tvlUsdSiloSpecificBN);
@@ -273,7 +320,7 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
 
     // --------------------------------------------------
 
-    console.log(`Sync success (${useTimestampPostgres}),${deletedExpiredRecordCount > 0 ? ` Deleted ${deletedExpiredRecordCount} expired rate records,` : ''}, enableRateSync: ${enableRateSync}, enableTvlSync: ${enableTvlSync}, enableBorrowedSync: ${enableBorrowedSync}, exec time: ${new Date().getTime() - startTime}ms`);
+    console.log(`Sync success (${useTimestampPostgres}),${deletedExpiredRecordCount > 0 ? ` Deleted ${deletedExpiredRecordCount} expired rate records,` : ''} enableRateSync: ${enableRateSync}, enableTvlSync: ${enableTvlSync}, enableBorrowedSync: ${enableBorrowedSync}, exec time: ${new Date().getTime() - startTime}ms`);
   } catch (error) {
     console.error(`Unable to store latest rates for silos (${useTimestampPostgres})`, error);
   }
