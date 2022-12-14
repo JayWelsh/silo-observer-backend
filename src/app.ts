@@ -19,11 +19,7 @@ import botLoginAndReadyUp from './tasks/bot-login-and-ready-up';
 import { periodicSiloDataTracker } from './tasks/periodic-silo-data-tracker';
 
 let corsOptions = {
-  origin: 'http://localhost:3000',
-}
-
-let corsOptionsProd = {
-  origin: 'https://silo.observer',
+  origin: ['http://localhost:3000', 'https://silo.observer', 'https://www.silo.observer'],
 }
 
 dotenv.config();
@@ -35,8 +31,7 @@ Model.knex(knex);
 const app = express();
 const port = process.env.PORT || 8000;
 
-app.use(cors(corsOptions))
-app.use(cors(corsOptionsProd))
+app.use(cors(corsOptions));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
