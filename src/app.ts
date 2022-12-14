@@ -22,12 +22,8 @@ let corsOptions = {
   origin: 'http://localhost:3000',
 }
 
-let corsOptionsProdFrontendNonWWW = {
+let corsOptionsProd = {
   origin: 'https://silo.observer',
-}
-
-let corsOptionsProdFrontendWWW = {
-  origin: 'https://www.silo.observer',
 }
 
 dotenv.config();
@@ -40,8 +36,7 @@ const app = express();
 const port = process.env.PORT || 8000;
 
 app.use(cors(corsOptions))
-app.use(cors(corsOptionsProdFrontendNonWWW))
-app.use(cors(corsOptionsProdFrontendWWW))
+app.use(cors(corsOptionsProd))
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
