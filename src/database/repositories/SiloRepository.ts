@@ -12,7 +12,7 @@ class SiloRepository extends BaseRepository {
 
     async getSiloByAddress(
       siloAddress: string | number,
-      transformer: ITransformer,
+      transformer?: ITransformer,
     ) {
       const result = await this.model.query().where(function (this: QueryBuilder<SiloModel>) {
         this.where('address', siloAddress);
@@ -39,7 +39,7 @@ class SiloRepository extends BaseRepository {
 
       const { perPage, page } = pagination;
 
-      const results = await this.model.query().page(page - 1, perPage);
+      const results = await this.model.query().orderBy("tvl", "DESC").page(page - 1, perPage);
       
       return this.parserResult(new Pagination(results, perPage, page), transformer)
     }

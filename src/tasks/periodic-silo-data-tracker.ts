@@ -190,6 +190,9 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
           tvl: tvlUsdSiloSpecificBN.toNumber(),
           timestamp: useTimestampPostgres,
         });
+        await SiloRepository.query().update({
+          tvl: tvlUsdSiloSpecificBN.toNumber(),
+        }).where("address", siloChecksumAddress);
       }
 
       if(enableBorrowedSync) {
@@ -198,6 +201,9 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
           borrowed: borrowedUsdSiloSpecificBN.toNumber(),
           timestamp: useTimestampPostgres,
         });
+        await SiloRepository.query().update({
+          borrowed: borrowedUsdSiloSpecificBN.toNumber(),
+        }).where("address", siloChecksumAddress);
       }
 
       if(isHourlyMoment) {

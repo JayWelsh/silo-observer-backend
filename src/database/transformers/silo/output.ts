@@ -8,6 +8,8 @@ class SiloOutputTransformer extends BaseTransformer {
       name: siloEntry.name,
       address: siloEntry.address,
       input_token_address: siloEntry.input_token_address,
+      tvl: siloEntry.tvl,
+      borrowed: siloEntry.borrowed,
     }
   }
 }

@@ -40,6 +40,8 @@ export interface ISilo {
   name: string
   address: string
   input_token_address: string
+  tvl: number
+  borrowed: number
 }
 
 export interface IAsset {
