@@ -4,6 +4,10 @@ import { utils } from "ethers";
 
 import { SiloRepository } from '../database/repositories';
 
+import {
+  SiloOutputTransformer
+} from '../database/transformers';
+
 import Controller from './Controller';
 
 class SiloController extends Controller {
@@ -15,22 +19,18 @@ class SiloController extends Controller {
 
     let silo;
     if(utils.isAddress(siloAddressOrName)) {
-      silo = await SiloRepository.getSiloByAddress(siloAddressOrName);
+      silo = await SiloRepository.getSiloByAddress(siloAddressOrName, SiloOutputTransformer);
     } else {
-      silo = await SiloRepository.getSiloByName(siloAddressOrName);
+      silo = await SiloRepository.getSiloByName(siloAddressOrName, SiloOutputTransformer);
     }
 
     this.sendResponse(res, silo);
   }
-  async getSilos(req: Request, res: Response) {
-
-    const {
-      siloAddress,
-    } = req.params;
+  async listSilos(req: Request, res: Response) {
 
     const pagination = this.extractPagination(req)
 
-    let silos = await SiloRepository.getSilos(pagination);
+    let silos = await SiloRepository.listSilos(pagination, SiloOutputTransformer);
 
     this.sendResponse(res, silos);
   }
