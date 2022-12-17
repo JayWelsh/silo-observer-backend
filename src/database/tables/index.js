@@ -1,6 +1,7 @@
 const SILO_TABLE = 'silo'
 const ASSET_TABLE = 'asset'
 
+const RATE_LATEST_TABLE = 'rate_latest'
 const RATE_TABLE = 'rate'
 const RATE_HOURLY_TABLE = 'rate_hourly'
 
@@ -13,6 +14,7 @@ const BORROWED_HOURLY_TABLE = 'borrowed_hourly'
 module.exports = {
   SILO_TABLE,
   ASSET_TABLE,
+  RATE_LATEST_TABLE,
   RATE_TABLE,
   RATE_HOURLY_TABLE,
   TVL_MINUTELY_TABLE,

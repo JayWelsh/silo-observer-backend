@@ -1,8 +1,9 @@
-const SILO_TABLE = 'silo'
-const ASSET_TABLE = 'asset'
+const SILO_TABLE = 'silo';
+const ASSET_TABLE = 'asset';
 
-const RATE_TABLE = 'rate' // minutely
-const RATE_HOURLY_TABLE = 'rate_hourly'
+const RATE_TABLE = 'rate'; // minutely
+const RATE_HOURLY_TABLE = 'rate_hourly';
+const RATE_LATEST_TABLE = 'rate_latest';
 
 const TVL_MINUTELY_TABLE = 'tvl_minutely';
 const TVL_HOURLY_TABLE = 'tvl_hourly';
@@ -15,6 +16,7 @@ export {
   ASSET_TABLE,
   RATE_TABLE, // minutely, todo refactor/table rename
   RATE_HOURLY_TABLE,
+  RATE_LATEST_TABLE,
   TVL_MINUTELY_TABLE,
   TVL_HOURLY_TABLE,
   BORROWED_MINUTELY_TABLE,

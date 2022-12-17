@@ -1,6 +1,7 @@
 import AssetRepository from "./AssetRepository";
 import SiloRepository from "./SiloRepository";
 
+import RateLatestRepository from "./RateLatestRepository";
 import RateRepository from "./RateRepository";
 import RateHourlyRepository from "./RateHourlyRepository";
 
@@ -13,6 +14,7 @@ import BorrowedHourlyRepository from "./BorrowedHourlyRepository";
 export {
   AssetRepository,
   SiloRepository,
+  RateLatestRepository,
   RateRepository,
   RateHourlyRepository,
   TvlMinutelyRepository,

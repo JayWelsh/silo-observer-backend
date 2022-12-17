@@ -4,6 +4,7 @@ import SiloModel from './SiloModel';
 // RATE
 import RateModel from './RateModel'; // minutely, todo refactor
 import RateHourlyModel from './RateHourlyModel';
+import RateLatestModel from './RateLatestModel';
 
 // TVL
 import TvlMinutelyModel from './TvlMinutelyModel';
@@ -16,6 +17,7 @@ import BorrowedHourlyModel from './BorrowedHourlyModel';
 export {
   AssetModel,
   SiloModel,
+  RateLatestModel,
   RateModel,
   RateHourlyModel,
   TvlMinutelyModel,

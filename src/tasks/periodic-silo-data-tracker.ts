@@ -20,6 +20,7 @@ import {
 import {
   SiloRepository,
   AssetRepository,
+  RateLatestRepository,
   RateRepository,
   RateHourlyRepository,
   TvlMinutelyRepository,
@@ -244,6 +245,25 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
         let rateAssetChecksumAddress = utils.getAddress(id);
 
         if(enableRateSync) {
+
+          let latestRecord = await RateLatestRepository.getLatestRateByAssetOnSideInSilo(rateAssetChecksumAddress, side, siloChecksumAddress);
+          if(latestRecord) {
+            // update latest record
+            await RateLatestRepository.update({
+              rate: rate,
+              timestamp: useTimestampPostgres,
+            }, latestRecord.id);
+          } else {
+            // create latest record
+            await RateLatestRepository.create({
+              silo_address: siloChecksumAddress,
+              asset_address: rateAssetChecksumAddress,
+              rate: rate,
+              side: side,
+              type: type,
+              timestamp: useTimestampPostgres
+            });
+          }
 
           await RateRepository.create({
             silo_address: siloChecksumAddress,

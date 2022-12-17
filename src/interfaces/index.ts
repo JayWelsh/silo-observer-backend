@@ -42,6 +42,7 @@ export interface ISilo {
   input_token_address: string
   tvl: number
   borrowed: number
+  latest_rates: IRate[]
 }
 
 export interface IAsset {

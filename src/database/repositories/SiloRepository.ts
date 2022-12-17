@@ -39,7 +39,10 @@ class SiloRepository extends BaseRepository {
 
       const { perPage, page } = pagination;
 
-      const results = await this.model.query().orderBy("tvl", "DESC").page(page - 1, perPage);
+      const results = await this.model.query()
+        .withGraphFetched("latest_rates")
+        .orderBy("tvl", "DESC")
+        .page(page - 1, perPage);
       
       return this.parserResult(new Pagination(results, perPage, page), transformer)
     }
