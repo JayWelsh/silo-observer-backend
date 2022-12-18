@@ -22,6 +22,9 @@ class RateTransformer extends BaseTransformer {
           decimals: rateEntry.asset.decimals,
         }
       }),
+      ...(!rateEntry.asset && rateEntry.asset_address && {
+        asset_address: rateEntry.asset_address,
+      }),
       type: rateEntry.type,
     }
   }
