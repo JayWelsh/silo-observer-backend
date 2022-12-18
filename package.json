@@ -42,7 +42,7 @@
     "@types/node": "^17.0.32",
     "concurrently": "^7.1.0",
     "nodemon": "^2.0.16",
-    "typescript": "^4.6.4",
-    "tsc-watch": "^6.0.0"
+    "tsc-watch": "^6.0.0",
+    "typescript": "^4.6.4"
   }
 }
