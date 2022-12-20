@@ -1,5 +1,7 @@
 import { getAllSiloAssetBalances } from './getAllSiloAssetBalances';
+import { getAllSiloAssetRates } from './getAllSiloAssetRates';
 
 export {
-  getAllSiloAssetBalances
+  getAllSiloAssetBalances,
+  getAllSiloAssetRates,
 }

@@ -16,3 +16,4 @@ export const ALCHEMY_API_KEY = process.env['ALCHEMY_API_KEY'];
 export const ALCHEMY_ENDPOINT = `https://eth-mainnet.g.alchemy.com/v2/${process.env['ALCHEMY_API_KEY']}`;
 export const START_BLOCK = 15307294;
 export const SILO_FACTORY_ADDRESS = '0x4D919CEcfD4793c0D47866C8d0a02a0950737589';
+export const SILO_LENS_ADDRESS = '0xf12C3758c1eC393704f0Db8537ef7F57368D92Ea';
