@@ -1,4 +1,5 @@
-import { request, gql } from 'graphql-request';
+import { gql } from 'graphql-request';
+import axios from 'axios';
 import { raw } from 'objection';
 import { utils } from "ethers";
 import BigNumber from 'bignumber.js';
@@ -71,6 +72,45 @@ interface ITokenAddressToLastPrice {
   [key: string]: string
 }
 
+interface ICoingeckoAssetPriceEntryResponse {
+  [key: string]: ICoingeckoAssetPriceEntry
+}
+
+interface ICoingeckoAssetPriceEntry {
+  usd: number 
+}
+
+// TODO move to dedicated file to share with other files which might use it in the future
+const fetchCoingeckoPrices = async (assetAddressesQueryString : string) => {
+  let results : ICoingeckoAssetPriceEntry[] = await axios.get(
+    `https://api.coingecko.com/api/v3/simple/token_price/ethereum?contract_addresses=${assetAddressesQueryString}&vs_currencies=USD`,
+    {
+      headers: { "Accept-Encoding": "gzip,deflate,compress" }
+    }
+  )
+  .then(function (response) {
+    // handle success
+    return response?.data ? response?.data : {};
+  })
+  .catch(e => {
+    console.error("error fetching coingecko prices", e);
+    return {};
+  })
+  let assetAddressToCoingeckoUsdPrice : ITokenAddressToLastPrice = {}
+  let iterable = Object.entries(results);
+  if(iterable.length > 0) {
+    for(let assetAddressToPrice of iterable) {
+      let checksumAssetAddress = utils.getAddress(assetAddressToPrice[0]);
+      if(assetAddressToPrice[1].usd) {
+        assetAddressToCoingeckoUsdPrice[checksumAssetAddress] = new BigNumber(assetAddressToPrice[1].usd).toString();
+      } else {
+        assetAddressToCoingeckoUsdPrice[checksumAssetAddress] = new BigNumber(0).toString();
+      }
+    }
+  }
+  return assetAddressToCoingeckoUsdPrice;
+}
+
 const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: number) => {
 
   let useTimestampPostgres = new Date(useTimestampUnix * 1000).toISOString();
@@ -78,9 +118,18 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
 
   try {
 
-    let siloAssetBalances = await getAllSiloAssetBalances();
+    let {
+      siloAssetBalances,
+      siloAddresses,
+      allSiloAssetsWithState,
+      assetAddresses,
+    } = await getAllSiloAssetBalances();
 
-    let siloAssetRates = await getAllSiloAssetRates();
+    let siloAssetRates = await getAllSiloAssetRates(siloAddresses, allSiloAssetsWithState);
+
+    let coingeckoAddressesQuery = assetAddresses.join(',');
+
+    let tokenAddressToCoingeckoPrice = await fetchCoingeckoPrices(coingeckoAddressesQuery);
 
     let result = await subgraphRequestWithRetry(siloQuery);
 
@@ -175,10 +224,12 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
 
       // Method 2 (using info directly from chain for TVL to reduce reliance on off-chain data)
       const tvlUsdSiloSpecificBN = Object.entries(siloAssetBalances[siloChecksumAddress]).reduce((acc, entry) => {
-        let tokenPrice = new BigNumber(tokenAddressToLastPrice[entry[1].tokenAddress]);
+        let subgraphTokenPrice = new BigNumber(tokenAddressToLastPrice[entry[1].tokenAddress]);
+        let coingeckoPrice = new BigNumber(tokenAddressToCoingeckoPrice[entry[1].tokenAddress]);
+        let usePrice = coingeckoPrice.toNumber() > 0 ? coingeckoPrice : subgraphTokenPrice;
         let tokenBalance = new BigNumber(entry[1].balance);
-        if(tokenPrice.isGreaterThan(0) && tokenBalance.isGreaterThan(0)) {
-          let usdValueOfAsset = tokenBalance.multipliedBy(tokenPrice);
+        if(usePrice.isGreaterThan(0) && tokenBalance.isGreaterThan(0)) {
+          let usdValueOfAsset = tokenBalance.multipliedBy(usePrice);
           acc = acc.plus(usdValueOfAsset);
         }
         return acc;

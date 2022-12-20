@@ -40,6 +40,8 @@ export const getAllSiloAssetBalances = async () => {
 
   const siloAddresses = siloCreationEvents.map((entry) => entry?.args?.silo);
 
+  const assetAddresses : string[] = [];
+
   const indexedSiloAddresses : string[] = [];
 
   const siloContracts = siloAddresses.map(address => {
@@ -56,6 +58,9 @@ export const getAllSiloAssetBalances = async () => {
     let siloAddress = indexedSiloAddresses[siloIndex];
     for(let singleSiloAsset of singleSiloAssetsWithState) {
       queryIndexToSiloAddress.push(siloAddress);
+      if(assetAddresses.indexOf(singleSiloAsset) === -1) {
+        assetAddresses.push(singleSiloAsset);
+      }
     }
     siloIndex++;
   }
@@ -89,6 +94,11 @@ export const getAllSiloAssetBalances = async () => {
     resultsIndex++;
   }
 
-  return results;
+  return {
+    siloAssetBalances: results,
+    allSiloAssetsWithState,
+    siloAddresses,
+    assetAddresses,
+  }
 
 }
