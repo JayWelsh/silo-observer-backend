@@ -31,26 +31,9 @@ interface IAllSiloAssetRates {
   tokenAddress: string
 }
 
-export const getAllSiloAssetRates = async () => {
-  
-  const SiloFactoryContract = new Contract(SILO_FACTORY_ADDRESS, SiloFactoryABI);
-  const siloFactoryContract = await SiloFactoryContract.connect(EthersProvider);
+export const getAllSiloAssetRates = async (siloAddresses: string [], allSiloAssetsWithState: string[][]) => {
 
-  const siloCreationEventFilter = await siloFactoryContract.filters.NewSiloCreated(null, null);
-
-  const siloCreationEvents = await siloFactoryContract.queryFilter(siloCreationEventFilter);
-
-  const siloAddresses = siloCreationEvents.map((entry) => entry?.args?.silo);
-
-  const indexedSiloAddresses : string[] = [];
-
-  const siloContracts = siloAddresses.map(address => {
-    indexedSiloAddresses.push(address);
-    let contract = new MulticallContract(address, SiloABI);
-    return contract;
-  });
-
-  const [...allSiloAssetsWithState] = await MulticallProvider.all(siloContracts.map(contract => contract.getAssets()));
+  const indexedSiloAddresses : string[] = siloAddresses;
 
   let siloIndex = 0;
   let queryIndexToSiloAddress : string[] = [];
