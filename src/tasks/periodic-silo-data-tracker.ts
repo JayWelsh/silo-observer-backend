@@ -30,7 +30,8 @@ import {
 } from '../database/repositories';
 
 import {
-  getAllSiloAssetBalances
+  getAllSiloAssetBalances,
+  getAllSiloAssetRates,
 } from '../web3/jobs';
 
 const siloQuery = gql`
@@ -78,6 +79,8 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
   try {
 
     let siloAssetBalances = await getAllSiloAssetBalances();
+
+    let siloAssetRates = await getAllSiloAssetRates();
 
     let result = await subgraphRequestWithRetry(siloQuery);
 
@@ -231,18 +234,18 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
       // RATE HANDLING BELOW
 
       // Store rates for each asset
-      for (let rateEntry of market.rates) {
+      for (let rateEntry of siloAssetRates[siloChecksumAddress]) {
         let {
+          tokenAddress,
           rate,
           side,
-          type,
         } = rateEntry;
 
-        let {
-          id,
-        } = rateEntry.token;
+        let rateAssetChecksumAddress = utils.getAddress(tokenAddress);
 
-        let rateAssetChecksumAddress = utils.getAddress(id);
+        // All rates show as variable on subgraph at the moment
+        // TODO: Figure out actual rate types via chain query
+        let type = "VARIABLE";
 
         if(enableRateSync) {
 
@@ -286,6 +289,7 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
           }
 
         }
+
       }
 
       // RATE HANDLING ABOVE
