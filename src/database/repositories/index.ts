@@ -11,6 +11,18 @@ import TvlHourlyRepository from "./TvlHourlyRepository";
 import BorrowedMinutelyRepository from "./BorrowedMinutelyRepository";
 import BorrowedHourlyRepository from "./BorrowedHourlyRepository";
 
+import SiloUserRepository from "./SiloUserRepository";
+
+import EventIndexerBlockTrackerRepository from "./EventIndexerBlockTrackerRepository";
+
+// Event types
+import BorrowEventRepository from './BorrowEventRepository';
+import DepositEventRepository from './DepositEventRepository';
+import WithdrawEventRepository from './WithdrawEventRepository';
+import RepayEventRepository from './RepayEventRepository';
+
+import BlockMetadataRepository from "./BlockMetadataRepository";
+
 export {
   AssetRepository,
   SiloRepository,
@@ -21,4 +33,11 @@ export {
   TvlHourlyRepository,
   BorrowedMinutelyRepository,
   BorrowedHourlyRepository,
+  SiloUserRepository,
+  EventIndexerBlockTrackerRepository,
+  BorrowEventRepository,
+  DepositEventRepository,
+  WithdrawEventRepository,
+  RepayEventRepository,
+  BlockMetadataRepository,
 };

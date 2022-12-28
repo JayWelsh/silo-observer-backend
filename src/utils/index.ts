@@ -43,6 +43,7 @@ const subgraphRequestWithRetry = async (query: string, url = SUBGRAPH_ENDPOINT, 
 }
 
 export {
+  sleep,
   srcPath,
   envPath,
   env,

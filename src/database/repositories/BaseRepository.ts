@@ -59,7 +59,11 @@ abstract class BaseRepository {
             return null;
         }
 
-        return this.parserResult(result[0])
+        if(result.length === 1) {
+            return this.parserResult(result[0]);
+        } else {
+            return this.parserResult(result);
+        }
     }
 
     async all() {

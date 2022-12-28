@@ -6,7 +6,6 @@ import BigNumber from 'bignumber.js';
 
 import {
   EthersProvider,
-  MulticallProvider
 } from "../../app";
 
 import {
@@ -16,6 +15,11 @@ import {
 import SiloFactoryABI from '../abis/SiloFactoryABI.json';
 import SiloABI from '../abis/SiloABI.json';
 import ERC20ABI from '../abis/ERC20ABI.json';
+
+import {
+  queryFilterRetryOnFailure,
+  multicallProviderRetryOnFailure,
+} from '../utils';
 
 BigNumber.config({ EXPONENTIAL_AT: [-1e+9, 1e+9] });
 
@@ -36,9 +40,9 @@ export const getAllSiloAssetBalances = async () => {
 
   const siloCreationEventFilter = await siloFactoryContract.filters.NewSiloCreated(null, null);
 
-  const siloCreationEvents = await siloFactoryContract.queryFilter(siloCreationEventFilter);
+  const siloCreationEvents = await queryFilterRetryOnFailure(siloFactoryContract, siloCreationEventFilter);
 
-  const siloAddresses = siloCreationEvents.map((entry) => entry?.args?.silo);
+  const siloAddresses = siloCreationEvents ? siloCreationEvents.map((entry) => entry?.args?.silo) : [];
 
   const assetAddresses : string[] = [];
 
@@ -50,7 +54,7 @@ export const getAllSiloAssetBalances = async () => {
     return contract;
   });
 
-  const [...allSiloAssetsWithState] = await MulticallProvider.all(siloContracts.map(contract => contract.getAssets()));
+  const [...allSiloAssetsWithState] = await multicallProviderRetryOnFailure(siloContracts.map(contract => contract.getAssets()), 'all silos with state');
 
   let siloIndex = 0;
   let queryIndexToSiloAddress : string[] = [];
@@ -73,8 +77,8 @@ export const getAllSiloAssetBalances = async () => {
     return contract;
   })
 
-  const [...allSiloAssetBalances] = await MulticallProvider.all(tokenContracts.map((contract, index) => contract.balanceOf(queryIndexToSiloAddress[index])));
-  const [...allSiloAssetDecimals] = await MulticallProvider.all(tokenContracts.map((contract, index) => contract.decimals()));
+  const [...allSiloAssetBalances] = await multicallProviderRetryOnFailure(tokenContracts.map((contract, index) => contract.balanceOf(queryIndexToSiloAddress[index])), 'all silo asset balances');
+  const [...allSiloAssetDecimals] = await multicallProviderRetryOnFailure(tokenContracts.map((contract, index) => contract.decimals()), 'all silo asset decimals');
 
   let results : IAllSiloAssetBalanceResults = {};
   let resultsIndex = 0;

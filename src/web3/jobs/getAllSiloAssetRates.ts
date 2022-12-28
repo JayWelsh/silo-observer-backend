@@ -5,14 +5,12 @@ import { Contract, utils } from 'ethers';
 import BigNumber from 'bignumber.js';
 
 import {
-  EthersProvider,
-  MulticallProvider
-} from "../../app";
-
-import {
-  SILO_FACTORY_ADDRESS,
   SILO_LENS_ADDRESS,
 } from "../../constants";
+
+import {
+  multicallProviderRetryOnFailure,
+} from '../utils';
 
 import SiloFactoryABI from '../abis/SiloFactoryABI.json';
 import SiloABI from '../abis/SiloABI.json';
@@ -53,8 +51,8 @@ export const getAllSiloAssetRates = async (siloAddresses: string [], allSiloAsse
     return contract;
   })
 
-  const [...allSiloBorrowerRates] = await MulticallProvider.all(tokenContracts.map((contract, index) => contract.borrowAPY(queryIndexToSiloAddress[index], flattenedTokenAddresses[index])));
-  const [...allSiloLenderRates] = await MulticallProvider.all(tokenContracts.map((contract, index) => contract.depositAPY(queryIndexToSiloAddress[index], flattenedTokenAddresses[index])));
+  const [...allSiloBorrowerRates] = await multicallProviderRetryOnFailure(tokenContracts.map((contract, index) => contract.borrowAPY(queryIndexToSiloAddress[index], flattenedTokenAddresses[index])), 'all silo borrower rates');
+  const [...allSiloLenderRates] = await multicallProviderRetryOnFailure(tokenContracts.map((contract, index) => contract.depositAPY(queryIndexToSiloAddress[index], flattenedTokenAddresses[index])), 'all silo lender rates');
 
   let rateResults : IAllSiloAssetRateResults = {};
   let borrowerResultsIndex = 0;
