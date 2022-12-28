@@ -14,6 +14,19 @@ import TvlHourlyModel from './TvlHourlyModel';
 import BorrowedMinutelyModel from './BorrowedMinutelyModel';
 import BorrowedHourlyModel from './BorrowedHourlyModel';
 
+// USER METRICS
+import SiloUserModel from './SiloUserModel';
+
+// ON-CHAIN EVENTS
+import EventIndexerBlockTrackerModel from './EventIndexerBlockTrackerModel';
+import BorrowEventModel from './BorrowEventModel';
+import DepositEventModel from './DepositEventModel';
+import WithdrawEventModel from './WithdrawEventModel';
+import RepayEventModel from './RepayEventModel';
+
+// BLOCK METADATA
+import BlockMetadataModel from './BlockMetadataModel';
+
 export {
   AssetModel,
   SiloModel,
@@ -24,4 +37,11 @@ export {
   TvlHourlyModel,
   BorrowedMinutelyModel,
   BorrowedHourlyModel,
+  SiloUserModel,
+  EventIndexerBlockTrackerModel,
+  BorrowEventModel,
+  DepositEventModel,
+  WithdrawEventModel,
+  RepayEventModel,
+  BlockMetadataModel,
 }

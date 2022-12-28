@@ -1,6 +1,8 @@
 const SILO_TABLE = 'silo'
 const ASSET_TABLE = 'asset'
 
+const SILO_USER_TABLE = 'silo_user_table';
+
 const RATE_LATEST_TABLE = 'rate_latest'
 const RATE_TABLE = 'rate'
 const RATE_HOURLY_TABLE = 'rate_hourly'
@@ -11,9 +13,18 @@ const TVL_HOURLY_TABLE = 'tvl_hourly'
 const BORROWED_MINUTELY_TABLE = 'borrowed_minutely'
 const BORROWED_HOURLY_TABLE = 'borrowed_hourly'
 
+const EVENT_INDEXER_BLOCK_TRACKER_TABLE = 'event_indexer_block_tracker';
+const BORROW_EVENT_TABLE = 'borrow_event';
+const REPAY_EVENT_TABLE = 'repay_event';
+const DEPOSIT_EVENT_TABLE = 'deposit_event';
+const WITHDRAW_EVENT_TABLE = 'withdraw_event';
+
+const BLOCK_METADATA_TABLE = 'block_metadata';
+
 module.exports = {
   SILO_TABLE,
   ASSET_TABLE,
+  SILO_USER_TABLE,
   RATE_LATEST_TABLE,
   RATE_TABLE,
   RATE_HOURLY_TABLE,
@@ -21,4 +32,10 @@ module.exports = {
   TVL_HOURLY_TABLE,
   BORROWED_MINUTELY_TABLE,
   BORROWED_HOURLY_TABLE,
+  EVENT_INDEXER_BLOCK_TRACKER_TABLE,
+  BORROW_EVENT_TABLE,
+  REPAY_EVENT_TABLE,
+  DEPOSIT_EVENT_TABLE,
+  WITHDRAW_EVENT_TABLE,
+  BLOCK_METADATA_TABLE,
 }

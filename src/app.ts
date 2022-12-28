@@ -17,6 +17,11 @@ import dbConfig from "./config/database";
 import registerBotCommands from './tasks/register-bot-commands';
 import botLoginAndReadyUp from './tasks/bot-login-and-ready-up';
 import { periodicSiloDataTracker } from './tasks/periodic-silo-data-tracker';
+import { periodicContractEventTracker } from './tasks/periodic-contract-event-tracker';
+
+// minutely cycle to run indexer, 10 = 10 minutes (i.e. 10, 20, 30, 40, 50, 60 past the hour).
+// recommend to use 10 if doing a full sync, once up to speed, 2 minutes should be safe.
+let contractEventIndexerPeriodMinutes = 10;
 
 let corsOptions = {
   origin: ['http://localhost:3000', 'https://silo.observer', 'https://www.silo.observer'],
@@ -66,3 +71,17 @@ export const EthersProvider = new providers.AlchemyWebSocketProvider("homestead"
 export const MulticallProvider = new Provider(EthersProvider);
 
 MulticallProvider.init();
+
+const runContractEventIndexer = new CronJob(
+	`20 */${contractEventIndexerPeriodMinutes} * * * *`, // runs at 20 seconds past the minute on contractEventIndexerPeriodMinutes to offset it from the minutely runner which usually takes around 5-10 seconds
+	function() {
+    let useTimestampUnix = Math.floor(new Date().setSeconds(0) / 1000);
+    let startTime = new Date().getTime();
+    periodicContractEventTracker(useTimestampUnix, startTime);
+	},
+	null,
+	true,
+	'Etc/UTC'
+);
+
+runContractEventIndexer.start();
