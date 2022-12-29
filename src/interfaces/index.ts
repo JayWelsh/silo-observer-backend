@@ -85,4 +85,26 @@ export interface ITvlTotal {
   asset?: IAsset
 }
 
+export interface ISiloUserEvent {
+  silo_address: string
+  asset_address: string
+  user_address: string
+  receiver_address?: string
+  amount: number,
+  collateral_only?: boolean
+  tx_hash: string
+  block_number: number
+  silo?: ISilo
+  asset?: IAsset
+  block_metadata?: IBlockMetadata
+  block_day_timestamp?: string
+}
+
+export interface IBlockMetadata {
+  block_number: number,
+  block_timestamp_unix: number,
+  block_timestamp: string,
+  block_day_timestamp: string,
+}
+
 // Internal Interfaces Above
