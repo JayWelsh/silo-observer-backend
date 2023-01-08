@@ -81,10 +81,6 @@ class EventController extends Controller {
       eventType,
     } = req.params;
 
-    console.log({
-      eventType,
-    })
-
     const {
       page,
       perPage

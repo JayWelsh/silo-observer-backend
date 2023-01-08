@@ -14,7 +14,7 @@ class SiloRepository extends BaseRepository {
       siloAddress: string | number,
       transformer?: ITransformer,
     ) {
-      const result = await this.model.query().where(function (this: QueryBuilder<SiloModel>) {
+      const result = await this.model.query().withGraphFetched("latest_rates").where(function (this: QueryBuilder<SiloModel>) {
         this.where('address', siloAddress);
       }).first();
 
@@ -25,7 +25,7 @@ class SiloRepository extends BaseRepository {
       siloName: string,
       transformer: ITransformer,
     ) {
-      const result = await this.model.query().where(function (this: QueryBuilder<SiloModel>) {
+      const result = await this.model.query().withGraphFetched("latest_rates").where(function (this: QueryBuilder<SiloModel>) {
         this.where('name', siloName);
       }).first();
 
