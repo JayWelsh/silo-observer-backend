@@ -292,6 +292,11 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
           side,
         } = rateEntry;
 
+        let rateToNumericPrecision = new BigNumber(rate).precision(16).toString();
+        if(new BigNumber(rate).isGreaterThan(1000)) {
+          rateToNumericPrecision = '1000';
+        }
+
         let rateAssetChecksumAddress = utils.getAddress(tokenAddress);
 
         // All rates show as variable on subgraph at the moment
@@ -304,7 +309,7 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
           if(latestRecord) {
             // update latest record
             await RateLatestRepository.update({
-              rate: rate,
+              rate: rateToNumericPrecision,
               timestamp: useTimestampPostgres,
             }, latestRecord.id);
           } else {
@@ -312,7 +317,7 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
             await RateLatestRepository.create({
               silo_address: siloChecksumAddress,
               asset_address: rateAssetChecksumAddress,
-              rate: rate,
+              rate: rateToNumericPrecision,
               side: side,
               type: type,
               timestamp: useTimestampPostgres
@@ -322,7 +327,7 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
           await RateRepository.create({
             silo_address: siloChecksumAddress,
             asset_address: rateAssetChecksumAddress,
-            rate: rate,
+            rate: rateToNumericPrecision,
             side: side,
             type: type,
             timestamp: useTimestampPostgres
@@ -332,7 +337,7 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
             await RateHourlyRepository.create({
               silo_address: siloChecksumAddress,
               asset_address: rateAssetChecksumAddress,
-              rate: rate,
+              rate: rateToNumericPrecision,
               side: side,
               type: type,
               timestamp: useTimestampPostgres
