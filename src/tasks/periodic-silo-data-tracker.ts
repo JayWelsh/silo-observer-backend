@@ -4,6 +4,10 @@ import { raw } from 'objection';
 import { utils } from "ethers";
 import BigNumber from 'bignumber.js';
 
+import {
+  sleep,
+} from '../utils';
+
 BigNumber.config({ EXPONENTIAL_AT: [-1e+9, 1e+9] });
 
 import { subgraphRequestWithRetry } from '../utils';
@@ -80,8 +84,10 @@ interface ICoingeckoAssetPriceEntry {
   usd: number 
 }
 
+let coingeckoRetryMax = 10;
+
 // TODO move to dedicated file to share with other files which might use it in the future
-const fetchCoingeckoPrices = async (assetAddressesQueryString : string) => {
+const fetchCoingeckoPrices = async (assetAddressesQueryString : string, retryCount = 0) => {
   let results : ICoingeckoAssetPriceEntry[] = await axios.get(
     `https://api.coingecko.com/api/v3/simple/token_price/ethereum?contract_addresses=${assetAddressesQueryString}&vs_currencies=USD`,
     {
@@ -92,8 +98,15 @@ const fetchCoingeckoPrices = async (assetAddressesQueryString : string) => {
     // handle success
     return response?.data ? response?.data : {};
   })
-  .catch(e => {
-    console.error("error fetching coingecko prices", e);
+  .catch(async (e) => {
+    retryCount++;
+    if(retryCount < coingeckoRetryMax) {
+      console.error(`error fetching coingecko prices at ${Math.floor(new Date().getTime() / 1000)}, retry #${retryCount}...`, e);
+      await sleep(5000);
+      return await fetchCoingeckoPrices(assetAddressesQueryString, retryCount);
+    } else {
+      console.error(`retries failed, error fetching coingecko prices at ${Math.floor(new Date().getTime() / 1000)}`, e);
+    }
     return {};
   })
   let assetAddressToCoingeckoUsdPrice : ITokenAddressToLastPrice = {}
