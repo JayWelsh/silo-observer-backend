@@ -2,6 +2,10 @@ import {
   queryFilterRetryOnFailure
 } from '../utils';
 
+import {
+  NETWORK_TO_MAX_BLOCK_BATCH_SIZE,
+} from '../../constants';
+
 export const eventIndexer = async (
   contract: any,
   eventFilter: any,
@@ -9,10 +13,11 @@ export const eventIndexer = async (
   fromBlock: number,
   toBlock: number,
   blockRange: number,
+  network: string,
   meta: string,
 ) => {
 
-  let maxBlockBatchSize = 150000;
+  let maxBlockBatchSize = NETWORK_TO_MAX_BLOCK_BATCH_SIZE[network];
 
   if(blockRange > 0) {
 
@@ -58,7 +63,7 @@ export const eventIndexer = async (
       }
 
       // fetch batch
-      const eventContractEventBatch = await queryFilterRetryOnFailure(contract, eventFilter, fromBlock, toBlock);
+      const eventContractEventBatch = await queryFilterRetryOnFailure(contract, eventFilter, fromBlock, toBlock, `${currentBatch} of ${batchCount} - ${meta}`);
       events = [...events, ...(eventContractEventBatch ? eventContractEventBatch : [])];
 
       // log batch status

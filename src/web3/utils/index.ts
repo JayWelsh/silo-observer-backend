@@ -6,7 +6,9 @@ import {
 
 import {
   EthersProvider,
+  EthersProviderArbitrum,
   MulticallProvider,
+  MulticallProviderArbitrum,
 } from "../../app";
 
 export interface IEventIndexerBlockTracker {
@@ -51,6 +53,7 @@ export const queryFilterRetryOnFailure = async (
   eventFilter: any,
   fromBlock?: number,
   toBlock?: number,
+  batchInfo?: string,
   retryCount?: number,
   retryMax?: number,
 ): Promise<Array<Event> | null> => {
@@ -66,12 +69,12 @@ export const queryFilterRetryOnFailure = async (
   } catch (e) {
     retryCount++;
     if(retryCount <= retryMax) {
-      console.error(`Query failed, starting retry #${retryCount} (eventFilter: ${eventFilter}, fromBlock: ${fromBlock}, toBlock: ${toBlock})`);
-      let randomDelay = 1000 + Math.floor(Math.random() * 1000);
+      console.error(`Query failed, starting retry #${retryCount} (eventFilter: ${eventFilter}, fromBlock: ${fromBlock}, toBlock: ${toBlock}, batchInfo: ${batchInfo ? batchInfo : "N/A"})`);
+      let randomDelay = 1000 + Math.floor(Math.random() * 3000);
       await sleep(randomDelay);
-      return await queryFilterRetryOnFailure(contract, eventFilter, fromBlock, toBlock, retryCount, retryMax);
+      return await queryFilterRetryOnFailure(contract, eventFilter, fromBlock, toBlock, batchInfo, retryCount, retryMax);
     } else {
-      console.error(`Unable to complete queryFilter after max retries (eventFilter: ${eventFilter}, fromBlock: ${fromBlock}, toBlock: ${toBlock})`);
+      console.error(`Unable to complete queryFilter after max retries (eventFilter: ${eventFilter}, fromBlock: ${fromBlock}, toBlock: ${toBlock}, batchInfo: ${batchInfo ? batchInfo : "N/A"}, error: ${e})`);
       return null;
     }
   }
@@ -80,6 +83,7 @@ export const queryFilterRetryOnFailure = async (
 export const multicallProviderRetryOnFailure = async (
   calls: any[],
   meta: string,
+  network: string,
   retryCount?: number,
   retryMax?: number,
 ): Promise<Array<any>> => {
@@ -90,7 +94,11 @@ export const multicallProviderRetryOnFailure = async (
     retryCount = 0;
   }
   try {
-    const [...results] = await MulticallProvider.all(calls);
+    let useProvider = MulticallProvider;
+    if(network === "arbitrum") {
+      useProvider = MulticallProviderArbitrum;
+    }
+    const [...results] = await useProvider.all(calls);
     return results;
   } catch (e) {
     retryCount++;
@@ -98,7 +106,7 @@ export const multicallProviderRetryOnFailure = async (
       console.error(`Multicall failed, starting retry #${retryCount} (meta: ${meta})`);
       let randomDelay = 1000 + Math.floor(Math.random() * 1000);
       await sleep(randomDelay);
-      return await multicallProviderRetryOnFailure(calls, meta, retryCount, retryMax);
+      return await multicallProviderRetryOnFailure(calls, meta, network, retryCount, retryMax);
     } else {
       console.error(`Unable to complete multicallProviderRetryOnFailure after max retries (meta: ${meta})`);
       return [];
@@ -106,7 +114,7 @@ export const multicallProviderRetryOnFailure = async (
   }
 }
 
-export const getBlockWithRetries = async (blockNumber: number, retryCount?: number, retryMax?: number): Promise<any> => {
+export const getBlockWithRetries = async (blockNumber: number, network: string, retryCount?: number, retryMax?: number): Promise<any> => {
   if(!retryMax) {
     retryMax = 10;
   }
@@ -114,7 +122,12 @@ export const getBlockWithRetries = async (blockNumber: number, retryCount?: numb
     retryCount = 0;
   }
   try {
-    let block = await EthersProvider.getBlock(blockNumber).catch(e => {throw new Error(e)});
+    let provider = EthersProvider;
+    if(network === "arbitrum") {
+      provider = EthersProviderArbitrum;
+    }
+
+    let block = await provider.getBlock(blockNumber).catch(e => {throw new Error(e)});
     return block;
   } catch (e) {
     retryCount++;
@@ -122,7 +135,7 @@ export const getBlockWithRetries = async (blockNumber: number, retryCount?: numb
       console.error(`Query failed, starting retry #${retryCount} (blockNumber: ${blockNumber})`);
       let randomDelay = 1000 + Math.floor(Math.random() * 1000);
       await sleep(randomDelay);
-      return await getBlockWithRetries(blockNumber, retryCount, retryMax);
+      return await getBlockWithRetries(blockNumber, network, retryCount, retryMax);
     } else {
       console.error(`Unable to complete getBlock after max retries (blockNumber: ${blockNumber})`);
       return null;

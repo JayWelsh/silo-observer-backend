@@ -4,6 +4,7 @@ import BigNumber from 'bignumber.js';
 
 import {
   EthersProvider,
+  EthersProviderArbitrum,
 } from "../../app";
 
 import {
@@ -25,12 +26,13 @@ BigNumber.config({ EXPONENTIAL_AT: [-1e+9, 1e+9] });
 
 export const getAllSiloWithdrawEventsSinceBlock = async (
   siloAddresses: string [],
-  lastestBlock: number
+  lastestBlock: number,
+  network: string,
 ) => {
 
   console.log("Initiating Withdraw Event Tracker");
 
-  let eventIndexBlockTrackerRecord = await EventIndexerBlockTrackerRepository.findByColumn("event_name", "Withdraw");
+  let eventIndexBlockTrackerRecord = await EventIndexerBlockTrackerRepository.getByEventNameAndNetwork("Withdraw", network);
 
   let {
     fromBlock,
@@ -41,6 +43,7 @@ export const getAllSiloWithdrawEventsSinceBlock = async (
   // delete any records newer than latestBlock in case there was an incomplete run which occurred
   let deletedRecords = await WithdrawEventRepository.query().delete().where(function (this: any) {
     this.whereRaw(`block_number > ${fromBlock}`);
+    this.where(`network`, network);
   });
 
   if(deletedRecords && (deletedRecords > 0)) {
@@ -50,13 +53,18 @@ export const getAllSiloWithdrawEventsSinceBlock = async (
   let siloProgress = 0;
   let totalRecordCount = 0;
   let allEvents : Event[] = [];
+  let provider = EthersProvider;
+  if(network === "arbitrum") {
+    provider = EthersProviderArbitrum;
+  }
+
   for(let siloAddress of siloAddresses) {
     siloProgress++
     const SiloContract = new Contract(siloAddress, SiloABI);
-    const siloContract = await SiloContract.connect(EthersProvider);
+    const siloContract = await SiloContract.connect(provider);
     const withdrawEventFilter = await siloContract.filters.Withdraw(null, null, null);
 
-    let events = await eventIndexer(siloContract, withdrawEventFilter, lastestBlock, fromBlock, toBlock, blockRange, `${siloAddress} (Withdraw) - silo ${siloProgress} of ${siloAddresses.length}`);
+    let events = await eventIndexer(siloContract, withdrawEventFilter, lastestBlock, fromBlock, toBlock, blockRange, network, `${siloAddress} (Withdraw) - silo ${siloProgress} of ${siloAddresses.length}`);
     if(events) {
       allEvents = [...allEvents, ...events];
     }
@@ -86,6 +94,7 @@ export const getAllSiloWithdrawEventsSinceBlock = async (
           amount: amount.toString(),
           tx_hash: transactionHash,
           block_number: blockNumber,
+          network,
         })
       }
     }

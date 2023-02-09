@@ -6,6 +6,7 @@ import BigNumber from 'bignumber.js';
 
 import {
   SILO_LENS_ADDRESS,
+  SILO_LENS_ADDRESS_ARBITRUM,
 } from "../../constants";
 
 import {
@@ -29,7 +30,7 @@ interface IAllSiloAssetRates {
   tokenAddress: string
 }
 
-export const getAllSiloAssetRates = async (siloAddresses: string [], allSiloAssetsWithState: string[][]) => {
+export const getAllSiloAssetRates = async (siloAddresses: string [], allSiloAssetsWithState: string[][], network: string) => {
 
   const indexedSiloAddresses : string[] = siloAddresses;
 
@@ -47,12 +48,15 @@ export const getAllSiloAssetRates = async (siloAddresses: string [], allSiloAsse
   let tokenQueryIndex = 0;
   const tokenContracts = flattenedTokenAddresses.map(tokenAddress => {
     let contract = new MulticallContract(SILO_LENS_ADDRESS, SiloLensABI);
+    if (network === "arbitrum") {
+      contract = new MulticallContract(SILO_LENS_ADDRESS_ARBITRUM, SiloLensABI);
+    }
     tokenQueryIndex++
     return contract;
-  })
+  }).filter((item) => item);
 
-  const [...allSiloBorrowerRates] = await multicallProviderRetryOnFailure(tokenContracts.map((contract, index) => contract.borrowAPY(queryIndexToSiloAddress[index], flattenedTokenAddresses[index])), 'all silo borrower rates');
-  const [...allSiloLenderRates] = await multicallProviderRetryOnFailure(tokenContracts.map((contract, index) => contract.depositAPY(queryIndexToSiloAddress[index], flattenedTokenAddresses[index])), 'all silo lender rates');
+  const [...allSiloBorrowerRates] = await multicallProviderRetryOnFailure(tokenContracts.map((contract, index) => contract.borrowAPY(queryIndexToSiloAddress[index], flattenedTokenAddresses[index])), 'all silo borrower rates', network);
+  const [...allSiloLenderRates] = await multicallProviderRetryOnFailure(tokenContracts.map((contract, index) => contract.depositAPY(queryIndexToSiloAddress[index], flattenedTokenAddresses[index])), 'all silo lender rates', network);
 
   let rateResults : IAllSiloAssetRateResults = {};
   let borrowerResultsIndex = 0;

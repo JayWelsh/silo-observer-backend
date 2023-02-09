@@ -35,6 +35,7 @@ jobs:
             echo DB_USER=\"'${{secrets.DB_USER}}'\" >> .env
             echo DB_PASS=\"'${{secrets.DB_PASS}}'\" >> .env
             echo ALCHEMY_API_KEY=\"'${{secrets.ALCHEMY_API_KEY}}'\" >> .env
+            echo ALCHEMY_API_KEY_ARBITRUM=\"'${{secrets.ALCHEMY_API_KEY_ARBITRUM}}'\" >> .env
             yarn run build
             yarn run knex migrate:latest
             pm2 startOrReload ./config/ecosystem.json

@@ -6,10 +6,12 @@ import BigNumber from 'bignumber.js';
 
 import {
   EthersProvider,
+  EthersProviderArbitrum,
 } from "../../app";
 
 import {
   SILO_FACTORY_ADDRESS,
+  SILO_FACTORY_ADDRESS_ARBITRUM,
 } from "../../constants";
 
 import SiloFactoryABI from '../abis/SiloFactoryABI.json';
@@ -33,76 +35,97 @@ interface IAllSiloAssetBalances {
   tokenAddress: string
 }
 
-export const getAllSiloAssetBalances = async () => {
+export const getAllSiloAssetBalances = async (network: string) => {
   
-  const SiloFactoryContract = new Contract(SILO_FACTORY_ADDRESS, SiloFactoryABI);
-  const siloFactoryContract = await SiloFactoryContract.connect(EthersProvider);
-
-  const siloCreationEventFilter = await siloFactoryContract.filters.NewSiloCreated(null, null);
-
-  const siloCreationEvents = await queryFilterRetryOnFailure(siloFactoryContract, siloCreationEventFilter);
-
-  const siloAddresses = siloCreationEvents ? siloCreationEvents.map((entry) => entry?.args?.silo) : [];
-
-  const assetAddresses : string[] = [];
-
-  const indexedSiloAddresses : string[] = [];
-
-  const siloContracts = siloAddresses.map(address => {
-    indexedSiloAddresses.push(address);
-    let contract = new MulticallContract(address, SiloABI);
-    return contract;
-  });
-
-  const [...allSiloAssetsWithState] = await multicallProviderRetryOnFailure(siloContracts.map(contract => contract.getAssets()), 'all silos with state');
-
-  let siloIndex = 0;
-  let queryIndexToSiloAddress : string[] = [];
-  for(let singleSiloAssetsWithState of allSiloAssetsWithState) {
-    let siloAddress = indexedSiloAddresses[siloIndex];
-    for(let singleSiloAsset of singleSiloAssetsWithState) {
-      queryIndexToSiloAddress.push(siloAddress);
-      if(assetAddresses.indexOf(singleSiloAsset) === -1) {
-        assetAddresses.push(singleSiloAsset);
-      }
-    }
-    siloIndex++;
+  let SiloFactoryContract;
+  let siloFactoryContract;
+  
+  if(network === 'ethereum') {
+    SiloFactoryContract = new Contract(SILO_FACTORY_ADDRESS, SiloFactoryABI);
+    siloFactoryContract = await SiloFactoryContract.connect(EthersProvider);
+  } else if (network === 'arbitrum') {
+    SiloFactoryContract = new Contract(SILO_FACTORY_ADDRESS_ARBITRUM, SiloFactoryABI);
+    siloFactoryContract = await SiloFactoryContract.connect(EthersProviderArbitrum);
   }
 
-  let flattenedTokenAddresses = allSiloAssetsWithState.flat();
-  let tokenQueryIndex = 0;
-  const tokenContracts = flattenedTokenAddresses.map(tokenAddress => {
-    let contract = new MulticallContract(tokenAddress, ERC20ABI);
-    tokenQueryIndex++
-    return contract;
-  })
+  if(siloFactoryContract) {
 
-  const [...allSiloAssetBalances] = await multicallProviderRetryOnFailure(tokenContracts.map((contract, index) => contract.balanceOf(queryIndexToSiloAddress[index])), 'all silo asset balances');
-  const [...allSiloAssetDecimals] = await multicallProviderRetryOnFailure(tokenContracts.map((contract, index) => contract.decimals()), 'all silo asset decimals');
+    const siloCreationEventFilter = await siloFactoryContract.filters.NewSiloCreated(null, null);
 
-  let results : IAllSiloAssetBalanceResults = {};
-  let resultsIndex = 0;
-  for(let entry of allSiloAssetBalances) {
-    let balance = new BigNumber(utils.formatUnits(entry, allSiloAssetDecimals[resultsIndex])).toString();
-    let singleResult = {
-      balance,
-      decimals: allSiloAssetDecimals[resultsIndex],
-      tokenAddress: flattenedTokenAddresses[resultsIndex]
-    };
-    if(!results[queryIndexToSiloAddress[resultsIndex]]) {
-      results[queryIndexToSiloAddress[resultsIndex]] = [];
-      results[queryIndexToSiloAddress[resultsIndex]].push(singleResult);
-    } else {
-      results[queryIndexToSiloAddress[resultsIndex]].push(singleResult);
+    const siloCreationEvents = await queryFilterRetryOnFailure(siloFactoryContract, siloCreationEventFilter);
+
+    const siloAddresses = siloCreationEvents ? siloCreationEvents.map((entry) => entry?.args?.silo) : [];
+
+    const assetAddresses : string[] = [];
+
+    const indexedSiloAddresses : string[] = [];
+
+    const siloContracts = siloAddresses.map(address => {
+      indexedSiloAddresses.push(address);
+      let contract = new MulticallContract(address, SiloABI);
+      return contract;
+    });
+
+    const [...allSiloAssetsWithState] = await multicallProviderRetryOnFailure(siloContracts.map(contract => contract.getAssets()), 'all silos with state', network);
+
+    let siloIndex = 0;
+    let queryIndexToSiloAddress : string[] = [];
+    for(let singleSiloAssetsWithState of allSiloAssetsWithState) {
+      let siloAddress = indexedSiloAddresses[siloIndex];
+      for(let singleSiloAsset of singleSiloAssetsWithState) {
+        queryIndexToSiloAddress.push(siloAddress);
+        if(assetAddresses.indexOf(singleSiloAsset) === -1) {
+          assetAddresses.push(singleSiloAsset);
+        }
+      }
+      siloIndex++;
     }
-    resultsIndex++;
+
+    let flattenedTokenAddresses = allSiloAssetsWithState.flat();
+    let tokenQueryIndex = 0;
+    const tokenContracts = flattenedTokenAddresses.map(tokenAddress => {
+      let contract = new MulticallContract(tokenAddress, ERC20ABI);
+      tokenQueryIndex++
+      return contract;
+    })
+
+    const [...allSiloAssetBalances] = await multicallProviderRetryOnFailure(tokenContracts.map((contract, index) => contract.balanceOf(queryIndexToSiloAddress[index])), 'all silo asset balances', network);
+    const [...allSiloAssetDecimals] = await multicallProviderRetryOnFailure(tokenContracts.map((contract, index) => contract.decimals()), 'all silo asset decimals', network);
+
+    let results : IAllSiloAssetBalanceResults = {};
+    let resultsIndex = 0;
+    for(let entry of allSiloAssetBalances) {
+      let balance = new BigNumber(utils.formatUnits(entry, allSiloAssetDecimals[resultsIndex])).toString();
+      let singleResult = {
+        balance,
+        decimals: allSiloAssetDecimals[resultsIndex],
+        tokenAddress: flattenedTokenAddresses[resultsIndex]
+      };
+      if(!results[queryIndexToSiloAddress[resultsIndex]]) {
+        results[queryIndexToSiloAddress[resultsIndex]] = [];
+        results[queryIndexToSiloAddress[resultsIndex]].push(singleResult);
+      } else {
+        results[queryIndexToSiloAddress[resultsIndex]].push(singleResult);
+      }
+      resultsIndex++;
+    }
+
+    return {
+      success: true,
+      siloAssetBalances: results,
+      allSiloAssetsWithState,
+      siloAddresses,
+      assetAddresses,
+    }
+
   }
 
   return {
-    siloAssetBalances: results,
-    allSiloAssetsWithState,
-    siloAddresses,
-    assetAddresses,
+    success: false,
+    siloAssetBalances: {},
+    allSiloAssetsWithState: [],
+    siloAddresses: [],
+    assetAddresses: []
   }
 
 }
