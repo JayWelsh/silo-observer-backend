@@ -22,7 +22,7 @@ import { periodicContractEventTracker } from './tasks/periodic-contract-event-tr
 
 // minutely cycle to run indexer, 10 = 10 minutes (i.e. 10, 20, 30, 40, 50, 60 past the hour).
 // recommend to use 10 if doing a full sync, once up to speed, 2 minutes should be safe.
-let contractEventIndexerPeriodMinutes = 10;
+let contractEventIndexerPeriodMinutes = 2;
 
 let corsOptions = {
   origin: ['http://localhost:3000', 'https://silo.observer', 'https://www.silo.observer'],
