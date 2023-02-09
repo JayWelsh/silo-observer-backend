@@ -2,10 +2,12 @@ import { Contract } from 'ethers';
 
 import {
   EthersProvider,
+  EthersProviderArbitrum,
 } from "../../app";
 
 import {
   SILO_FACTORY_ADDRESS,
+  SILO_FACTORY_ADDRESS_ARBITRUM,
 } from "../../constants";
 
 import {
@@ -14,20 +16,32 @@ import {
 
 import SiloFactoryABI from '../abis/SiloFactoryABI.json';
 
-export const getAllSiloAddresses = async () => {
+export const getAllSiloAddresses = async (network: string) => {
 
-  const SiloFactoryContract = new Contract(SILO_FACTORY_ADDRESS, SiloFactoryABI);
-  const siloFactoryContract = await SiloFactoryContract.connect(EthersProvider);
+  let SiloFactoryContract;
+  let siloFactoryContract;
+  
+  if(network === 'ethereum') {
+    SiloFactoryContract = new Contract(SILO_FACTORY_ADDRESS, SiloFactoryABI);
+    siloFactoryContract = await SiloFactoryContract.connect(EthersProvider);
+  } else if (network === 'arbitrum') {
+    SiloFactoryContract = new Contract(SILO_FACTORY_ADDRESS_ARBITRUM, SiloFactoryABI);
+    siloFactoryContract = await SiloFactoryContract.connect(EthersProviderArbitrum);
+  }
 
-  const siloCreationEventFilter = await siloFactoryContract.filters.NewSiloCreated(null, null);
+  if(SiloFactoryContract && siloFactoryContract) {
 
-  const siloCreationEvents = await queryFilterRetryOnFailure(siloFactoryContract, siloCreationEventFilter);
+    const siloCreationEventFilter = await siloFactoryContract.filters.NewSiloCreated(null, null);
 
-  if(siloCreationEvents) {
+    const siloCreationEvents = await queryFilterRetryOnFailure(siloFactoryContract, siloCreationEventFilter);
 
-    const siloAddresses = siloCreationEvents.map((entry) => entry?.args?.silo);
+    if(siloCreationEvents) {
 
-    return siloAddresses
+      const siloAddresses = siloCreationEvents.map((entry) => entry?.args?.silo);
+
+      return siloAddresses
+
+    }
 
   }
 

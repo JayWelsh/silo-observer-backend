@@ -96,6 +96,7 @@ DISCORD_BOT_CLIENT_ID="YOUR_DISCORD_BOT_CLIENT_ID"
 
 # Alchemy
 ALCHEMY_API_KEY="YOUR_ALCHEMY_API_KEY"
+ALCHEMY_API_KEY_ARBITRUM="YOUR_ALCHEMY_API_KEY_ARBITRUM"
 ```
 
 If Postgres is running on the same machine as this repo, then usually you would set the `DB_HOST` to `127.0.0.1`, the default Postgres `DB_PORT` is `5432`.

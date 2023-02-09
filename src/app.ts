@@ -9,6 +9,7 @@ import {CronJob} from "cron";
 import {providers} from "ethers";
 import {
   ALCHEMY_API_KEY,
+	ALCHEMY_API_KEY_ARBITRUM,
 } from "./constants"
 
 import routes from "./routes";
@@ -21,7 +22,7 @@ import { periodicContractEventTracker } from './tasks/periodic-contract-event-tr
 
 // minutely cycle to run indexer, 10 = 10 minutes (i.e. 10, 20, 30, 40, 50, 60 past the hour).
 // recommend to use 10 if doing a full sync, once up to speed, 2 minutes should be safe.
-let contractEventIndexerPeriodMinutes = 2;
+let contractEventIndexerPeriodMinutes = 10;
 
 let corsOptions = {
   origin: ['http://localhost:3000', 'https://silo.observer', 'https://www.silo.observer'],
@@ -66,11 +67,15 @@ runMinutelyDataTracker.start();
 
 // web3
 
+// ETH MAINNET
 export const EthersProvider = new providers.AlchemyWebSocketProvider("homestead", ALCHEMY_API_KEY);
-
 export const MulticallProvider = new Provider(EthersProvider);
-
 MulticallProvider.init();
+
+// ARBITRUM
+export const EthersProviderArbitrum = new providers.AlchemyWebSocketProvider("arbitrum", ALCHEMY_API_KEY_ARBITRUM);
+export const MulticallProviderArbitrum = new Provider(EthersProviderArbitrum, 42161);
+MulticallProviderArbitrum.init();
 
 const runContractEventIndexer = new CronJob(
 	`20 */${contractEventIndexerPeriodMinutes} * * * *`, // runs at 20 seconds past the minute on contractEventIndexerPeriodMinutes to offset it from the minutely runner which usually takes around 5-10 seconds

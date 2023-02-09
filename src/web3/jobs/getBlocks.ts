@@ -6,7 +6,7 @@ import {
   getBlockWithRetries,
 } from '../utils';
 
-export const getBlocks = async (blockNumbers: number[]) => {
+export const getBlocks = async (blockNumbers: number[], network: string) => {
 
   console.log('getting blocks')
   
@@ -24,7 +24,7 @@ export const getBlocks = async (blockNumbers: number[]) => {
 
     console.log(`Fetching block batch from index ${startIndex} to ${endIndex}`);
 
-    let calls = blockNumbers.slice(startIndex, endIndex).map(blockNumber => getBlockWithRetries(blockNumber));
+    let calls = blockNumbers.slice(startIndex, endIndex).map(blockNumber => getBlockWithRetries(blockNumber, network));
 
     let [...blocks] = await Promise.all(calls);
 

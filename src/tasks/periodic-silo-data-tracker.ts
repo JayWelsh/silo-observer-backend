@@ -19,7 +19,10 @@ import {
 } from '../interfaces';
 
 import {
-  MAX_MINUTELY_RATE_ENTRIES
+  MAX_MINUTELY_RATE_ENTRIES,
+  NETWORK_ID_TO_COINGECKO_ID,
+  NETWORKS,
+  NETWORK_TO_SUBGRAPH,
 } from '../constants'
 
 import {
@@ -38,6 +41,7 @@ import {
   getAllSiloAssetBalances,
   getAllSiloAssetRates,
 } from '../web3/jobs';
+import e from 'express';
 
 const siloQuery = gql`
   {
@@ -87,9 +91,9 @@ interface ICoingeckoAssetPriceEntry {
 let coingeckoRetryMax = 10;
 
 // TODO move to dedicated file to share with other files which might use it in the future
-const fetchCoingeckoPrices = async (assetAddressesQueryString : string, retryCount = 0) => {
+const fetchCoingeckoPrices = async (assetAddressesQueryString : string, network: string, retryCount = 0) => {
   let results : ICoingeckoAssetPriceEntry[] = await axios.get(
-    `https://api.coingecko.com/api/v3/simple/token_price/ethereum?contract_addresses=${assetAddressesQueryString}&vs_currencies=USD`,
+    `https://api.coingecko.com/api/v3/simple/token_price/${NETWORK_ID_TO_COINGECKO_ID[network]}?contract_addresses=${assetAddressesQueryString}&vs_currencies=USD`,
     {
       headers: { "Accept-Encoding": "gzip,deflate,compress" }
     }
@@ -103,7 +107,7 @@ const fetchCoingeckoPrices = async (assetAddressesQueryString : string, retryCou
     if(retryCount < coingeckoRetryMax) {
       console.error(`error fetching coingecko prices at ${Math.floor(new Date().getTime() / 1000)}, retry #${retryCount}...`, e);
       await sleep(5000);
-      return await fetchCoingeckoPrices(assetAddressesQueryString, retryCount);
+      return await fetchCoingeckoPrices(assetAddressesQueryString, network, retryCount);
     } else {
       console.error(`retries failed, error fetching coingecko prices at ${Math.floor(new Date().getTime() / 1000)}`, e);
     }
@@ -129,299 +133,312 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
   let useTimestampPostgres = new Date(useTimestampUnix * 1000).toISOString();
   let isHourlyMoment = (useTimestampUnix % 3600) === 0;
 
-  try {
+  for(let network of NETWORKS) {
 
-    let {
-      siloAssetBalances,
-      siloAddresses,
-      allSiloAssetsWithState,
-      assetAddresses,
-    } = await getAllSiloAssetBalances();
+    try {
 
-    let siloAssetRates = await getAllSiloAssetRates(siloAddresses, allSiloAssetsWithState);
+      let {
+        success,
+        siloAssetBalances,
+        siloAddresses,
+        allSiloAssetsWithState,
+        assetAddresses,
+      } = await getAllSiloAssetBalances(network);
 
-    let coingeckoAddressesQuery = assetAddresses.join(',');
+      if(success) {
 
-    let tokenAddressToCoingeckoPrice = await fetchCoingeckoPrices(coingeckoAddressesQuery);
+        let siloAssetRates = await getAllSiloAssetRates(siloAddresses, allSiloAssetsWithState, network);
 
-    let result = await subgraphRequestWithRetry(siloQuery);
+        let coingeckoAddressesQuery = assetAddresses.join(',');
 
-    let tvlUsdAllSilosBN = new BigNumber(0);
-    let borrowedUsdAllSilosBN = new BigNumber(0);
+        let tokenAddressToCoingeckoPrice = await fetchCoingeckoPrices(coingeckoAddressesQuery, network);
 
-    let tokenAddressToLastPrice = result?.markets.reduce((acc: ITokenAddressToLastPrice, market: IMarket) => {
-      let inputTokenChecksumAddress = utils.getAddress(market.inputToken.id);
-      let inputTokenLastPrice = market.inputToken.lastPriceUSD;
-      if(!acc[inputTokenChecksumAddress] && inputTokenLastPrice) {
-        acc[inputTokenChecksumAddress] = inputTokenLastPrice;
-      }
-      for(let outputToken of market.outputToken) {
-        let outputTokenAddress = utils.getAddress(outputToken.id);
-        let outputTokenLastPrice = outputToken.lastPriceUSD;
-        if(!acc[outputTokenAddress] && outputTokenLastPrice) {
-          acc[outputTokenAddress] = outputTokenLastPrice;
-        }
-      }
-      return acc;
-    }, {});
+        let result = await subgraphRequestWithRetry(siloQuery, NETWORK_TO_SUBGRAPH[network]);
 
-    for(let market of result?.markets) {
+        let tvlUsdAllSilosBN = new BigNumber(0);
+        let borrowedUsdAllSilosBN = new BigNumber(0);
 
-      let siloChecksumAddress = utils.getAddress(market.id);
-      let inputTokenChecksumAddress = utils.getAddress(market.inputToken.id);
-      let inputTokenSymbol = market.inputToken.symbol;
+        let tokenAddressToLastPrice = result?.markets.reduce((acc: ITokenAddressToLastPrice, market: IMarket) => {
+          let inputTokenChecksumAddress = utils.getAddress(market.inputToken.id);
+          let inputTokenLastPrice = market.inputToken.lastPriceUSD;
+          if(!acc[inputTokenChecksumAddress] && inputTokenLastPrice) {
+            acc[inputTokenChecksumAddress] = inputTokenLastPrice;
+          }
+          for(let outputToken of market.outputToken) {
+            let outputTokenAddress = utils.getAddress(outputToken.id);
+            let outputTokenLastPrice = outputToken.lastPriceUSD;
+            if(!acc[outputTokenAddress] && outputTokenLastPrice) {
+              acc[outputTokenAddress] = outputTokenLastPrice;
+            }
+          }
+          return acc;
+        }, {});
 
-      // --------------------------------------------------
+        for(let market of result?.markets) {
 
-      // PATCH MISSING SILOS / ASSETS BELOW
+          let siloChecksumAddress = utils.getAddress(market.id);
+          let inputTokenChecksumAddress = utils.getAddress(market.inputToken.id);
+          let inputTokenSymbol = market.inputToken.symbol;
 
-      // Load relevant assets to this silo into memory
-      let siloAssets = market.rates.reduce((acc: IToken[], rateEntry: IRateEntrySubgraph) => {
-        let {
-          id,
-          symbol,
-          decimals
-        } = rateEntry.token
-        if(!acc.find((item: IToken) => item.address === id)) {
-          acc.push({
-            address: utils.getAddress(id),
-            symbol,
-            decimals
-          })
-        }
-        return acc;
-      }, [] as IToken[]);
+          // --------------------------------------------------
 
-      // Ensure that relevant assets already exist, else create them
-      for(let siloAsset of siloAssets) {
-        let {
-          address,
-          symbol,
-          decimals
-        } = siloAsset;
+          // PATCH MISSING SILOS / ASSETS BELOW
 
-        let assetChecksumAddress = utils.getAddress(address);
-        
-        let assetRecord = await AssetRepository.getAssetByAddress(assetChecksumAddress);
-        if(!assetRecord) {
-          await AssetRepository.create({
-            address: assetChecksumAddress,
-            symbol,
-            decimals,
-          });
-          console.log(`Created asset record for ${assetChecksumAddress} (${symbol})`);
-        }
-      }
+          // Load relevant assets to this silo into memory
+          let siloAssets = market.rates.reduce((acc: IToken[], rateEntry: IRateEntrySubgraph) => {
+            let {
+              id,
+              symbol,
+              decimals
+            } = rateEntry.token
+            if(!acc.find((item: IToken) => item.address === id)) {
+              acc.push({
+                address: utils.getAddress(id),
+                symbol,
+                decimals
+              })
+            }
+            return acc;
+          }, [] as IToken[]);
 
-      // Ensure that silo already exists in DB, else create it.
-      let siloRecord = await SiloRepository.getSiloByAddress(siloChecksumAddress);
-      if(!siloRecord) {
-        // Create record for silo
-        await SiloRepository.create({
-          name: inputTokenSymbol,
-          address: siloChecksumAddress,
-          input_token_address: inputTokenChecksumAddress,
-        });
-        console.log(`Created silo record for ${siloChecksumAddress} (${inputTokenSymbol})`);
-      }
+          // Ensure that relevant assets already exist, else create them
+          for(let siloAsset of siloAssets) {
+            let {
+              address,
+              symbol,
+              decimals
+            } = siloAsset;
 
-      // PATCH MISSING SILOS / ASSETS ABOVE
-
-      // --------------------------------------------------
-
-      // TVL HANDLING BELOW
-      
-      // Method 1
-      // const tvlUsdSiloSpecificBN = new BigNumber(market.totalValueLockedUSD).minus(new BigNumber(market.totalBorrowBalanceUSD));
-      // const borrowedUsdSiloSpecificBN = new BigNumber(market.totalBorrowBalanceUSD);
-
-      // Method 2 (using info directly from chain for TVL to reduce reliance on off-chain data)
-      const tvlUsdSiloSpecificBN = Object.entries(siloAssetBalances[siloChecksumAddress]).reduce((acc, entry) => {
-        let subgraphTokenPrice = new BigNumber(tokenAddressToLastPrice[entry[1].tokenAddress]);
-        let coingeckoPrice = new BigNumber(tokenAddressToCoingeckoPrice[entry[1].tokenAddress]);
-        let usePrice = coingeckoPrice.toNumber() > 0 ? coingeckoPrice : subgraphTokenPrice;
-        let tokenBalance = new BigNumber(entry[1].balance);
-        if(usePrice.isGreaterThan(0) && tokenBalance.isGreaterThan(0)) {
-          let usdValueOfAsset = tokenBalance.multipliedBy(usePrice);
-          acc = acc.plus(usdValueOfAsset);
-        }
-        return acc;
-      }, new BigNumber(0));
-      const borrowedUsdSiloSpecificBN = new BigNumber(market.totalBorrowBalanceUSD);
-
-      tvlUsdAllSilosBN = tvlUsdAllSilosBN.plus(tvlUsdSiloSpecificBN);
-      borrowedUsdAllSilosBN = borrowedUsdAllSilosBN.plus(borrowedUsdSiloSpecificBN);
-
-      if (enableTvlSync) {
-        await TvlMinutelyRepository.create({
-          silo_address: siloChecksumAddress,
-          tvl: tvlUsdSiloSpecificBN.toNumber(),
-          timestamp: useTimestampPostgres,
-        });
-        await SiloRepository.query().update({
-          tvl: tvlUsdSiloSpecificBN.toNumber(),
-        }).where("address", siloChecksumAddress);
-      }
-
-      if(enableBorrowedSync) {
-        await BorrowedMinutelyRepository.create({
-          silo_address: siloChecksumAddress,
-          borrowed: borrowedUsdSiloSpecificBN.toNumber(),
-          timestamp: useTimestampPostgres,
-        });
-        await SiloRepository.query().update({
-          borrowed: borrowedUsdSiloSpecificBN.toNumber(),
-        }).where("address", siloChecksumAddress);
-      }
-
-      if(isHourlyMoment) {
-        if (enableTvlSync) {
-          await TvlHourlyRepository.create({
-            silo_address: siloChecksumAddress,
-            tvl: tvlUsdSiloSpecificBN.toNumber(),
-            timestamp: useTimestampPostgres,
-          });
-        }
-        if(enableBorrowedSync) {
-          await BorrowedHourlyRepository.create({
-            silo_address: siloChecksumAddress,
-            borrowed: borrowedUsdSiloSpecificBN.toNumber(),
-            timestamp: useTimestampPostgres,
-          });
-        }
-      }
-
-      // TVL HANDLING ABOVE
-
-      // --------------------------------------------------
-
-      // RATE HANDLING BELOW
-
-      // Store rates for each asset
-      for (let rateEntry of siloAssetRates[siloChecksumAddress]) {
-        let {
-          tokenAddress,
-          rate,
-          side,
-        } = rateEntry;
-
-        let rateToNumericPrecision = new BigNumber(rate).precision(16).toString();
-        if(new BigNumber(rate).isGreaterThan(1000)) {
-          rateToNumericPrecision = '1000';
-        }
-
-        let rateAssetChecksumAddress = utils.getAddress(tokenAddress);
-
-        // All rates show as variable on subgraph at the moment
-        // TODO: Figure out actual rate types via chain query
-        let type = "VARIABLE";
-
-        if(enableRateSync) {
-
-          let latestRecord = await RateLatestRepository.getLatestRateByAssetOnSideInSilo(rateAssetChecksumAddress, side, siloChecksumAddress);
-          if(latestRecord) {
-            // update latest record
-            await RateLatestRepository.update({
-              rate: rateToNumericPrecision,
-              timestamp: useTimestampPostgres,
-            }, latestRecord.id);
-          } else {
-            // create latest record
-            await RateLatestRepository.create({
-              silo_address: siloChecksumAddress,
-              asset_address: rateAssetChecksumAddress,
-              rate: rateToNumericPrecision,
-              side: side,
-              type: type,
-              timestamp: useTimestampPostgres
-            });
+            let assetChecksumAddress = utils.getAddress(address);
+            
+            let assetRecord = await AssetRepository.getAssetByAddress(assetChecksumAddress);
+            if(!assetRecord) {
+              await AssetRepository.create({
+                address: assetChecksumAddress,
+                symbol,
+                decimals,
+                network,
+              });
+              console.log(`Created asset record for ${assetChecksumAddress} (${symbol})`);
+            }
           }
 
-          await RateRepository.create({
-            silo_address: siloChecksumAddress,
-            asset_address: rateAssetChecksumAddress,
-            rate: rateToNumericPrecision,
-            side: side,
-            type: type,
-            timestamp: useTimestampPostgres
-          });
+          // Ensure that silo already exists in DB, else create it.
+          let siloRecord = await SiloRepository.getSiloByAddress(siloChecksumAddress);
+          if(!siloRecord) {
+            // Create record for silo
+            await SiloRepository.create({
+              name: inputTokenSymbol,
+              address: siloChecksumAddress,
+              input_token_address: inputTokenChecksumAddress,
+              network,
+            });
+            console.log(`Created silo record for ${siloChecksumAddress} (${inputTokenSymbol})`);
+          }
+
+          // PATCH MISSING SILOS / ASSETS ABOVE
+
+          // --------------------------------------------------
+
+          // TVL HANDLING BELOW
+          
+          // Method 1
+          // const tvlUsdSiloSpecificBN = new BigNumber(market.totalValueLockedUSD).minus(new BigNumber(market.totalBorrowBalanceUSD));
+          // const borrowedUsdSiloSpecificBN = new BigNumber(market.totalBorrowBalanceUSD);
+
+          // Method 2 (using info directly from chain for TVL to reduce reliance on off-chain data)
+          const tvlUsdSiloSpecificBN = Object.entries(siloAssetBalances[siloChecksumAddress]).reduce((acc, entry) => {
+            let subgraphTokenPrice = new BigNumber(tokenAddressToLastPrice[entry[1].tokenAddress]);
+            let coingeckoPrice = new BigNumber(tokenAddressToCoingeckoPrice[entry[1].tokenAddress]);
+            let usePrice = coingeckoPrice.toNumber() > 0 ? coingeckoPrice : subgraphTokenPrice;
+            let tokenBalance = new BigNumber(entry[1].balance);
+            if(usePrice.isGreaterThan(0) && tokenBalance.isGreaterThan(0)) {
+              let usdValueOfAsset = tokenBalance.multipliedBy(usePrice);
+              acc = acc.plus(usdValueOfAsset);
+            }
+            return acc;
+          }, new BigNumber(0));
+          const borrowedUsdSiloSpecificBN = new BigNumber(market.totalBorrowBalanceUSD);
+
+          tvlUsdAllSilosBN = tvlUsdAllSilosBN.plus(tvlUsdSiloSpecificBN);
+          borrowedUsdAllSilosBN = borrowedUsdAllSilosBN.plus(borrowedUsdSiloSpecificBN);
+
+          if (enableTvlSync) {
+            await TvlMinutelyRepository.create({
+              silo_address: siloChecksumAddress,
+              tvl: tvlUsdSiloSpecificBN.toNumber(),
+              timestamp: useTimestampPostgres,
+            });
+            await SiloRepository.query().update({
+              tvl: tvlUsdSiloSpecificBN.toNumber(),
+            }).where("address", siloChecksumAddress);
+          }
+
+          if(enableBorrowedSync) {
+            await BorrowedMinutelyRepository.create({
+              silo_address: siloChecksumAddress,
+              borrowed: borrowedUsdSiloSpecificBN.toNumber(),
+              timestamp: useTimestampPostgres,
+            });
+            await SiloRepository.query().update({
+              borrowed: borrowedUsdSiloSpecificBN.toNumber(),
+            }).where("address", siloChecksumAddress);
+          }
 
           if(isHourlyMoment) {
-            await RateHourlyRepository.create({
-              silo_address: siloChecksumAddress,
-              asset_address: rateAssetChecksumAddress,
-              rate: rateToNumericPrecision,
-              side: side,
-              type: type,
-              timestamp: useTimestampPostgres
-            });
+            if (enableTvlSync) {
+              await TvlHourlyRepository.create({
+                silo_address: siloChecksumAddress,
+                tvl: tvlUsdSiloSpecificBN.toNumber(),
+                timestamp: useTimestampPostgres,
+              });
+            }
+            if(enableBorrowedSync) {
+              await BorrowedHourlyRepository.create({
+                silo_address: siloChecksumAddress,
+                borrowed: borrowedUsdSiloSpecificBN.toNumber(),
+                timestamp: useTimestampPostgres,
+              });
+            }
           }
 
+          // TVL HANDLING ABOVE
+
+          // --------------------------------------------------
+
+          // RATE HANDLING BELOW
+
+          // Store rates for each asset
+          for (let rateEntry of siloAssetRates[siloChecksumAddress]) {
+            let {
+              tokenAddress,
+              rate,
+              side,
+            } = rateEntry;
+
+            let rateToNumericPrecision = new BigNumber(rate).precision(16).toString();
+            if(new BigNumber(rate).isGreaterThan(1000)) {
+              rateToNumericPrecision = '1000';
+            }
+
+            let rateAssetChecksumAddress = utils.getAddress(tokenAddress);
+
+            // All rates show as variable on subgraph at the moment
+            // TODO: Figure out actual rate types via chain query
+            let type = "VARIABLE";
+
+            if(enableRateSync) {
+
+              let latestRecord = await RateLatestRepository.getLatestRateByAssetOnSideInSilo(rateAssetChecksumAddress, side, siloChecksumAddress);
+              if(latestRecord) {
+                // update latest record
+                await RateLatestRepository.update({
+                  rate: rateToNumericPrecision,
+                  timestamp: useTimestampPostgres,
+                }, latestRecord.id);
+              } else {
+                // create latest record
+                await RateLatestRepository.create({
+                  silo_address: siloChecksumAddress,
+                  asset_address: rateAssetChecksumAddress,
+                  rate: rateToNumericPrecision,
+                  side: side,
+                  type: type,
+                  timestamp: useTimestampPostgres
+                });
+              }
+
+              await RateRepository.create({
+                silo_address: siloChecksumAddress,
+                asset_address: rateAssetChecksumAddress,
+                rate: rateToNumericPrecision,
+                side: side,
+                type: type,
+                timestamp: useTimestampPostgres
+              });
+
+              if(isHourlyMoment) {
+                await RateHourlyRepository.create({
+                  silo_address: siloChecksumAddress,
+                  asset_address: rateAssetChecksumAddress,
+                  rate: rateToNumericPrecision,
+                  side: side,
+                  type: type,
+                  timestamp: useTimestampPostgres
+                });
+              }
+
+            }
+
+          }
+
+          // RATE HANDLING ABOVE
+
+          // --------------------------------------------------
         }
 
-      }
+        // --------------------------------------------------
 
-      // RATE HANDLING ABOVE
+        // MULTI-MARKET (WHOLE PLATFORM) RECORD HANDLING BELOW
 
-      // --------------------------------------------------
-    }
+        if (enableTvlSync) {
+          await TvlMinutelyRepository.create({
+            tvl: tvlUsdAllSilosBN.toNumber(),
+            timestamp: useTimestampPostgres,
+            meta: 'all',
+          });
+        }
 
-    // --------------------------------------------------
+        if(enableBorrowedSync) {
+          await BorrowedMinutelyRepository.create({
+            borrowed: borrowedUsdAllSilosBN.toNumber(),
+            timestamp: useTimestampPostgres,
+            meta: 'all',
+          });
+        }
 
-    // MULTI-MARKET (WHOLE PLATFORM) RECORD HANDLING BELOW
+        if(isHourlyMoment) {
+          if (enableTvlSync) {
+            await TvlHourlyRepository.create({
+              tvl: tvlUsdAllSilosBN.toNumber(),
+              timestamp: useTimestampPostgres,
+              meta: 'all',
+            });
+          }
+          if(enableBorrowedSync) {
+            await BorrowedHourlyRepository.create({
+              borrowed: borrowedUsdAllSilosBN.toNumber(),
+              timestamp: useTimestampPostgres,
+              meta: 'all',
+            });
+          }
+        }
 
-    if (enableTvlSync) {
-      await TvlMinutelyRepository.create({
-        tvl: tvlUsdAllSilosBN.toNumber(),
-        timestamp: useTimestampPostgres,
-        meta: 'all',
-      });
-    }
+        // MULTI-MARKET (WHOLE PLATFORM) RECORD HANDLING ABOVE
+        
+        // --------------------------------------------------
 
-    if(enableBorrowedSync) {
-      await BorrowedMinutelyRepository.create({
-        borrowed: borrowedUsdAllSilosBN.toNumber(),
-        timestamp: useTimestampPostgres,
-        meta: 'all',
-      });
-    }
+        // RECORD EXPIRY HANDLING BELOW
 
-    if(isHourlyMoment) {
-      if (enableTvlSync) {
-        await TvlHourlyRepository.create({
-          tvl: tvlUsdAllSilosBN.toNumber(),
-          timestamp: useTimestampPostgres,
-          meta: 'all',
-        });
-      }
-      if(enableBorrowedSync) {
-        await BorrowedHourlyRepository.create({
-          borrowed: borrowedUsdAllSilosBN.toNumber(),
-          timestamp: useTimestampPostgres,
-          meta: 'all',
-        });
-      }
-    }
+        // remove any minutely records older than 1441 minutes in one query
+        let deletedExpiredRecordCount = 0;
+        if(enableRateSync) {
+          deletedExpiredRecordCount = await RateRepository.query().delete().where(raw(`timestamp < now() - interval '${MAX_MINUTELY_RATE_ENTRIES} minutes'`));
+        }
 
-    // MULTI-MARKET (WHOLE PLATFORM) RECORD HANDLING ABOVE
+        // RECORD EXPIRY HANDLING ABOVE
+
+        // --------------------------------------------------
+
+        console.log(`Sync success (${network}) (${useTimestampPostgres}),${deletedExpiredRecordCount > 0 ? ` Deleted ${deletedExpiredRecordCount} expired rate records,` : ''} enableRateSync: ${enableRateSync}, enableTvlSync: ${enableTvlSync}, enableBorrowedSync: ${enableBorrowedSync}, exec time: ${new Date().getTime() - startTime}ms`);
     
-    // --------------------------------------------------
-
-    // RECORD EXPIRY HANDLING BELOW
-
-    // remove any minutely records older than 1441 minutes in one query
-    let deletedExpiredRecordCount = 0;
-    if(enableRateSync) {
-      deletedExpiredRecordCount = await RateRepository.query().delete().where(raw(`timestamp < now() - interval '${MAX_MINUTELY_RATE_ENTRIES} minutes'`));
+      }else{
+        throw new Error(`getAllSiloAssetBalances unsuccessful`)
+      }
+    } catch (error) {
+      console.error(`Unable to store latest rates for silos (${network}) (${useTimestampPostgres})`, error);
     }
 
-    // RECORD EXPIRY HANDLING ABOVE
-
-    // --------------------------------------------------
-
-    console.log(`Sync success (${useTimestampPostgres}),${deletedExpiredRecordCount > 0 ? ` Deleted ${deletedExpiredRecordCount} expired rate records,` : ''} enableRateSync: ${enableRateSync}, enableTvlSync: ${enableTvlSync}, enableBorrowedSync: ${enableBorrowedSync}, exec time: ${new Date().getTime() - startTime}ms`);
-  } catch (error) {
-    console.error(`Unable to store latest rates for silos (${useTimestampPostgres})`, error);
   }
 }
 
