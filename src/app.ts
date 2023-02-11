@@ -78,7 +78,7 @@ export const MulticallProviderArbitrum = new Provider(EthersProviderArbitrum, 42
 MulticallProviderArbitrum.init();
 
 const runContractEventIndexer = new CronJob(
-	`20 */${contractEventIndexerPeriodMinutes} * * * *`, // runs at 20 seconds past the minute on contractEventIndexerPeriodMinutes to offset it from the minutely runner which usually takes around 5-10 seconds
+	`40 */${contractEventIndexerPeriodMinutes} * * * *`, // runs at 40 seconds past the minute on contractEventIndexerPeriodMinutes to offset it from the minutely runner which usually takes around 30 seconds
 	function() {
     let useTimestampUnix = Math.floor(new Date().setSeconds(0) / 1000);
     let startTime = new Date().getTime();

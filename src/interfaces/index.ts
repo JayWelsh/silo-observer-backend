@@ -62,6 +62,7 @@ export interface IRate {
   type: string
   silo?: ISilo
   asset?: IAsset
+  network: string
 }
 
 export interface IBorrowedTotal {
@@ -73,6 +74,7 @@ export interface IBorrowedTotal {
   meta: string
   silo?: ISilo
   asset?: IAsset
+  network: string
 }
 
 export interface ITvlTotal {
@@ -84,6 +86,7 @@ export interface ITvlTotal {
   meta: string
   silo?: ISilo
   asset?: IAsset
+  network: string
 }
 
 export interface ISiloUserEvent {

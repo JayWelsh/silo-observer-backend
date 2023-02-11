@@ -8,6 +8,7 @@ class RateTransformer extends BaseTransformer {
       rate: rateEntry.rate,
       side: rateEntry.side,
       timestamp: rateEntry.timestamp,
+      network: rateEntry.network,
       ...(rateEntry.silo && {
         silo: {
           name: rateEntry.silo.name,
