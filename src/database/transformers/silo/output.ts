@@ -9,6 +9,7 @@ class SiloOutputTransformer extends BaseTransformer {
     return {
       name: siloEntry.name,
       address: siloEntry.address,
+      network: siloEntry.network,
       input_token_address: siloEntry.input_token_address,
       tvl: siloEntry.tvl,
       borrowed: siloEntry.borrowed,
