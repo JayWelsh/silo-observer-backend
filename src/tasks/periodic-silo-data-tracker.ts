@@ -268,6 +268,7 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
               silo_address: siloChecksumAddress,
               tvl: tvlUsdSiloSpecificBN.toNumber(),
               timestamp: useTimestampPostgres,
+              network: network,
             });
             await SiloRepository.query().update({
               tvl: tvlUsdSiloSpecificBN.toNumber(),
@@ -279,6 +280,7 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
               silo_address: siloChecksumAddress,
               borrowed: borrowedUsdSiloSpecificBN.toNumber(),
               timestamp: useTimestampPostgres,
+              network: network,
             });
             await SiloRepository.query().update({
               borrowed: borrowedUsdSiloSpecificBN.toNumber(),
@@ -291,6 +293,7 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
                 silo_address: siloChecksumAddress,
                 tvl: tvlUsdSiloSpecificBN.toNumber(),
                 timestamp: useTimestampPostgres,
+                network: network,
               });
             }
             if(enableBorrowedSync) {
@@ -298,6 +301,7 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
                 silo_address: siloChecksumAddress,
                 borrowed: borrowedUsdSiloSpecificBN.toNumber(),
                 timestamp: useTimestampPostgres,
+                network: network,
               });
             }
           }
@@ -344,7 +348,8 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
                   rate: rateToNumericPrecision,
                   side: side,
                   type: type,
-                  timestamp: useTimestampPostgres
+                  timestamp: useTimestampPostgres,
+                  network: network,
                 });
               }
 
@@ -354,7 +359,8 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
                 rate: rateToNumericPrecision,
                 side: side,
                 type: type,
-                timestamp: useTimestampPostgres
+                timestamp: useTimestampPostgres,
+                network: network,
               });
 
               if(isHourlyMoment) {
@@ -364,7 +370,8 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
                   rate: rateToNumericPrecision,
                   side: side,
                   type: type,
-                  timestamp: useTimestampPostgres
+                  timestamp: useTimestampPostgres,
+                  network: network,
                 });
               }
 
@@ -386,6 +393,7 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
             tvl: tvlUsdAllSilosBN.toNumber(),
             timestamp: useTimestampPostgres,
             meta: 'all',
+            network: network,
           });
         }
 
@@ -394,6 +402,7 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
             borrowed: borrowedUsdAllSilosBN.toNumber(),
             timestamp: useTimestampPostgres,
             meta: 'all',
+            network: network,
           });
         }
 
@@ -403,6 +412,7 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
               tvl: tvlUsdAllSilosBN.toNumber(),
               timestamp: useTimestampPostgres,
               meta: 'all',
+              network: network,
             });
           }
           if(enableBorrowedSync) {
@@ -410,6 +420,7 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
               borrowed: borrowedUsdAllSilosBN.toNumber(),
               timestamp: useTimestampPostgres,
               meta: 'all',
+              network: network,
             });
           }
         }
