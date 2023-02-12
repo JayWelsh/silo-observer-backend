@@ -33,8 +33,10 @@ import {
   RateHourlyRepository,
   TvlMinutelyRepository,
   TvlHourlyRepository,
+  TvlLatestRepository,
   BorrowedMinutelyRepository,
   BorrowedHourlyRepository,
+  BorrowedLatestRepository,
 } from '../database/repositories';
 
 import {
@@ -395,6 +397,23 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
             meta: 'all',
             network: network,
           });
+
+          let latestRecord = await TvlLatestRepository.getLatestResultByNetworkAndMeta(network, "all");
+          if(latestRecord) {
+            // update latest record
+            await TvlLatestRepository.update({
+              tvl: tvlUsdAllSilosBN.toNumber(),
+              timestamp: useTimestampPostgres,
+            }, latestRecord.id);
+          } else {
+            // create latest record
+            await TvlLatestRepository.create({
+              tvl: tvlUsdAllSilosBN.toNumber(),
+              timestamp: useTimestampPostgres,
+              meta: 'all',
+              network: network,
+            });
+          }
         }
 
         if(enableBorrowedSync) {
@@ -404,6 +423,24 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
             meta: 'all',
             network: network,
           });
+
+          let latestRecord = await BorrowedLatestRepository.getLatestResultByNetworkAndMeta(network, "all");
+          if(latestRecord) {
+            // update latest record
+            await BorrowedLatestRepository.update({
+              borrowed: borrowedUsdAllSilosBN.toNumber(),
+              timestamp: useTimestampPostgres,
+            }, latestRecord.id);
+          } else {
+            // create latest record
+            await BorrowedLatestRepository.create({
+              borrowed: borrowedUsdAllSilosBN.toNumber(),
+              timestamp: useTimestampPostgres,
+              meta: 'all',
+              network: network,
+            });
+          }
+
         }
 
         if(isHourlyMoment) {

@@ -9,10 +9,12 @@ import RateLatestModel from './RateLatestModel';
 // TVL
 import TvlMinutelyModel from './TvlMinutelyModel';
 import TvlHourlyModel from './TvlHourlyModel';
+import TvlLatestModel from './TvlLatestModel';
 
 // BORROWED
 import BorrowedMinutelyModel from './BorrowedMinutelyModel';
 import BorrowedHourlyModel from './BorrowedHourlyModel';
+import BorrowedLatestModel from './BorrowedLatestModel';
 
 // USER METRICS
 import SiloUserModel from './SiloUserModel';
@@ -35,8 +37,10 @@ export {
   RateHourlyModel,
   TvlMinutelyModel,
   TvlHourlyModel,
+  TvlLatestModel,
   BorrowedMinutelyModel,
   BorrowedHourlyModel,
+  BorrowedLatestModel,
   SiloUserModel,
   EventIndexerBlockTrackerModel,
   BorrowEventModel,

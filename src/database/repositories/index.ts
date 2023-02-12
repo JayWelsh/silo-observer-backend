@@ -7,9 +7,11 @@ import RateHourlyRepository from "./RateHourlyRepository";
 
 import TvlMinutelyRepository from "./TvlMinutelyRepository";
 import TvlHourlyRepository from "./TvlHourlyRepository";
+import TvlLatestRepository from "./TvlLatestRepository";
 
 import BorrowedMinutelyRepository from "./BorrowedMinutelyRepository";
 import BorrowedHourlyRepository from "./BorrowedHourlyRepository";
+import BorrowedLatestRepository from "./BorrowedLatestRepository";
 
 import SiloUserRepository from "./SiloUserRepository";
 
@@ -31,8 +33,10 @@ export {
   RateHourlyRepository,
   TvlMinutelyRepository,
   TvlHourlyRepository,
+  TvlLatestRepository,
   BorrowedMinutelyRepository,
   BorrowedHourlyRepository,
+  BorrowedLatestRepository,
   SiloUserRepository,
   EventIndexerBlockTrackerRepository,
   BorrowEventRepository,

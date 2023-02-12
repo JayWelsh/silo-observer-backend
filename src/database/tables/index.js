@@ -9,9 +9,11 @@ const RATE_HOURLY_TABLE = 'rate_hourly'
 
 const TVL_MINUTELY_TABLE = 'tvl_minutely'
 const TVL_HOURLY_TABLE = 'tvl_hourly'
+const TVL_LATEST_TABLE = 'tvl_latest'
 
 const BORROWED_MINUTELY_TABLE = 'borrowed_minutely'
 const BORROWED_HOURLY_TABLE = 'borrowed_hourly'
+const BORROWED_LATEST_TABLE = 'borrowed_latest'
 
 const EVENT_INDEXER_BLOCK_TRACKER_TABLE = 'event_indexer_block_tracker';
 const BORROW_EVENT_TABLE = 'borrow_event';
@@ -30,8 +32,10 @@ module.exports = {
   RATE_HOURLY_TABLE,
   TVL_MINUTELY_TABLE,
   TVL_HOURLY_TABLE,
+  TVL_LATEST_TABLE,
   BORROWED_MINUTELY_TABLE,
   BORROWED_HOURLY_TABLE,
+  BORROWED_LATEST_TABLE,
   EVENT_INDEXER_BLOCK_TRACKER_TABLE,
   BORROW_EVENT_TABLE,
   REPAY_EVENT_TABLE,
