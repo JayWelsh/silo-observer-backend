@@ -31,20 +31,24 @@ module.exports = {
     let totalTvlAndBorrowed = new BigNumber(0);
     let totalTvl = new BigNumber(0);
     let totalBorrowed = new BigNumber(0);
+    let [latestNetworkResultsTvl, latestNetworkResultsBorrowed] = await Promise.all([
+      Promise.all(NETWORKS.map(network => TvlMinutelyRepository.getLatestResultByNetworkAndMeta(network, "all"))),
+      Promise.all(NETWORKS.map(network => BorrowedMinutelyRepository.getLatestResultByNetworkAndMeta(network, "all")))
+    ])
+    let networkIndex = 0;
     for(let network of NETWORKS) {
-      let latestNetworkResultTvl = await TvlMinutelyRepository.getLatestResultByNetworkAndMeta(network, "all");
-      let latestNetworkResultBorrowed = await BorrowedMinutelyRepository.getLatestResultByNetworkAndMeta(network, "all");
-      networkToLatestTvlFigures[network] = latestNetworkResultTvl;
-      networkToLatestBorrowedFigures[network] = latestNetworkResultBorrowed;
-      let tvlPlusBorrowed = new BigNumber(latestNetworkResultTvl?.tvl).plus(latestNetworkResultBorrowed?.borrowed).toNumber();
+      networkToLatestTvlFigures[network] = latestNetworkResultsTvl[networkIndex];
+      networkToLatestBorrowedFigures[network] = latestNetworkResultsBorrowed[networkIndex];
+      let tvlPlusBorrowed = new BigNumber(latestNetworkResultsTvl[networkIndex]?.tvl).plus(latestNetworkResultsBorrowed[networkIndex]?.borrowed).toNumber();
       totalTvlAndBorrowed = totalTvlAndBorrowed.plus(tvlPlusBorrowed);
-      totalTvl = totalTvl.plus(latestNetworkResultTvl?.tvl);
-      totalBorrowed = totalBorrowed.plus(latestNetworkResultBorrowed?.borrowed);
+      totalTvl = totalTvl.plus(latestNetworkResultsTvl[networkIndex]?.tvl);
+      totalBorrowed = totalBorrowed.plus(latestNetworkResultsBorrowed[networkIndex]?.borrowed);
       buildResponse.push({ name: '\u200B', value: '\u200B' });
       buildResponse.push({ name: `TVL + Borrowed (${network[0].toUpperCase()}${network.slice(1).toLowerCase()})`, value: `*$ ${formatDecimal(tvlPlusBorrowed, 2)}*` });
-      buildResponse.push({ name: `TVL (${network[0].toUpperCase()}${network.slice(1).toLowerCase()})`, value: `*$ ${formatDecimal(latestNetworkResultTvl?.tvl, 2)}*` });
-      buildResponse.push({ name: `Borrowed (${network[0].toUpperCase()}${network.slice(1).toLowerCase()})`, value: `*$ ${formatDecimal(latestNetworkResultBorrowed?.borrowed, 2)}*` });
+      buildResponse.push({ name: `TVL (${network[0].toUpperCase()}${network.slice(1).toLowerCase()})`, value: `*$ ${formatDecimal(latestNetworkResultsTvl[networkIndex]?.tvl, 2)}*` });
+      buildResponse.push({ name: `Borrowed (${network[0].toUpperCase()}${network.slice(1).toLowerCase()})`, value: `*$ ${formatDecimal(latestNetworkResultsBorrowed[networkIndex]?.borrowed, 2)}*` });
       subsequentFlag = true;
+      networkIndex++;
     }
     buildResponse.unshift({ name: `Borrowed (All)`, value: `*$ ${formatDecimal(totalBorrowed.toNumber(), 2)}*` });
     buildResponse.unshift({ name: `TVL (All)`, value: `*$ ${formatDecimal(totalTvl.toNumber(), 2)}*` });
