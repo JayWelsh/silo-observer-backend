@@ -11,6 +11,7 @@ const commandFiles = fs.readdirSync(path.join(__dirname, '../discord-bot/command
 
 // Grab the SlashCommandBuilder#toJSON() output of each command's data for deployment
 for (const file of commandFiles) {
+	console.log('Adding Discord Command to Active List:', file)
 	const command = require(path.join(__dirname, `../discord-bot/commands/${file}`));
 	commands.push(command.data.toJSON());
 }
