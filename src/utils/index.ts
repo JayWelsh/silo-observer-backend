@@ -4,7 +4,8 @@ import { request } from 'graphql-request';
 import { SUBGRAPH_ENDPOINT } from '../constants';
 
 import {
-  formatPercentage
+  formatPercentage,
+  formatDecimal,
 } from './numberFormatting';
 
 const envPath = (directory: string) => path.resolve(__dirname, '../../' + directory);
@@ -48,5 +49,6 @@ export {
   envPath,
   env,
   formatPercentage,
+  formatDecimal,
   subgraphRequestWithRetry,
 }
