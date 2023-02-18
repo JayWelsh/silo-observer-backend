@@ -21,8 +21,8 @@ import { periodicSiloDataTracker } from './tasks/periodic-silo-data-tracker';
 import { periodicContractEventTracker } from './tasks/periodic-contract-event-tracker';
 
 // minutely cycle to run indexer, 10 = 10 minutes (i.e. 10, 20, 30, 40, 50, 60 past the hour).
-// recommend to use 10 if doing a full sync, once up to speed, 2 minutes should be safe.
-let contractEventIndexerPeriodMinutes = 2;
+// recommend to use 10 if doing a full sync, once up to speed, 3 minutes should be safe.
+let contractEventIndexerPeriodMinutes = 3;
 
 let corsOptions = {
   origin: ['http://localhost:3000', 'https://silo.observer', 'https://www.silo.observer'],
@@ -51,8 +51,8 @@ console.log(`-------- ⚡ PORT: ${port} ⚡ --------`);
 registerBotCommands();
 let discordClient = botLoginAndReadyUp();
 
-const runMinutelyDataTracker = new CronJob(
-	'0 */1 * * * *',
+const runSiloDataTracker = new CronJob(
+	'15 */2 * * * *',
 	function() {
     let useTimestampUnix = Math.floor(new Date().setSeconds(0) / 1000);
     let startTime = new Date().getTime();
@@ -63,7 +63,7 @@ const runMinutelyDataTracker = new CronJob(
 	'Etc/UTC'
 );
 
-runMinutelyDataTracker.start();
+runSiloDataTracker.start();
 
 // web3
 
@@ -78,7 +78,7 @@ export const MulticallProviderArbitrum = new Provider(EthersProviderArbitrum, 42
 MulticallProviderArbitrum.init();
 
 const runContractEventIndexer = new CronJob(
-	`40 */${contractEventIndexerPeriodMinutes} * * * *`, // runs at 40 seconds past the minute on contractEventIndexerPeriodMinutes to offset it from the minutely runner which usually takes around 30 seconds
+	`15 */${contractEventIndexerPeriodMinutes} * * * *`, // runs at 40 seconds past the minute on contractEventIndexerPeriodMinutes to offset it from the minutely runner which usually takes around 30 seconds
 	function() {
     let useTimestampUnix = Math.floor(new Date().setSeconds(0) / 1000);
     let startTime = new Date().getTime();
