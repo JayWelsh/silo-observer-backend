@@ -22,7 +22,8 @@ import { periodicContractEventTracker } from './tasks/periodic-contract-event-tr
 
 // minutely cycle to run indexer, 10 = 10 minutes (i.e. 10, 20, 30, 40, 50, 60 past the hour).
 // recommend to use 10 if doing a full sync, once up to speed, 3 minutes should be safe.
-let contractEventIndexerPeriodMinutes = 3;
+// using 6 for Alchemy costs
+let contractEventIndexerPeriodMinutes = 20; // temp until new month
 
 let corsOptions = {
   origin: ['http://localhost:3000', 'https://silo.observer', 'https://www.silo.observer'],
@@ -52,7 +53,8 @@ registerBotCommands();
 let discordClient = botLoginAndReadyUp();
 
 const runSiloDataTracker = new CronJob(
-	'15 */2 * * * *',
+	// '15 */4 * * * *',
+	'30 */15 * * * *', // temp decrease until new month
 	function() {
     let useTimestampUnix = Math.floor(new Date().setSeconds(0) / 1000);
     let startTime = new Date().getTime();
