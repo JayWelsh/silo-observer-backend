@@ -249,17 +249,22 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
           // const borrowedUsdSiloSpecificBN = new BigNumber(market.totalBorrowBalanceUSD);
 
           // Method 2 (using info directly from chain for TVL to reduce reliance on off-chain data)
-          const tvlUsdSiloSpecificBN = Object.entries(siloAssetBalances[siloChecksumAddress]).reduce((acc, entry) => {
-            let subgraphTokenPrice = new BigNumber(tokenAddressToLastPrice[entry[1].tokenAddress]);
-            let coingeckoPrice = new BigNumber(tokenAddressToCoingeckoPrice[entry[1].tokenAddress]);
-            let usePrice = coingeckoPrice.toNumber() > 0 ? coingeckoPrice : subgraphTokenPrice;
-            let tokenBalance = new BigNumber(entry[1].balance);
-            if(usePrice.isGreaterThan(0) && tokenBalance.isGreaterThan(0)) {
-              let usdValueOfAsset = tokenBalance.multipliedBy(usePrice);
-              acc = acc.plus(usdValueOfAsset);
-            }
-            return acc;
-          }, new BigNumber(0));
+          let tvlUsdSiloSpecificBN = new BigNumber(0);
+          if(siloAssetBalances[siloChecksumAddress]) {
+            tvlUsdSiloSpecificBN = Object.entries(siloAssetBalances[siloChecksumAddress]).reduce((acc, entry) => {
+              let subgraphTokenPrice = new BigNumber(tokenAddressToLastPrice[entry[1].tokenAddress]);
+              let coingeckoPrice = new BigNumber(tokenAddressToCoingeckoPrice[entry[1].tokenAddress]);
+              let usePrice = coingeckoPrice.toNumber() > 0 ? coingeckoPrice : subgraphTokenPrice;
+              let tokenBalance = new BigNumber(entry[1].balance);
+              if(usePrice.isGreaterThan(0) && tokenBalance.isGreaterThan(0)) {
+                let usdValueOfAsset = tokenBalance.multipliedBy(usePrice);
+                acc = acc.plus(usdValueOfAsset);
+              }
+              return acc;
+            }, new BigNumber(0));
+          } else {
+            console.log({"could not process asset balances for": siloChecksumAddress});
+          }
           const borrowedUsdSiloSpecificBN = new BigNumber(market.totalBorrowBalanceUSD);
 
           tvlUsdAllSilosBN = tvlUsdAllSilosBN.plus(tvlUsdSiloSpecificBN);
@@ -315,36 +320,48 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
           // RATE HANDLING BELOW
 
           // Store rates for each asset
-          for (let rateEntry of siloAssetRates[siloChecksumAddress]) {
-            let {
-              tokenAddress,
-              rate,
-              side,
-            } = rateEntry;
+          if(siloAssetRates[siloChecksumAddress]) {
+            for (let rateEntry of siloAssetRates[siloChecksumAddress]) {
+              let {
+                tokenAddress,
+                rate,
+                side,
+              } = rateEntry;
 
-            let rateToNumericPrecision = new BigNumber(rate).precision(16).toString();
-            if(new BigNumber(rate).isGreaterThan(1000)) {
-              rateToNumericPrecision = '1000';
-            }
+              let rateToNumericPrecision = new BigNumber(rate).precision(16).toString();
+              if(new BigNumber(rate).isGreaterThan(1000)) {
+                rateToNumericPrecision = '1000';
+              }
 
-            let rateAssetChecksumAddress = utils.getAddress(tokenAddress);
+              let rateAssetChecksumAddress = utils.getAddress(tokenAddress);
 
-            // All rates show as variable on subgraph at the moment
-            // TODO: Figure out actual rate types via chain query
-            let type = "VARIABLE";
+              // All rates show as variable on subgraph at the moment
+              // TODO: Figure out actual rate types via chain query
+              let type = "VARIABLE";
 
-            if(enableRateSync) {
+              if(enableRateSync) {
 
-              let latestRecord = await RateLatestRepository.getLatestRateByAssetOnSideInSilo(rateAssetChecksumAddress, side, siloChecksumAddress);
-              if(latestRecord) {
-                // update latest record
-                await RateLatestRepository.update({
-                  rate: rateToNumericPrecision,
-                  timestamp: useTimestampPostgres,
-                }, latestRecord.id);
-              } else {
-                // create latest record
-                await RateLatestRepository.create({
+                let latestRecord = await RateLatestRepository.getLatestRateByAssetOnSideInSilo(rateAssetChecksumAddress, side, siloChecksumAddress);
+                if(latestRecord) {
+                  // update latest record
+                  await RateLatestRepository.update({
+                    rate: rateToNumericPrecision,
+                    timestamp: useTimestampPostgres,
+                  }, latestRecord.id);
+                } else {
+                  // create latest record
+                  await RateLatestRepository.create({
+                    silo_address: siloChecksumAddress,
+                    asset_address: rateAssetChecksumAddress,
+                    rate: rateToNumericPrecision,
+                    side: side,
+                    type: type,
+                    timestamp: useTimestampPostgres,
+                    network: network,
+                  });
+                }
+
+                await RateRepository.create({
                   silo_address: siloChecksumAddress,
                   asset_address: rateAssetChecksumAddress,
                   rate: rateToNumericPrecision,
@@ -353,32 +370,25 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
                   timestamp: useTimestampPostgres,
                   network: network,
                 });
-              }
 
-              await RateRepository.create({
-                silo_address: siloChecksumAddress,
-                asset_address: rateAssetChecksumAddress,
-                rate: rateToNumericPrecision,
-                side: side,
-                type: type,
-                timestamp: useTimestampPostgres,
-                network: network,
-              });
+                if(isHourlyMoment) {
+                  await RateHourlyRepository.create({
+                    silo_address: siloChecksumAddress,
+                    asset_address: rateAssetChecksumAddress,
+                    rate: rateToNumericPrecision,
+                    side: side,
+                    type: type,
+                    timestamp: useTimestampPostgres,
+                    network: network,
+                  });
+                }
 
-              if(isHourlyMoment) {
-                await RateHourlyRepository.create({
-                  silo_address: siloChecksumAddress,
-                  asset_address: rateAssetChecksumAddress,
-                  rate: rateToNumericPrecision,
-                  side: side,
-                  type: type,
-                  timestamp: useTimestampPostgres,
-                  network: network,
-                });
               }
 
             }
 
+          } else {
+            console.log({'could not process rates for': siloChecksumAddress})
           }
 
           // RATE HANDLING ABOVE

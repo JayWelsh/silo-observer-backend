@@ -12,6 +12,7 @@ import {
 import {
   SILO_FACTORY_ADDRESS,
   SILO_FACTORY_ADDRESS_ARBITRUM,
+  SILO_BLACKLIST,
 } from "../../constants";
 
 import SiloFactoryABI from '../abis/SiloFactoryABI.json';
@@ -54,7 +55,7 @@ export const getAllSiloAssetBalances = async (network: string) => {
 
     const siloCreationEvents = await queryFilterRetryOnFailure(siloFactoryContract, siloCreationEventFilter);
 
-    const siloAddresses = siloCreationEvents ? siloCreationEvents.map((entry) => entry?.args?.silo) : [];
+    const siloAddresses = siloCreationEvents ? siloCreationEvents.map((entry) => entry?.args?.silo).filter((item) => SILO_BLACKLIST.indexOf(item) === -1) : [];
 
     const assetAddresses : string[] = [];
 
