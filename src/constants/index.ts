@@ -6,8 +6,8 @@ dotenv.config();
 export const MAX_MINUTELY_RATE_ENTRIES = 1441;
 
 // Subgraph
-export const SUBGRAPH_ENDPOINT = "https://api.thegraph.com/subgraphs/id/QmQtXaKxL6pZyc3DAH7jijBJsFuTdCD6psU6md7wKh6a6d";
-export const SUBGRAPH_VERSION = "2.2.1";
+export const SUBGRAPH_ENDPOINT = "https://api.thegraph.com/subgraphs/id/QmZwDpzNPEdDFMmSghyBC6wZ3aAjJqFB2xrAsrcLCPwVQk";
+export const SUBGRAPH_VERSION = "2.2.8";
 export const SUBGRAPH_ENDPOINT_FALLBACK = "https://api.thegraph.com/subgraphs/id/QmQV7RB3WUFuSrCSyJsDq6FkQsVYFwak2xCZYsq3JmDrSq";
 export const SUBGRAPH_VERSION_FALLBACK = "2.0.2";
 
