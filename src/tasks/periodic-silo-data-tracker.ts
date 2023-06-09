@@ -23,6 +23,7 @@ import {
   NETWORK_ID_TO_COINGECKO_ID,
   NETWORKS,
   NETWORK_TO_SUBGRAPH,
+  SILO_BLACKLIST,
 } from '../constants'
 
 import {
@@ -176,7 +177,9 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
           return acc;
         }, {});
 
-        for(let market of result?.markets) {
+        let nonBlacklistedMarkets = result?.markets.filter((market: any) => SILO_BLACKLIST.indexOf(utils.getAddress(market.id)) === -1);
+
+        for(let market of nonBlacklistedMarkets) {
 
           let siloChecksumAddress = utils.getAddress(market.id);
           let inputTokenChecksumAddress = utils.getAddress(market.inputToken.id);
