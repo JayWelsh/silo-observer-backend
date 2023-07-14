@@ -15,6 +15,7 @@ export interface IRateEntrySubgraph {
 }
 
 export interface IMarket {
+  id: string,
   inputToken: ITokenSubgraph,
   outputToken: ITokenSubgraph[]
 }
