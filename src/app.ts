@@ -58,7 +58,7 @@ const runSiloDataTracker = new CronJob(
 	function() {
     let useTimestampUnix = Math.floor(new Date().setSeconds(0) / 1000);
     let startTime = new Date().getTime();
-    periodicSiloDataTracker(useTimestampUnix, startTime);
+    // periodicSiloDataTracker(useTimestampUnix, startTime);
 	},
 	null,
 	true,
@@ -84,7 +84,7 @@ const runContractEventIndexer = new CronJob(
 	function() {
     let useTimestampUnix = Math.floor(new Date().setSeconds(0) / 1000);
     let startTime = new Date().getTime();
-    periodicContractEventTracker(useTimestampUnix, startTime);
+    // periodicContractEventTracker(useTimestampUnix, startTime);
 	},
 	null,
 	true,
