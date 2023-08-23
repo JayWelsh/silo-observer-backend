@@ -5,6 +5,10 @@ import { QueryBuilder } from "objection";
 import Pagination, { IPaginationRequest } from "../../utils/Pagination";
 import { ITransformer } from "../../interfaces";
 
+import {
+  SILO_BLACKLIST,
+} from '../../constants';
+
 class SiloRepository extends BaseRepository {
     getModel() {
       return SiloModel
@@ -12,10 +16,17 @@ class SiloRepository extends BaseRepository {
 
     async getSiloByAddress(
       siloAddress: string | number,
+      deploymentID: string,
       transformer?: ITransformer,
     ) {
-      const result = await this.model.query().withGraphFetched("latest_rates.[asset]").where(function (this: QueryBuilder<SiloModel>) {
+
+      let tableName = this.model.tableName;
+
+      const result = await this.model.query()
+      .withGraphFetched("latest_rates.[asset]")
+      .where(function (this: QueryBuilder<SiloModel>) {
         this.where('address', siloAddress);
+        this.where(`${tableName}.deployment_id`, deploymentID);
       }).first();
 
       return this.parserResult(result, transformer)
@@ -23,10 +34,17 @@ class SiloRepository extends BaseRepository {
     
     async getSiloByName(
       siloName: string,
+      deploymentID: string,
       transformer: ITransformer,
     ) {
-      const result = await this.model.query().withGraphFetched("latest_rates.[asset]").where(function (this: QueryBuilder<SiloModel>) {
+
+      let tableName = this.model.tableName;
+
+      const result = await this.model.query()
+      .withGraphFetched("latest_rates.[asset]")
+      .where(function (this: QueryBuilder<SiloModel>) {
         this.where('name', siloName);
+        this.where(`${tableName}.deployment_id`, deploymentID);
       }).first();
 
       return this.parserResult(result, transformer)
@@ -41,6 +59,7 @@ class SiloRepository extends BaseRepository {
 
       const results = await this.model.query()
         .withGraphFetched("latest_rates")
+        .whereNotIn("address", SILO_BLACKLIST)
         .orderBy("tvl", "DESC")
         .page(page - 1, perPage);
       

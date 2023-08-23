@@ -9,6 +9,7 @@ class BorrowedTotalOutputTransformer extends BaseTransformer {
       timestamp: borrowedTotalEntry.timestamp,
       meta: borrowedTotalEntry.meta,
       network: borrowedTotalEntry.network,
+      deployment_id: borrowedTotalEntry.deployment_id,
       ...(borrowedTotalEntry.silo && { 
         silo:{
           name: borrowedTotalEntry.silo.name,

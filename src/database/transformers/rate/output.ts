@@ -9,6 +9,7 @@ class RateTransformer extends BaseTransformer {
       side: rateEntry.side,
       timestamp: rateEntry.timestamp,
       network: rateEntry.network,
+      deployment_id: rateEntry.deployment_id,
       ...(rateEntry.silo && {
         silo: {
           name: rateEntry.silo.name,

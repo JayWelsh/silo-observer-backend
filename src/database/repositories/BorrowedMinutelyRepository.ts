@@ -8,10 +8,14 @@ class BorrowedMinutelyRepository extends BorrowedBaseRepository {
     return BorrowedMinutelyModel
   }
 
-  async getLatestResultByNetworkAndMeta(network: string, meta: string) {
+  async getLatestResultByNetworkAndMetaAndDeploymentID(network: string, meta: string, deploymentID: string) {
+
+    let tableName = BorrowedMinutelyModel.tableName;
+    
     const result = await BorrowedMinutelyModel.query().where(function (this: QueryBuilder<BorrowedMinutelyModel>) {
       this.where('network', network);
       this.where('meta', meta);
+      this.where(`${tableName}.deployment_id`, deploymentID);
     }).orderBy('timestamp', 'DESC').first();
 
     return this.parserResult(result);

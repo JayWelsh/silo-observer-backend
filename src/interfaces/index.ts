@@ -41,6 +41,7 @@ export interface ISilo {
   name: string
   address: string
   network: string
+  deployment_id: string
   input_token_address: string
   tvl: number
   borrowed: number
@@ -64,6 +65,7 @@ export interface IRate {
   silo?: ISilo
   asset?: IAsset
   network: string
+  deployment_id: string
 }
 
 export interface IBorrowedTotal {
@@ -76,6 +78,7 @@ export interface IBorrowedTotal {
   silo?: ISilo
   asset?: IAsset
   network: string
+  deployment_id: string
 }
 
 export interface ITvlTotal {
@@ -88,6 +91,7 @@ export interface ITvlTotal {
   silo?: ISilo
   asset?: IAsset
   network: string
+  deployment_id: string
 }
 
 export interface ISiloUserEvent {
@@ -113,3 +117,20 @@ export interface IBlockMetadata {
 }
 
 // Internal Interfaces Above
+
+export interface IFactoryConfig {
+  address: string;
+  abi: any;
+  meta: string;
+}
+
+export interface IDeployment {
+  id: string;
+  idHumanReadable: string;
+  network: string
+  siloLens: string;
+  siloLensABI: any;
+  siloBlacklist: string[];
+  subgraphEndpoint: string;
+  siloFactories: IFactoryConfig[];
+}

@@ -8,10 +8,14 @@ class BorrowedLatestRepository extends BorrowedBaseRepository {
     return BorrowedLatestModel
   }
 
-  async getLatestResultByNetworkAndMeta(network: string, meta: string) {
+  async getLatestResultByNetworkAndMetaAndDeploymentID(network: string, meta: string, deploymentID: string) {
+
+    let tableName = BorrowedLatestModel.tableName;
+
     const result = await BorrowedLatestModel.query().where(function (this: QueryBuilder<BorrowedLatestModel>) {
       this.where('network', network);
       this.where('meta', meta);
+      this.where(`${tableName}.deployment_id`, deploymentID);
     }).orderBy('timestamp', 'DESC').first();
 
     return this.parserResult(result);

@@ -20,6 +20,10 @@ import {
   extractFromBlockToBlock
 } from '../utils'
 
+import {
+  IDeployment,
+} from '../../interfaces';
+
 import SiloABI from '../abis/SiloABI.json';
 
 BigNumber.config({ EXPONENTIAL_AT: [-1e+9, 1e+9] });
@@ -27,12 +31,15 @@ BigNumber.config({ EXPONENTIAL_AT: [-1e+9, 1e+9] });
 export const getAllSiloBorrowEventsSinceBlock = async (
   siloAddresses: string [],
   lastestBlock: number,
-  network: string,
+  deploymentConfig: IDeployment,
 ) => {
 
   console.log("Initiating Borrow Event Tracker");
 
-  let eventIndexBlockTrackerRecord = await EventIndexerBlockTrackerRepository.getByEventNameAndNetwork("Borrow", network);
+  let network = deploymentConfig.network;
+  let deploymentId = deploymentConfig.id;
+
+  let eventIndexBlockTrackerRecord = await EventIndexerBlockTrackerRepository.getByEventNameAndNetwork("Borrow", network, deploymentId);
 
   let {
     fromBlock,
@@ -44,6 +51,7 @@ export const getAllSiloBorrowEventsSinceBlock = async (
   let deletedRecords = await BorrowEventRepository.query().delete().where(function (this: any) {
     this.whereRaw(`block_number > ${fromBlock}`);
     this.where(`network`, network);
+    this.where(`deployment_id`, deploymentId);
   });
 
   if(deletedRecords && (deletedRecords > 0)) {
@@ -92,6 +100,7 @@ export const getAllSiloBorrowEventsSinceBlock = async (
           tx_hash: transactionHash,
           block_number: blockNumber,
           network,
+          deployment_id: deploymentId,
         })
       }
     }

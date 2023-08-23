@@ -22,17 +22,24 @@ import {
 
 import SiloABI from '../abis/SiloABI.json';
 
+import {
+  IDeployment,
+} from '../../interfaces';
+
 BigNumber.config({ EXPONENTIAL_AT: [-1e+9, 1e+9] });
 
 export const getAllSiloDepositEventsSinceBlock = async (
   siloAddresses: string [],
   lastestBlock: number,
-  network: string,
+  deploymentConfig: IDeployment,
 ) => {
+
+  let network = deploymentConfig.network;
+  let deploymentId = deploymentConfig.id;
 
   console.log("Initiating Deposit Event Tracker");
 
-  let eventIndexBlockTrackerRecord = await EventIndexerBlockTrackerRepository.getByEventNameAndNetwork("Deposit", network);
+  let eventIndexBlockTrackerRecord = await EventIndexerBlockTrackerRepository.getByEventNameAndNetwork("Deposit", network, deploymentId);
 
   let {
     fromBlock,
@@ -44,6 +51,7 @@ export const getAllSiloDepositEventsSinceBlock = async (
   let deletedRecords = await DepositEventRepository.query().delete().where(function (this: any) {
     this.whereRaw(`block_number > ${fromBlock}`);
     this.where(`network`, network);
+    this.where(`deployment_id`, deploymentId);
   });
 
   if(deletedRecords && (deletedRecords > 0)) {
@@ -95,6 +103,7 @@ export const getAllSiloDepositEventsSinceBlock = async (
           tx_hash: transactionHash,
           block_number: blockNumber,
           network,
+          deployment_id: deploymentId,
         })
       }
     }

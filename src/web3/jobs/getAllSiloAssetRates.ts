@@ -6,6 +6,7 @@ import BigNumber from 'bignumber.js';
 
 import {
   SILO_LENS_ADDRESS,
+  SILO_LENS_ADDRESS_LLAMA,
   SILO_LENS_ADDRESS_ARBITRUM,
 } from "../../constants";
 
@@ -17,6 +18,11 @@ import SiloFactoryABI from '../abis/SiloFactoryABI.json';
 import SiloABI from '../abis/SiloABI.json';
 import ERC20ABI from '../abis/ERC20ABI.json';
 import SiloLensABI from '../abis/SiloLensABI.json';
+import SiloLensLlamaABI from '../abis/SiloLensLlamaABI.json';
+
+import {
+  IDeployment,
+} from '../../interfaces';
 
 BigNumber.config({ EXPONENTIAL_AT: [-1e+9, 1e+9] });
 
@@ -30,7 +36,7 @@ interface IAllSiloAssetRates {
   tokenAddress: string
 }
 
-export const getAllSiloAssetRates = async (siloAddresses: string [], allSiloAssetsWithState: string[][], network: string) => {
+export const getAllSiloAssetRates = async (siloAddresses: string [], allSiloAssetsWithState: string[][], deploymentConfig: IDeployment) => {
 
   const indexedSiloAddresses : string[] = siloAddresses;
 
@@ -47,16 +53,13 @@ export const getAllSiloAssetRates = async (siloAddresses: string [], allSiloAsse
   let flattenedTokenAddresses = allSiloAssetsWithState.flat();
   let tokenQueryIndex = 0;
   const tokenContracts = flattenedTokenAddresses.map(tokenAddress => {
-    let contract = new MulticallContract(SILO_LENS_ADDRESS, SiloLensABI);
-    if (network === "arbitrum") {
-      contract = new MulticallContract(SILO_LENS_ADDRESS_ARBITRUM, SiloLensABI);
-    }
+    let contract = new MulticallContract(deploymentConfig.siloLens, deploymentConfig.siloLensABI);
     tokenQueryIndex++
     return contract;
   }).filter((item) => item);
 
-  const [...allSiloBorrowerRates] = await multicallProviderRetryOnFailure(tokenContracts.map((contract, index) => contract.borrowAPY(queryIndexToSiloAddress[index], flattenedTokenAddresses[index])), 'all silo borrower rates', network);
-  const [...allSiloLenderRates] = await multicallProviderRetryOnFailure(tokenContracts.map((contract, index) => contract.depositAPY(queryIndexToSiloAddress[index], flattenedTokenAddresses[index])), 'all silo lender rates', network);
+  const [...allSiloBorrowerRates] = await multicallProviderRetryOnFailure(tokenContracts.map((contract, index) => contract.borrowAPY(queryIndexToSiloAddress[index], flattenedTokenAddresses[index])), 'all silo borrower rates', deploymentConfig.network);
+  const [...allSiloLenderRates] = await multicallProviderRetryOnFailure(tokenContracts.map((contract, index) => contract.depositAPY(queryIndexToSiloAddress[index], flattenedTokenAddresses[index])), 'all silo lender rates', deploymentConfig.network);
 
   let rateResults : IAllSiloAssetRateResults = {};
   let borrowerResultsIndex = 0;

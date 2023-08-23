@@ -7,6 +7,7 @@ import {
 
 import {
   SILO_FACTORY_ADDRESS,
+  SILO_LLAMA_FACTORY_ADDRESS,
   SILO_FACTORY_ADDRESS_ARBITRUM,
 } from "../../constants";
 
@@ -14,22 +15,33 @@ import {
   queryFilterRetryOnFailure
 } from '../utils';
 
+import {
+  IDeployment,
+} from '../../interfaces';
+
 import SiloFactoryABI from '../abis/SiloFactoryABI.json';
 
-export const getAllSiloAddresses = async (network: string) => {
+export const getAllSiloAddresses = async (deploymentConfig: IDeployment) => {
 
-  let SiloFactoryContract;
-  let siloFactoryContract;
+  let siloFactories = [];
   
-  if(network === 'ethereum') {
-    SiloFactoryContract = new Contract(SILO_FACTORY_ADDRESS, SiloFactoryABI);
-    siloFactoryContract = await SiloFactoryContract.connect(EthersProvider);
-  } else if (network === 'arbitrum') {
-    SiloFactoryContract = new Contract(SILO_FACTORY_ADDRESS_ARBITRUM, SiloFactoryABI);
-    siloFactoryContract = await SiloFactoryContract.connect(EthersProviderArbitrum);
+  for(let siloFactoryConfig of deploymentConfig.siloFactories) {
+    if(deploymentConfig.network === 'ethereum') {
+      let FactoryContract = new Contract(siloFactoryConfig.address, siloFactoryConfig.abi);
+      let factoryContract = await FactoryContract.connect(EthersProvider);
+      siloFactories.push({contract: factoryContract, meta: siloFactoryConfig.meta});
+    } else if (deploymentConfig.network === 'arbitrum') {
+      let FactoryContract = new Contract(siloFactoryConfig.address, siloFactoryConfig.abi);
+      let factoryContract = await FactoryContract.connect(EthersProviderArbitrum);
+      siloFactories.push({contract: factoryContract, meta: siloFactoryConfig.meta});
+    }
   }
 
-  if(SiloFactoryContract && siloFactoryContract) {
+  let siloAddresses : string[] = [];
+
+  for(let siloFactory of siloFactories) {
+
+    let siloFactoryContract = siloFactory.contract;
 
     const siloCreationEventFilter = await siloFactoryContract.filters.NewSiloCreated(null, null);
 
@@ -45,6 +57,6 @@ export const getAllSiloAddresses = async (network: string) => {
 
   }
 
-  return [];
+  return siloAddresses;
 
 }

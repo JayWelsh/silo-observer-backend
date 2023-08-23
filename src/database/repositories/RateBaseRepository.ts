@@ -12,7 +12,11 @@ abstract class RateBaseRepository extends BaseRepository {
     assetAddress: string,
     side: string,
     siloAddress: string,
+    deploymentID: string,
   ) {
+
+    let tableName = this.model.tableName;
+
     const result = await this.model.query()
     .withGraphJoined('asset')
     .withGraphJoined('silo')
@@ -20,6 +24,7 @@ abstract class RateBaseRepository extends BaseRepository {
       this.where('asset_address', assetAddress);
       this.where('side', side);
       this.where('silo_address', siloAddress);
+      this.where(`${tableName}.deployment_id`, deploymentID);
     }).orderBy('timestamp', 'DESC').first();
 
     return this.parserResult(result);
@@ -27,9 +32,13 @@ abstract class RateBaseRepository extends BaseRepository {
 
   async getOldestRateByAssetOnSideInSilo(
     assetAddress: string,
+    deploymentID: string,
     side: string,
     siloAddress: string,
   ) {
+
+    let tableName = this.model.tableName;
+
     const result = await this.model.query()
     .withGraphJoined('asset')
     .withGraphJoined('silo')
@@ -37,6 +46,7 @@ abstract class RateBaseRepository extends BaseRepository {
       this.where('asset_address', assetAddress);
       this.where('side', side);
       this.where('silo_address', siloAddress);
+      this.where(`${tableName}.deployment_id`, deploymentID);
     }).orderBy('timestamp', 'ASC').first();
 
     return this.parserResult(result);
@@ -44,10 +54,13 @@ abstract class RateBaseRepository extends BaseRepository {
 
   async getRatesByAssetAddress(
     assetAddress: string,
+    deploymentID: string,
     side: string | undefined,
     pagination: IPaginationRequest,
     transformer: ITransformer,
   ) {
+
+    let tableName = this.model.tableName;
 
     const { perPage, page } = pagination;
 
@@ -56,6 +69,7 @@ abstract class RateBaseRepository extends BaseRepository {
     .withGraphJoined('silo')
     .where(function (this: QueryBuilder<RateModel>) {
       this.where('asset_address', assetAddress);
+      this.where(`${tableName}.deployment_id`, deploymentID);
       if(side) {
         this.where('side', side);
       }
@@ -66,10 +80,13 @@ abstract class RateBaseRepository extends BaseRepository {
 
   async getRatesByAssetSymbol(
     assetAddress: string,
+    deploymentID: string,
     side: string | undefined,
     pagination: IPaginationRequest,
     transformer: ITransformer,
   ) {
+
+    let tableName = this.model.tableName;
 
     const { perPage, page } = pagination;
 
@@ -81,6 +98,7 @@ abstract class RateBaseRepository extends BaseRepository {
       if(side) {
         this.where('side', side);
       }
+      this.where(`${tableName}.deployment_id`, deploymentID);
     }).orderBy('timestamp', 'DESC').page(page - 1, perPage);
 
     return this.parserResult(new Pagination(results, perPage, page), transformer);
@@ -88,9 +106,12 @@ abstract class RateBaseRepository extends BaseRepository {
 
   async getRatesBySiloAddress(
     siloAddress: string,
+    deploymentID: string,
     pagination: IPaginationRequest,
     transformer: ITransformer,
   ) {
+
+    let tableName = this.model.tableName;
 
     const { 
       perPage,
@@ -102,6 +123,7 @@ abstract class RateBaseRepository extends BaseRepository {
     .withGraphJoined('asset')
     .where(function (this: QueryBuilder<RateModel>) {
       this.where('silo_address', siloAddress);
+      this.where(`${tableName}.deployment_id`, deploymentID);
     }).orderBy('timestamp', 'DESC').page(page - 1, perPage);
 
     return this.parserResult(new Pagination(results, perPage, page), transformer);
@@ -109,9 +131,12 @@ abstract class RateBaseRepository extends BaseRepository {
 
   async getRatesBySiloName(
     siloName: string,
+    deploymentID: string,
     pagination: IPaginationRequest,
     transformer: ITransformer,
   ) {
+
+    let tableName = this.model.tableName;
 
     const { 
       perPage,
@@ -123,16 +148,26 @@ abstract class RateBaseRepository extends BaseRepository {
     .withGraphJoined('asset')
     .where(function (this: QueryBuilder<RateModel>) {
       this.where('silo.name', siloName);
+      this.where(`${tableName}.deployment_id`, deploymentID);
     }).orderBy('timestamp', 'DESC').page(page - 1, perPage);
 
     return this.parserResult(new Pagination(results, perPage, page), transformer);
   }
 
-  async getRateRecordCountByAssetOnSideInSilo(assetAddress: string, side: string, siloAddress: string) {
+  async getRateRecordCountByAssetOnSideInSilo(
+    assetAddress: string,
+    deploymentID: string,
+    side: string,
+    siloAddress: string
+  ) {
+
+    let tableName = this.model.tableName;
+    
     const result = await this.model.query().where(function (this: QueryBuilder<RateModel>) {
       this.where('asset_address', assetAddress);
       this.where('side', side);
       this.where('silo_address', siloAddress);
+      this.where(`${tableName}.deployment_id`, deploymentID);
     }).count();
 
     return result?.[0]?.count ? result?.[0]?.count : 0;
