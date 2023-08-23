@@ -10,14 +10,17 @@ abstract class BorrowedBaseRepository extends BaseRepository {
 
   async getLatestBorrowedTotalByAssetInSilo(
     assetAddress: string,
+    deploymentID: string,
     siloAddress: string,
   ) {
+    let tableName = this.model.tableName;
     const result = await this.model.query()
     .withGraphJoined('asset')
     .withGraphJoined('silo')
     .where(function (this: QueryBuilder<BorrowedMinutelyModel>) {
       this.where('asset_address', assetAddress);
       this.where('silo_address', siloAddress);
+      this.where(`${tableName}.deployment_id`, deploymentID);
     }).orderBy('timestamp', 'DESC').first();
 
     return this.parserResult(result);
@@ -25,9 +28,12 @@ abstract class BorrowedBaseRepository extends BaseRepository {
 
   async getBorrowedTotalsByAssetAddress(
     assetAddress: string,
+    deploymentID: string,
     pagination: IPaginationRequest,
     transformer: ITransformer,
   ) {
+
+    let tableName = this.model.tableName;
 
     const { perPage, page } = pagination;
 
@@ -36,6 +42,7 @@ abstract class BorrowedBaseRepository extends BaseRepository {
     .withGraphJoined('silo')
     .where(function (this: QueryBuilder<BorrowedMinutelyModel>) {
       this.where('asset_address', assetAddress);
+      this.where(`${tableName}.deployment_id`, deploymentID);
     }).orderBy('timestamp', 'DESC').page(page - 1, perPage);
 
     return this.parserResult(new Pagination(results, perPage, page), transformer);
@@ -43,9 +50,12 @@ abstract class BorrowedBaseRepository extends BaseRepository {
 
   async getBorrowedTotalsByAssetSymbol(
     assetSymbol: string,
+    deploymentID: string,
     pagination: IPaginationRequest,
     transformer: ITransformer,
   ) {
+
+    let tableName = this.model.tableName;
 
     const { perPage, page } = pagination;
 
@@ -54,6 +64,7 @@ abstract class BorrowedBaseRepository extends BaseRepository {
     .withGraphJoined('silo')
     .where(function (this: QueryBuilder<BorrowedMinutelyModel>) {
       this.where('asset.symbol', assetSymbol);
+      this.where(`${tableName}.deployment_id`, deploymentID);
     }).orderBy('timestamp', 'DESC').page(page - 1, perPage);
 
     return this.parserResult(new Pagination(results, perPage, page), transformer);
@@ -61,9 +72,12 @@ abstract class BorrowedBaseRepository extends BaseRepository {
 
   async getBorrowedTotalsBySiloAddress(
     siloAddress: string,
+    deploymentID: string,
     pagination: IPaginationRequest,
     transformer: ITransformer,
   ) {
+
+    let tableName = this.model.tableName;
 
     const { 
       perPage,
@@ -75,6 +89,7 @@ abstract class BorrowedBaseRepository extends BaseRepository {
     .withGraphJoined('asset')
     .where(function (this: QueryBuilder<BorrowedMinutelyModel>) {
       this.where('silo_address', siloAddress);
+      this.where(`${tableName}.deployment_id`, deploymentID);
     }).orderBy('timestamp', 'DESC').page(page - 1, perPage);
 
     return this.parserResult(new Pagination(results, perPage, page), transformer);
@@ -82,9 +97,12 @@ abstract class BorrowedBaseRepository extends BaseRepository {
 
   async getBorrowedTotalsBySiloName(
     siloName: string,
+    deploymentID: string,
     pagination: IPaginationRequest,
     transformer: ITransformer,
   ) {
+
+    let tableName = this.model.tableName;
 
     const { 
       perPage,
@@ -96,6 +114,7 @@ abstract class BorrowedBaseRepository extends BaseRepository {
     .withGraphJoined('asset')
     .where(function (this: QueryBuilder<BorrowedMinutelyModel>) {
       this.where('silo.name', siloName);
+      this.where(`${tableName}.deployment_id`, deploymentID);
     }).orderBy('timestamp', 'DESC').page(page - 1, perPage);
 
     return this.parserResult(new Pagination(results, perPage, page), transformer);

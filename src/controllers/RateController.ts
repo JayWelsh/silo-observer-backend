@@ -18,6 +18,7 @@ class RateController extends Controller {
 
     const {
       siloAddressOrName,
+      deploymentID,
     } = req.params;
 
     const {
@@ -29,17 +30,17 @@ class RateController extends Controller {
     let rates;
     if(utils.isAddress(siloAddressOrName)) {
       if(resolution === 'minutely') {
-        rates = await RateRepository.getRatesBySiloAddress(siloAddressOrName, pagination, RateOutputTransformer);
+        rates = await RateRepository.getRatesBySiloAddress(siloAddressOrName, deploymentID, pagination, RateOutputTransformer);
       }
       if(resolution === 'hourly') {
-        rates = await RateHourlyRepository.getRatesBySiloAddress(siloAddressOrName, pagination, RateOutputTransformer);
+        rates = await RateHourlyRepository.getRatesBySiloAddress(siloAddressOrName, deploymentID, pagination, RateOutputTransformer);
       }
     } else {
       if(resolution === 'minutely') {
-        rates = await RateRepository.getRatesBySiloName(siloAddressOrName, pagination, RateOutputTransformer);
+        rates = await RateRepository.getRatesBySiloName(siloAddressOrName, deploymentID, pagination, RateOutputTransformer);
       }
       if(resolution === 'hourly') {
-        rates = await RateHourlyRepository.getRatesBySiloName(siloAddressOrName, pagination, RateOutputTransformer);
+        rates = await RateHourlyRepository.getRatesBySiloName(siloAddressOrName, deploymentID, pagination, RateOutputTransformer);
       }
     }
 
@@ -50,6 +51,7 @@ class RateController extends Controller {
     const {
       assetAddressOrSymbol,
       side,
+      deploymentID,
     } = req.params;
 
     const {
@@ -61,17 +63,17 @@ class RateController extends Controller {
     let rates;
     if(utils.isAddress(assetAddressOrSymbol)) {
       if(resolution === 'minutely') {
-        rates = await RateRepository.getRatesByAssetAddress(assetAddressOrSymbol, side?.toUpperCase(), pagination, RateOutputTransformer);
+        rates = await RateRepository.getRatesByAssetAddress(assetAddressOrSymbol, deploymentID, side?.toUpperCase(), pagination, RateOutputTransformer);
       }
       if(resolution === 'hourly') {
-        rates = await RateHourlyRepository.getRatesByAssetAddress(assetAddressOrSymbol, side?.toUpperCase(), pagination, RateOutputTransformer);
+        rates = await RateHourlyRepository.getRatesByAssetAddress(assetAddressOrSymbol, deploymentID, side?.toUpperCase(), pagination, RateOutputTransformer);
       }
     } else {
       if(resolution === 'minutely') {
-        rates = await RateRepository.getRatesByAssetSymbol(assetAddressOrSymbol, side?.toUpperCase(), pagination, RateOutputTransformer);
+        rates = await RateRepository.getRatesByAssetSymbol(assetAddressOrSymbol, deploymentID, side?.toUpperCase(), pagination, RateOutputTransformer);
       }
       if(resolution === 'hourly') {
-        rates = await RateHourlyRepository.getRatesByAssetSymbol(assetAddressOrSymbol, side?.toUpperCase(), pagination, RateOutputTransformer);
+        rates = await RateHourlyRepository.getRatesByAssetSymbol(assetAddressOrSymbol, deploymentID, side?.toUpperCase(), pagination, RateOutputTransformer);
       }
     }
 

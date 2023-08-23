@@ -15,13 +15,14 @@ class SiloController extends Controller {
 
     const {
       siloAddressOrName,
+      deploymentID,
     } = req.params;
 
     let silo;
     if(utils.isAddress(siloAddressOrName)) {
-      silo = await SiloRepository.getSiloByAddress(siloAddressOrName, SiloOutputTransformer);
+      silo = await SiloRepository.getSiloByAddress(siloAddressOrName, deploymentID, SiloOutputTransformer);
     } else {
-      silo = await SiloRepository.getSiloByName(siloAddressOrName, SiloOutputTransformer);
+      silo = await SiloRepository.getSiloByName(siloAddressOrName, deploymentID, SiloOutputTransformer);
     }
 
     this.sendResponse(res, silo);

@@ -26,6 +26,7 @@ import {
 
 import {
   NETWORKS,
+  DEPLOYMENT_CONFIGS,
 } from '../constants';
 
 interface IUserAddressToCount {
@@ -50,19 +51,21 @@ export const periodicContractEventTracker = async (useTimestampUnix: number, sta
 
   let useTimestampPostgres = new Date(useTimestampUnix * 1000).toISOString();
 
-  for(let network of NETWORKS) {
+  for(let deploymentConfig of DEPLOYMENT_CONFIGS) {
+
+    let { network } = deploymentConfig;
 
     try {
 
       let latestBlockNumber = await getLatestBlockNumber(network);
 
-      let siloAddresses = await getAllSiloAddresses(network);
+      let siloAddresses = await getAllSiloAddresses(deploymentConfig);
 
       let [...eventBatches] = await Promise.all([
-        getAllSiloBorrowEventsSinceBlock(siloAddresses, latestBlockNumber, network),
-        getAllSiloDepositEventsSinceBlock(siloAddresses, latestBlockNumber, network),
-        getAllSiloRepayEventsSinceBlock(siloAddresses, latestBlockNumber, network),
-        getAllSiloWithdrawEventsSinceBlock(siloAddresses, latestBlockNumber, network),
+        getAllSiloBorrowEventsSinceBlock(siloAddresses, latestBlockNumber, deploymentConfig),
+        getAllSiloDepositEventsSinceBlock(siloAddresses, latestBlockNumber, deploymentConfig),
+        getAllSiloRepayEventsSinceBlock(siloAddresses, latestBlockNumber, deploymentConfig),
+        getAllSiloWithdrawEventsSinceBlock(siloAddresses, latestBlockNumber, deploymentConfig),
       ])
 
       let allEvents = eventBatches.reduce((acc: Event[], value: Event[]) => {
@@ -147,10 +150,10 @@ export const periodicContractEventTracker = async (useTimestampUnix: number, sta
         }
       }
 
-      console.log(`Periodic contract event tracker successful (${network}), exec time: ${new Date().getTime() - startTime}ms`)
+      console.log(`Periodic contract event tracker successful (${network} - ${deploymentConfig.id}), exec time: ${new Date().getTime() - startTime}ms`)
 
     } catch (e) {
-      console.error(`Error encountered in periodicContractEventTracker (${network}) at ${useTimestampPostgres}, exec time: ${new Date().getTime() - startTime}ms, error: ${e}`)
+      console.error(`Error encountered in periodicContractEventTracker (${network} - ${deploymentConfig.id}) at ${useTimestampPostgres}, exec time: ${new Date().getTime() - startTime}ms, error: ${e}`)
     }
 
   }

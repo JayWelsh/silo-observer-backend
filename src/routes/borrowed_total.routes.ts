@@ -4,7 +4,7 @@ import { body } from 'express-validator';
 
 import Router from "./Router";
 
-Router.get('/borrowed-totals/silo/:siloAddressOrName', [], 'BorrowedTotalController@getBorrowedTotalsBySilo');
+Router.get('/borrowed-totals/silo/:deploymentID/:siloAddressOrName', [], 'BorrowedTotalController@getBorrowedTotalsBySilo');
 
 Router.get('/borrowed-totals/asset/:assetAddressOrSymbol', [], 'BorrowedTotalController@getBorrowedTotalsByAsset');
 

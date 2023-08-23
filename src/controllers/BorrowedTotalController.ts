@@ -18,6 +18,7 @@ class BorrowedTotalController extends Controller {
 
     const {
       siloAddressOrName,
+      deploymentID,
     } = req.params;
 
     const {
@@ -29,17 +30,17 @@ class BorrowedTotalController extends Controller {
     let borrowedTotals;
     if(utils.isAddress(siloAddressOrName)) {
       if(resolution === 'minutely') {
-        borrowedTotals = await BorrowedMinutelyRepository.getBorrowedTotalsBySiloAddress(siloAddressOrName, pagination, BorrowedTotalOutputTransformer);
+        borrowedTotals = await BorrowedMinutelyRepository.getBorrowedTotalsBySiloAddress(siloAddressOrName, deploymentID, pagination, BorrowedTotalOutputTransformer);
       }
       if(resolution === 'hourly') {
-        borrowedTotals = await BorrowedHourlyRepository.getBorrowedTotalsBySiloAddress(siloAddressOrName, pagination, BorrowedTotalOutputTransformer);
+        borrowedTotals = await BorrowedHourlyRepository.getBorrowedTotalsBySiloAddress(siloAddressOrName, deploymentID, pagination, BorrowedTotalOutputTransformer);
       }
     } else {
       if(resolution === 'minutely') {
-        borrowedTotals = await BorrowedMinutelyRepository.getBorrowedTotalsBySiloName(siloAddressOrName, pagination, BorrowedTotalOutputTransformer);
+        borrowedTotals = await BorrowedMinutelyRepository.getBorrowedTotalsBySiloName(siloAddressOrName, deploymentID, pagination, BorrowedTotalOutputTransformer);
       }
       if(resolution === 'hourly') {
-        borrowedTotals = await BorrowedHourlyRepository.getBorrowedTotalsBySiloName(siloAddressOrName, pagination, BorrowedTotalOutputTransformer);
+        borrowedTotals = await BorrowedHourlyRepository.getBorrowedTotalsBySiloName(siloAddressOrName, deploymentID, pagination, BorrowedTotalOutputTransformer);
       }
     }
 
@@ -49,6 +50,7 @@ class BorrowedTotalController extends Controller {
 
     const {
       assetAddressOrSymbol,
+      deploymentID,
     } = req.params;
 
     const {
@@ -60,17 +62,17 @@ class BorrowedTotalController extends Controller {
     let borrowedTotals;
     if(utils.isAddress(assetAddressOrSymbol)) {
       if(resolution === 'minutely') {
-        borrowedTotals = await BorrowedMinutelyRepository.getBorrowedTotalsByAssetAddress(assetAddressOrSymbol, pagination, BorrowedTotalOutputTransformer);
+        borrowedTotals = await BorrowedMinutelyRepository.getBorrowedTotalsByAssetAddress(assetAddressOrSymbol, deploymentID, pagination, BorrowedTotalOutputTransformer);
       }
       if(resolution === 'hourly') {
-        borrowedTotals = await BorrowedHourlyRepository.getBorrowedTotalsByAssetAddress(assetAddressOrSymbol, pagination, BorrowedTotalOutputTransformer);
+        borrowedTotals = await BorrowedHourlyRepository.getBorrowedTotalsByAssetAddress(assetAddressOrSymbol, deploymentID, pagination, BorrowedTotalOutputTransformer);
       }
     } else {
       if(resolution === 'minutely') {
-        borrowedTotals = await BorrowedMinutelyRepository.getBorrowedTotalsByAssetSymbol(assetAddressOrSymbol, pagination, BorrowedTotalOutputTransformer);
+        borrowedTotals = await BorrowedMinutelyRepository.getBorrowedTotalsByAssetSymbol(assetAddressOrSymbol, deploymentID, pagination, BorrowedTotalOutputTransformer);
       }
       if(resolution === 'hourly') {
-        borrowedTotals = await BorrowedHourlyRepository.getBorrowedTotalsByAssetSymbol(assetAddressOrSymbol, pagination, BorrowedTotalOutputTransformer);
+        borrowedTotals = await BorrowedHourlyRepository.getBorrowedTotalsByAssetSymbol(assetAddressOrSymbol, deploymentID, pagination, BorrowedTotalOutputTransformer);
       }
     }
 

@@ -10,6 +10,7 @@ class SiloOutputTransformer extends BaseTransformer {
       name: siloEntry.name,
       address: siloEntry.address,
       network: siloEntry.network,
+      deployment_id: siloEntry.deployment_id,
       input_token_address: siloEntry.input_token_address,
       tvl: siloEntry.tvl,
       borrowed: siloEntry.borrowed,

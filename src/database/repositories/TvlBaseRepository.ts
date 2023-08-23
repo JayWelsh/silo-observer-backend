@@ -10,14 +10,19 @@ abstract class TvlBaseRepository extends BaseRepository {
 
   async getLatestTvlTotalByAssetInSilo(
     assetAddress: string,
+    deploymentID: string,
     siloAddress: string,
   ) {
+    
+    let tableName = this.model.tableName;
+
     const result = await this.model.query()
     .withGraphJoined('asset')
     .withGraphJoined('silo')
     .where(function (this: QueryBuilder<TvlHourlyModel>) {
       this.where('asset_address', assetAddress);
       this.where('silo_address', siloAddress);
+      this.where(`${tableName}.deployment_id`, deploymentID);
     }).orderBy('timestamp', 'DESC').first();
 
     return this.parserResult(result);
@@ -25,9 +30,12 @@ abstract class TvlBaseRepository extends BaseRepository {
 
   async getTvlTotalsByAssetAddress(
     assetAddress: string,
+    deploymentID: string,
     pagination: IPaginationRequest,
     transformer: ITransformer,
   ) {
+
+    let tableName = this.model.tableName;
 
     const { perPage, page } = pagination;
 
@@ -36,6 +44,7 @@ abstract class TvlBaseRepository extends BaseRepository {
     .withGraphJoined('silo')
     .where(function (this: QueryBuilder<TvlHourlyModel>) {
       this.where('asset_address', assetAddress);
+      this.where(`${tableName}.deployment_id`, deploymentID);
     }).orderBy('timestamp', 'DESC').page(page - 1, perPage);
 
     return this.parserResult(new Pagination(results, perPage, page), transformer);
@@ -43,9 +52,12 @@ abstract class TvlBaseRepository extends BaseRepository {
 
   async getTvlTotalsByAssetSymbol(
     assetSymbol: string,
+    deploymentID: string,
     pagination: IPaginationRequest,
     transformer: ITransformer,
   ) {
+
+    let tableName = this.model.tableName;
 
     const { perPage, page } = pagination;
 
@@ -54,6 +66,7 @@ abstract class TvlBaseRepository extends BaseRepository {
     .withGraphJoined('silo')
     .where(function (this: QueryBuilder<TvlHourlyModel>) {
       this.where('asset.symbol', assetSymbol);
+      this.where(`${tableName}.deployment_id`, deploymentID);
     }).orderBy('timestamp', 'DESC').page(page - 1, perPage);
 
     return this.parserResult(new Pagination(results, perPage, page), transformer);
@@ -61,9 +74,12 @@ abstract class TvlBaseRepository extends BaseRepository {
 
   async getTvlTotalsBySiloAddress(
     siloAddress: string,
+    deploymentID: string,
     pagination: IPaginationRequest,
     transformer: ITransformer,
   ) {
+
+    let tableName = this.model.tableName;
 
     const { 
       perPage,
@@ -75,6 +91,7 @@ abstract class TvlBaseRepository extends BaseRepository {
     .withGraphJoined('asset')
     .where(function (this: QueryBuilder<TvlHourlyModel>) {
       this.where('silo_address', siloAddress);
+      this.where(`${tableName}.deployment_id`, deploymentID);
     }).orderBy('timestamp', 'DESC').page(page - 1, perPage);
 
     return this.parserResult(new Pagination(results, perPage, page), transformer);
@@ -82,9 +99,12 @@ abstract class TvlBaseRepository extends BaseRepository {
 
   async getTvlTotalsBySiloName(
     siloName: string,
+    deploymentID: string,
     pagination: IPaginationRequest,
     transformer: ITransformer,
   ) {
+
+    let tableName = this.model.tableName;
 
     const { 
       perPage,
@@ -96,6 +116,7 @@ abstract class TvlBaseRepository extends BaseRepository {
     .withGraphJoined('asset')
     .where(function (this: QueryBuilder<TvlHourlyModel>) {
       this.where('silo.name', siloName);
+      this.where(`${tableName}.deployment_id`, deploymentID);
     }).orderBy('timestamp', 'DESC').page(page - 1, perPage);
 
     return this.parserResult(new Pagination(results, perPage, page), transformer);

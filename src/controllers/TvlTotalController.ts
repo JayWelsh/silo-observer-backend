@@ -18,6 +18,7 @@ class TvlTotalController extends Controller {
 
     const {
       siloAddressOrName,
+      deploymentID,
     } = req.params;
 
     const {
@@ -29,17 +30,17 @@ class TvlTotalController extends Controller {
     let borrowedTotals;
     if(utils.isAddress(siloAddressOrName)) {
       if(resolution === 'minutely') {
-        borrowedTotals = await TvlMinutelyRepository.getTvlTotalsBySiloAddress(siloAddressOrName, pagination, TvlTotalOutputTransformer);
+        borrowedTotals = await TvlMinutelyRepository.getTvlTotalsBySiloAddress(siloAddressOrName, deploymentID, pagination, TvlTotalOutputTransformer);
       }
       if(resolution === 'hourly') {
-        borrowedTotals = await TvlHourlyRepository.getTvlTotalsBySiloAddress(siloAddressOrName, pagination, TvlTotalOutputTransformer);
+        borrowedTotals = await TvlHourlyRepository.getTvlTotalsBySiloAddress(siloAddressOrName, deploymentID, pagination, TvlTotalOutputTransformer);
       }
     } else {
       if(resolution === 'minutely') {
-        borrowedTotals = await TvlMinutelyRepository.getTvlTotalsBySiloName(siloAddressOrName, pagination, TvlTotalOutputTransformer);
+        borrowedTotals = await TvlMinutelyRepository.getTvlTotalsBySiloName(siloAddressOrName, deploymentID, pagination, TvlTotalOutputTransformer);
       }
       if(resolution === 'hourly') {
-        borrowedTotals = await TvlHourlyRepository.getTvlTotalsBySiloName(siloAddressOrName, pagination, TvlTotalOutputTransformer);
+        borrowedTotals = await TvlHourlyRepository.getTvlTotalsBySiloName(siloAddressOrName, deploymentID, pagination, TvlTotalOutputTransformer);
       }
     }
 
@@ -49,6 +50,7 @@ class TvlTotalController extends Controller {
 
     const {
       assetAddressOrSymbol,
+      deploymentID,
     } = req.params;
 
     const {
@@ -60,17 +62,17 @@ class TvlTotalController extends Controller {
     let borrowedTotals;
     if(utils.isAddress(assetAddressOrSymbol)) {
       if(resolution === 'minutely') {
-        borrowedTotals = await TvlMinutelyRepository.getTvlTotalsByAssetAddress(assetAddressOrSymbol, pagination, TvlTotalOutputTransformer);
+        borrowedTotals = await TvlMinutelyRepository.getTvlTotalsByAssetAddress(assetAddressOrSymbol, deploymentID, pagination, TvlTotalOutputTransformer);
       }
       if(resolution === 'hourly') {
-        borrowedTotals = await TvlHourlyRepository.getTvlTotalsByAssetAddress(assetAddressOrSymbol, pagination, TvlTotalOutputTransformer);
+        borrowedTotals = await TvlHourlyRepository.getTvlTotalsByAssetAddress(assetAddressOrSymbol, deploymentID, pagination, TvlTotalOutputTransformer);
       }
     } else {
       if(resolution === 'minutely') {
-        borrowedTotals = await TvlMinutelyRepository.getTvlTotalsByAssetSymbol(assetAddressOrSymbol, pagination, TvlTotalOutputTransformer);
+        borrowedTotals = await TvlMinutelyRepository.getTvlTotalsByAssetSymbol(assetAddressOrSymbol, deploymentID, pagination, TvlTotalOutputTransformer);
       }
       if(resolution === 'hourly') {
-        borrowedTotals = await TvlHourlyRepository.getTvlTotalsByAssetSymbol(assetAddressOrSymbol, pagination, TvlTotalOutputTransformer);
+        borrowedTotals = await TvlHourlyRepository.getTvlTotalsByAssetSymbol(assetAddressOrSymbol, deploymentID, pagination, TvlTotalOutputTransformer);
       }
     }
 

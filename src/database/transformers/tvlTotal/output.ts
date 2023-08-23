@@ -9,6 +9,7 @@ class TvlTotalOutputTransformer extends BaseTransformer {
       timestamp: tvlTotalEntry.timestamp,
       meta: tvlTotalEntry.meta,
       network: tvlTotalEntry.network,
+      deployment_id: tvlTotalEntry.deployment_id,
       ...(tvlTotalEntry.silo && { 
         silo:{
           name: tvlTotalEntry.silo.name,

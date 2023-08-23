@@ -15,6 +15,7 @@ import {
 
 import {
   NETWORKS,
+  DEPLOYMENT_CONFIGS,
 } from '../../constants';
 
 import { formatDecimal } from '../../utils';
@@ -25,30 +26,31 @@ module.exports = {
     .setDescription('Fetches the latest "TVL", "Borrowed" & "TVL + Borrowed" for silo.finance'),
 	async execute(interaction: any) {
     let buildResponse = [];
-    let networkToLatestTvlFigures : {[key: string]: ITvlTotal} = {};
-    let networkToLatestBorrowedFigures : {[key: string]: IBorrowedTotal} = {};
+    // let networkToLatestTvlFigures : {[key: string]: ITvlTotal} = {};
+    // let networkToLatestBorrowedFigures : {[key: string]: IBorrowedTotal} = {};
     let subsequentFlag = false;
     let totalTvlAndBorrowed = new BigNumber(0);
     let totalTvl = new BigNumber(0);
     let totalBorrowed = new BigNumber(0);
     let [latestNetworkResultsTvl, latestNetworkResultsBorrowed] = await Promise.all([
-      Promise.all(NETWORKS.map(network => TvlLatestRepository.getLatestResultByNetworkAndMeta(network, "all"))),
-      Promise.all(NETWORKS.map(network => BorrowedLatestRepository.getLatestResultByNetworkAndMeta(network, "all")))
+      Promise.all(DEPLOYMENT_CONFIGS.map(deploymentConfig => TvlLatestRepository.getLatestResultByNetworkAndMetaAndDeploymentID(deploymentConfig.network, "all", deploymentConfig.id))),
+      Promise.all(DEPLOYMENT_CONFIGS.map(deploymentConfig => BorrowedLatestRepository.getLatestResultByNetworkAndMetaAndDeploymentID(deploymentConfig.network, "all", deploymentConfig.id)))
     ])
-    let networkIndex = 0;
-    for(let network of NETWORKS) {
-      networkToLatestTvlFigures[network] = latestNetworkResultsTvl[networkIndex];
-      networkToLatestBorrowedFigures[network] = latestNetworkResultsBorrowed[networkIndex];
-      let tvlPlusBorrowed = new BigNumber(latestNetworkResultsTvl[networkIndex]?.tvl).plus(latestNetworkResultsBorrowed[networkIndex]?.borrowed).toNumber();
+    let deploymentConfigIndex = 0;
+    for(let deploymentConfig of DEPLOYMENT_CONFIGS) {
+      let network = deploymentConfig.network;
+      // networkToLatestTvlFigures[network] = latestNetworkResultsTvl[deploymentConfigIndex];
+      // networkToLatestBorrowedFigures[network] = latestNetworkResultsBorrowed[deploymentConfigIndex];
+      let tvlPlusBorrowed = new BigNumber(latestNetworkResultsTvl[deploymentConfigIndex]?.tvl).plus(latestNetworkResultsBorrowed[deploymentConfigIndex]?.borrowed).toNumber();
       totalTvlAndBorrowed = totalTvlAndBorrowed.plus(tvlPlusBorrowed);
-      totalTvl = totalTvl.plus(latestNetworkResultsTvl[networkIndex]?.tvl);
-      totalBorrowed = totalBorrowed.plus(latestNetworkResultsBorrowed[networkIndex]?.borrowed);
+      totalTvl = totalTvl.plus(latestNetworkResultsTvl[deploymentConfigIndex]?.tvl);
+      totalBorrowed = totalBorrowed.plus(latestNetworkResultsBorrowed[deploymentConfigIndex]?.borrowed);
       buildResponse.push({ name: '\u200B', value: '\u200B' });
-      buildResponse.push({ name: `TVL + Borrowed (${network[0].toUpperCase()}${network.slice(1).toLowerCase()})`, value: `*$ ${formatDecimal(tvlPlusBorrowed, 2)}*` });
-      buildResponse.push({ name: `TVL (${network[0].toUpperCase()}${network.slice(1).toLowerCase()})`, value: `*$ ${formatDecimal(latestNetworkResultsTvl[networkIndex]?.tvl, 2)}*` });
-      buildResponse.push({ name: `Borrowed (${network[0].toUpperCase()}${network.slice(1).toLowerCase()})`, value: `*$ ${formatDecimal(latestNetworkResultsBorrowed[networkIndex]?.borrowed, 2)}*` });
+      buildResponse.push({ name: `TVL + Borrowed (${deploymentConfig.idHumanReadable})`, value: `*$ ${formatDecimal(tvlPlusBorrowed, 2)}*` });
+      buildResponse.push({ name: `TVL (${deploymentConfig.idHumanReadable})`, value: `*$ ${formatDecimal(latestNetworkResultsTvl[deploymentConfigIndex]?.tvl, 2)}*` });
+      buildResponse.push({ name: `Borrowed (${deploymentConfig.idHumanReadable})`, value: `*$ ${formatDecimal(latestNetworkResultsBorrowed[deploymentConfigIndex]?.borrowed, 2)}*` });
       subsequentFlag = true;
-      networkIndex++;
+      deploymentConfigIndex++;
     }
     buildResponse.unshift({ name: `Borrowed (All)`, value: `*$ ${formatDecimal(totalBorrowed.toNumber(), 2)}*` });
     buildResponse.unshift({ name: `TVL (All)`, value: `*$ ${formatDecimal(totalTvl.toNumber(), 2)}*` });

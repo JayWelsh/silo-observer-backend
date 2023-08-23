@@ -4,7 +4,7 @@ import { body } from 'express-validator';
 
 import Router from "./Router";
 
-Router.get('/silo/:siloAddressOrName', [], 'SiloController@getSiloByAddressOrName');
+Router.get('/silo/:deploymentID/:siloAddressOrName', [], 'SiloController@getSiloByAddressOrName');
 
 Router.get('/silos', [], 'SiloController@listSilos');
 
