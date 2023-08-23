@@ -97,7 +97,7 @@ class Controller implements IController {
     extractPagination(req: Request) {
         return {
             page: req.query.page && Number(req.query.page) > 0 ? Number(req.query.page) : 1,
-            perPage: req.query.perPage && Number(req.query.perPage) <= 8640 ? Number(req.query.perPage) : 100,
+            perPage: req.query.perPage && Number(req.query.perPage) <= 16000 ? Number(req.query.perPage) : 100,
         }
     }
 
