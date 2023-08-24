@@ -13,7 +13,8 @@ import SiloLensLlamaABI from '../web3/abis/SiloLensLlamaABI.json';
 dotenv.config();
 
 // DB
-export const MAX_MINUTELY_RATE_ENTRIES = 1441;
+export const MAX_MINUTELY_RATE_ENTRIES = 1441; // 1 day + 1 second
+export const MAX_MINUTELY_TVL_AND_BORROWED_ENTRIES = 10081; // 7 days + 1 second
 
 // Subgraph
 export const SUBGRAPH_ENDPOINT = "https://api.thegraph.com/subgraphs/id/QmZwDpzNPEdDFMmSghyBC6wZ3aAjJqFB2xrAsrcLCPwVQk";
