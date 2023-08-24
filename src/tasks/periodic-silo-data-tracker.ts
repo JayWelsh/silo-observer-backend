@@ -529,7 +529,7 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
 
         // --------------------------------------------------
 
-        console.log(`Sync success (${deploymentConfig.network} - ${deploymentConfig.id}) (${useTimestampPostgres}),${deletedExpiredRateRecordCount > 0 ? ` Deleted ${deletedExpiredRateRecordCount} expired rate records,` : ''}, ${deletedExpiredTVLMinutelyRecordCount > 0 ? ` Deleted ${deletedExpiredTVLMinutelyRecordCount} expired TVL minutely records,` : ''}, ${deletedExpiredBorrowedMinutelyRecordCount > 0 ? ` Deleted ${deletedExpiredBorrowedMinutelyRecordCount} expired Borrowed minutely records,` : ''}, enableRateSync: ${enableRateSync}, enableTvlSync: ${enableTvlSync}, enableBorrowedSync: ${enableBorrowedSync}, exec time: ${new Date().getTime() - startTime}ms`);
+        console.log(`Sync success (${deploymentConfig.network} - ${deploymentConfig.id}) (${useTimestampPostgres}),${deletedExpiredRateRecordCount > 0 ? ` Deleted ${deletedExpiredRateRecordCount} expired rate records,` : ''} ${deletedExpiredTVLMinutelyRecordCount > 0 ? ` Deleted ${deletedExpiredTVLMinutelyRecordCount} expired TVL minutely records,` : ''} ${deletedExpiredBorrowedMinutelyRecordCount > 0 ? ` Deleted ${deletedExpiredBorrowedMinutelyRecordCount} expired Borrowed minutely records,` : ''} enableRateSync: ${enableRateSync}, enableTvlSync: ${enableTvlSync}, enableBorrowedSync: ${enableBorrowedSync}, exec time: ${new Date().getTime() - startTime}ms`);
     
       }else{
         throw new Error(`getAllSiloAssetBalances unsuccessful`)
