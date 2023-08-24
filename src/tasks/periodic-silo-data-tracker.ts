@@ -20,6 +20,7 @@ import {
 
 import {
   MAX_MINUTELY_RATE_ENTRIES,
+  MAX_MINUTELY_TVL_AND_BORROWED_ENTRIES,
   NETWORK_ID_TO_COINGECKO_ID,
   NETWORKS,
   DEPLOYMENT_CONFIGS,
@@ -509,16 +510,26 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
         // RECORD EXPIRY HANDLING BELOW
 
         // remove any minutely records older than 1441 minutes in one query
-        let deletedExpiredRecordCount = 0;
+        let deletedExpiredRateRecordCount = 0;
         if(enableRateSync) {
-          deletedExpiredRecordCount = await RateRepository.query().delete().where(raw(`timestamp < now() - interval '${MAX_MINUTELY_RATE_ENTRIES} minutes'`));
+          deletedExpiredRateRecordCount = await RateRepository.query().delete().where(raw(`timestamp < now() - interval '${MAX_MINUTELY_RATE_ENTRIES} minutes'`));
+        }
+
+        let deletedExpiredTVLMinutelyRecordCount = 0;
+        if(enableTvlSync) {
+          deletedExpiredTVLMinutelyRecordCount = await TvlMinutelyRepository.query().delete().where(raw(`timestamp < now() - interval '${MAX_MINUTELY_TVL_AND_BORROWED_ENTRIES} minutes'`));
+        }
+
+        let deletedExpiredBorrowedMinutelyRecordCount = 0;
+        if(enableBorrowedSync) {
+          deletedExpiredBorrowedMinutelyRecordCount = await BorrowedMinutelyRepository.query().delete().where(raw(`timestamp < now() - interval '${MAX_MINUTELY_TVL_AND_BORROWED_ENTRIES} minutes'`));
         }
 
         // RECORD EXPIRY HANDLING ABOVE
 
         // --------------------------------------------------
 
-        console.log(`Sync success (${deploymentConfig.network} - ${deploymentConfig.id}) (${useTimestampPostgres}),${deletedExpiredRecordCount > 0 ? ` Deleted ${deletedExpiredRecordCount} expired rate records,` : ''} enableRateSync: ${enableRateSync}, enableTvlSync: ${enableTvlSync}, enableBorrowedSync: ${enableBorrowedSync}, exec time: ${new Date().getTime() - startTime}ms`);
+        console.log(`Sync success (${deploymentConfig.network} - ${deploymentConfig.id}) (${useTimestampPostgres}),${deletedExpiredRateRecordCount > 0 ? ` Deleted ${deletedExpiredRateRecordCount} expired rate records,` : ''}, ${deletedExpiredTVLMinutelyRecordCount > 0 ? ` Deleted ${deletedExpiredTVLMinutelyRecordCount} expired TVL minutely records,` : ''}, ${deletedExpiredBorrowedMinutelyRecordCount > 0 ? ` Deleted ${deletedExpiredBorrowedMinutelyRecordCount} expired Borrowed minutely records,` : ''}, enableRateSync: ${enableRateSync}, enableTvlSync: ${enableTvlSync}, enableBorrowedSync: ${enableBorrowedSync}, exec time: ${new Date().getTime() - startTime}ms`);
     
       }else{
         throw new Error(`getAllSiloAssetBalances unsuccessful`)
