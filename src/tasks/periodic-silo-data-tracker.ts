@@ -162,6 +162,7 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
 
         let tvlUsdAllSilosBN = new BigNumber(0);
         let borrowedUsdAllSilosBN = new BigNumber(0);
+        let tvlUsdSiloAddressToAssetAddressBN : {[key: string]: {[key: string]: BigNumber}} = {};
 
         let tokenAddressToLastPrice = result?.markets.reduce((acc: ITokenAddressToLastPrice, market: IMarket) => {
           if(utils.getAddress(market?.id) === '0x03FF864F65A69E6C025F68F5695fA243F8d2d61B') {
@@ -259,22 +260,24 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
 
           // Method 2 (using info directly from chain for TVL to reduce reliance on off-chain data)
           let tvlUsdSiloSpecificBN = new BigNumber(0);
-          if(siloChecksumAddress === "0x03FF864F65A69E6C025F68F5695fA243F8d2d61B") {
-            console.log({'siloAssetBalances[siloChecksumAddress]': siloAssetBalances[siloChecksumAddress], 'siloAssetBalances': siloAssetBalances});
-          }
           if(siloAssetBalances[siloChecksumAddress]) {
             tvlUsdSiloSpecificBN = Object.entries(siloAssetBalances[siloChecksumAddress]).reduce((acc, entry) => {
-              let subgraphTokenPrice = new BigNumber(tokenAddressToLastPrice[entry[1].tokenAddress]);
-              let coingeckoPrice = new BigNumber(tokenAddressToCoingeckoPrice[entry[1].tokenAddress]);
+              let tokenChecksumAddress = entry[1].tokenAddress;
+              let subgraphTokenPrice = new BigNumber(tokenAddressToLastPrice[tokenChecksumAddress]);
+              let coingeckoPrice = new BigNumber(tokenAddressToCoingeckoPrice[tokenChecksumAddress]);
               let usePrice = coingeckoPrice.toNumber() > 0 ? coingeckoPrice : subgraphTokenPrice;
-              if(siloChecksumAddress === "0x03FF864F65A69E6C025F68F5695fA243F8d2d61B") {
-                console.log({'entry[1].tokenAddress': entry[1].tokenAddress, 'tokenAddressToCoingeckoPrice[entry[1].tokenAddress]': tokenAddressToCoingeckoPrice[entry[1].tokenAddress], 'usePrice': usePrice.toString()})
-              }
               let tokenBalance = new BigNumber(entry[1].balance);
               if(usePrice.isGreaterThan(0) && tokenBalance.isGreaterThan(0)) {
                 let usdValueOfAsset = tokenBalance.multipliedBy(usePrice);
-                if(siloChecksumAddress === "0x03FF864F65A69E6C025F68F5695fA243F8d2d61B") {
-                  console.log({'entry[1].tokenAddress': entry[1].tokenAddress, 'usdValueOfAsset': usdValueOfAsset})
+                if(tvlUsdSiloAddressToAssetAddressBN[siloChecksumAddress]) {
+                  if(tvlUsdSiloAddressToAssetAddressBN[siloChecksumAddress][tokenChecksumAddress]) {
+                    tvlUsdSiloAddressToAssetAddressBN[siloChecksumAddress][tokenChecksumAddress] = tvlUsdSiloAddressToAssetAddressBN[siloChecksumAddress][tokenChecksumAddress].plus(usdValueOfAsset);
+                  } else {
+                    tvlUsdSiloAddressToAssetAddressBN[siloChecksumAddress][tokenChecksumAddress] = new BigNumber(usdValueOfAsset);
+                  }
+                } else {
+                  tvlUsdSiloAddressToAssetAddressBN[siloChecksumAddress] = {};
+                  tvlUsdSiloAddressToAssetAddressBN[siloChecksumAddress][tokenChecksumAddress] = new BigNumber(usdValueOfAsset);
                 }
                 acc = acc.plus(usdValueOfAsset);
               }
@@ -450,6 +453,30 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
               network: deploymentConfig.network,
               deployment_id: deploymentConfig.id,
             });
+          }
+
+          for(let [siloAddress, entry] of Object.entries(tvlUsdSiloAddressToAssetAddressBN)) {
+            for(let [assetAddress, tvlValue] of Object.entries(entry)) {
+              let latestSiloToAssetRecord = await TvlLatestRepository.getLatestResultByNetworkAndSiloAddressAndAssetAddressAndDeploymentID(deploymentConfig.network, siloAddress, assetAddress, deploymentConfig.id);
+              if(latestSiloToAssetRecord) {
+                // update latest record
+                await TvlLatestRepository.update({
+                  tvl: tvlValue.toNumber(),
+                  timestamp: useTimestampPostgres,
+                }, latestSiloToAssetRecord.id);
+              } else {
+                // create latest record
+                await TvlLatestRepository.create({
+                  tvl: tvlValue.toNumber(),
+                  timestamp: useTimestampPostgres,
+                  silo_address: siloAddress,
+                  asset_address: assetAddress,
+                  meta: 'individual',
+                  network: deploymentConfig.network,
+                  deployment_id: deploymentConfig.id,
+                });
+              }
+            }
           }
         }
 

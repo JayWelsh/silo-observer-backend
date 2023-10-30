@@ -8,6 +8,6 @@ exports.up = (knex) => knex.schema.alterTable(SILO_TABLE, table => {
 });
 
 exports.down = (knex) => knex.schema.alterTable(SILO_TABLE, table => {
-  table.dropColumn("tvl", 16, 2);
-  table.dropColumn("borrowed", 16, 2);
+  table.dropColumn("tvl");
+  table.dropColumn("borrowed");
 });

@@ -5,6 +5,7 @@ import { utils } from "ethers";
 import {
   TvlMinutelyRepository,
   TvlHourlyRepository,
+  TvlLatestRepository,
 } from '../database/repositories';
 
 import {
@@ -95,6 +96,24 @@ class TvlTotalController extends Controller {
     }
 
     this.sendResponse(res, borrowedTotals);
+  }
+  async getTvlTotalsLatestAssetsByDeploymentID(req: Request, res: Response) {
+
+    const {
+      deploymentID,
+    } = req.params;
+
+    let allRecords = await TvlLatestRepository.getLatestResultsGroupedByAssetsByDeploymentID(deploymentID);
+
+    this.sendResponse(res, allRecords);
+
+  }
+  async getTvlTotalsLatestAssetsWholePlatform(req: Request, res: Response) {
+
+    let allRecords = await TvlLatestRepository.getLatestResultsGroupedByAssetsWholePlatform();
+
+    this.sendResponse(res, allRecords);
+
   }
 }
 
