@@ -156,6 +156,6 @@ export const getBlockWithRetries = async (blockNumber: number, network: string, 
   }
 }
 
-export const getEventFingerprint = (network: string, blockNumber: string, txIndex: string, logIndex: string) => {
+export const getEventFingerprint = (network: string, blockNumber: string | number, txIndex: string | number, logIndex: string | number) => {
   return `${network}-${blockNumber}-${txIndex}-${logIndex}`;
 }

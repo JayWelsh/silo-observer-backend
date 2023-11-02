@@ -34,6 +34,10 @@ import {
   fetchCoinGeckoAssetPriceClosestToTargetTime,
 } from '../utils';
 
+import {
+  getEventFingerprint,
+} from '../web3/utils'
+
 interface IUserAddressToCount {
   [key: string]: number;
 }
@@ -120,73 +124,101 @@ export const periodicContractEventTracker = async (useTimestampUnix: number, sta
         console.log(`Filled in block metadata for ${blockData.length} blocks`);
       }
 
-      // for(let borrowEvent of borrowEvents) {
-      //   let {
-      //     blockNumber,
-      //     args,
-      //   } = borrowEvent;
-      //   if(args && blockNumberToUnixTimestamp[blockNumber]) {
-      //     let {
-      //       asset,
-      //       amount,
-      //     } = args;
-      //     let closestPrice = await fetchCoinGeckoAssetPriceClosestToTargetTime(asset, network, blockNumberToUnixTimestamp[blockNumber]);
-      //     let assetRecord = await AssetRepository.findByColumn('address', asset);
-      //     let borrowValueUSD = closestPrice?.price ? new BigNumber(Number(utils.formatUnits(amount.toString(), assetRecord.decimals))).multipliedBy(closestPrice?.price).toString() : 0;
-      //     console.log({closestPrice, "borrow amount USD": borrowValueUSD, asset});
-      //   }
-      // }
+      for(let borrowEvent of borrowEvents) {
+        let {
+          blockNumber,
+          args,
+          transactionIndex,
+          logIndex,
+        } = borrowEvent;
+        if(args && blockNumberToUnixTimestamp[blockNumber]) {
+          let {
+            asset,
+            amount,
+          } = args;
+          let closestPrice = await fetchCoinGeckoAssetPriceClosestToTargetTime(asset, network, blockNumberToUnixTimestamp[blockNumber]);
+          let assetRecord = await AssetRepository.findByColumn('address', asset);
+          let borrowValueUSD = closestPrice?.price ? new BigNumber(Number(utils.formatUnits(amount.toString(), assetRecord.decimals))).multipliedBy(closestPrice?.price).toFixed(2) : 0;
+          let eventFingerprint = getEventFingerprint(network, blockNumber, transactionIndex, logIndex);
+          let existingEventRecord = await BorrowEventRepository.findByColumn('event_fingerprint', eventFingerprint);
+          if(existingEventRecord) {
+            await BorrowEventRepository.update({usd_value_at_event_time: borrowValueUSD}, existingEventRecord.id);
+          }
+          console.log({closestPrice, "borrow amount USD": borrowValueUSD, amount: utils.formatUnits(amount.toString(), assetRecord.decimals).toString(), asset});
+        }
+      }
 
-      // for(let depositEvent of depositEvents) {
-      //   let {
-      //     blockNumber,
-      //     args,
-      //   } = depositEvent;
-      //   if(args && blockNumberToUnixTimestamp[blockNumber]) {
-      //     let {
-      //       asset,
-      //       amount,
-      //     } = args;
-      //     let closestPrice = await fetchCoinGeckoAssetPriceClosestToTargetTime(asset, network, blockNumberToUnixTimestamp[blockNumber]);
-      //     let assetRecord = await AssetRepository.findByColumn('address', asset);
-      //     let depositValueUSD = closestPrice?.price ? new BigNumber(Number(utils.formatUnits(amount.toString(), assetRecord.decimals))).multipliedBy(closestPrice?.price).toString() : 0;
-      //     console.log({closestPrice, "deposit amount USD": depositValueUSD, asset});
-      //   }
-      // }
+      for(let depositEvent of depositEvents) {
+        let {
+          blockNumber,
+          args,
+          transactionIndex,
+          logIndex,
+        } = depositEvent;
+        if(args && blockNumberToUnixTimestamp[blockNumber]) {
+          let {
+            asset,
+            amount,
+          } = args;
+          let closestPrice = await fetchCoinGeckoAssetPriceClosestToTargetTime(asset, network, blockNumberToUnixTimestamp[blockNumber]);
+          let assetRecord = await AssetRepository.findByColumn('address', asset);
+          let depositValueUSD = closestPrice?.price ? new BigNumber(Number(utils.formatUnits(amount.toString(), assetRecord.decimals))).multipliedBy(closestPrice?.price).toFixed(2) : 0;
+          let eventFingerprint = getEventFingerprint(network, blockNumber, transactionIndex, logIndex);
+          let existingEventRecord = await DepositEventRepository.findByColumn('event_fingerprint', eventFingerprint);
+          if(existingEventRecord) {
+            await DepositEventRepository.update({usd_value_at_event_time: depositValueUSD}, existingEventRecord.id);
+          }
+          console.log({closestPrice, "deposit amount USD": depositValueUSD, amount: utils.formatUnits(amount.toString(), assetRecord.decimals).toString(), asset});
+        }
+      }
 
-      // for(let repayEvent of repayEvents) {
-      //   let {
-      //     blockNumber,
-      //     args,
-      //   } = repayEvent;
-      //   if(args && blockNumberToUnixTimestamp[blockNumber]) {
-      //     let {
-      //       asset,
-      //       amount,
-      //     } = args;
-      //     let closestPrice = await fetchCoinGeckoAssetPriceClosestToTargetTime(asset, network, blockNumberToUnixTimestamp[blockNumber]);
-      //     let assetRecord = await AssetRepository.findByColumn('address', asset);
-      //     let repayValueUSD = closestPrice?.price ? new BigNumber(Number(utils.formatUnits(amount.toString(), assetRecord.decimals))).multipliedBy(closestPrice?.price).toString() : 0;
-      //     console.log({closestPrice, "repay amount USD": repayValueUSD, asset});
-      //   }
-      // }
+      for(let repayEvent of repayEvents) {
+        let {
+          blockNumber,
+          args,
+          transactionIndex,
+          logIndex,
+        } = repayEvent;
+        if(args && blockNumberToUnixTimestamp[blockNumber]) {
+          let {
+            asset,
+            amount,
+          } = args;
+          let closestPrice = await fetchCoinGeckoAssetPriceClosestToTargetTime(asset, network, blockNumberToUnixTimestamp[blockNumber]);
+          let assetRecord = await AssetRepository.findByColumn('address', asset);
+          let repayValueUSD = closestPrice?.price ? new BigNumber(Number(utils.formatUnits(amount.toString(), assetRecord.decimals))).multipliedBy(closestPrice?.price).toFixed(2) : 0;
+          let eventFingerprint = getEventFingerprint(network, blockNumber, transactionIndex, logIndex);
+          let existingEventRecord = await RepayEventRepository.findByColumn('event_fingerprint', eventFingerprint);
+          if(existingEventRecord) {
+            await RepayEventRepository.update({usd_value_at_event_time: repayValueUSD}, existingEventRecord.id);
+          }
+          console.log({closestPrice, "repay amount USD": repayValueUSD, amount: utils.formatUnits(amount.toString(), assetRecord.decimals).toString(), asset});
+        }
+      }
 
-      // for(let withdrawEvent of withdrawEvents) {
-      //   let {
-      //     blockNumber,
-      //     args,
-      //   } = withdrawEvent;
-      //   if(args && blockNumberToUnixTimestamp[blockNumber]) {
-      //     let {
-      //       asset,
-      //       amount,
-      //     } = args;
-      //     let closestPrice = await fetchCoinGeckoAssetPriceClosestToTargetTime(asset, network, blockNumberToUnixTimestamp[blockNumber]);
-      //     let assetRecord = await AssetRepository.findByColumn('address', asset);
-      //     let withdrawValueUSD = closestPrice?.price ? new BigNumber(Number(utils.formatUnits(amount.toString(), assetRecord.decimals))).multipliedBy(closestPrice?.price).toString() : 0;
-      //     console.log({closestPrice, "withdraw amount USD": withdrawValueUSD, asset});
-      //   }
-      // }
+      for(let withdrawEvent of withdrawEvents) {
+        let {
+          blockNumber,
+          args,
+          transactionIndex,
+          logIndex,
+        } = withdrawEvent;
+        if(args && blockNumberToUnixTimestamp[blockNumber]) {
+          let {
+            asset,
+            amount,
+          } = args;
+          let closestPrice = await fetchCoinGeckoAssetPriceClosestToTargetTime(asset, network, blockNumberToUnixTimestamp[blockNumber]);
+          let assetRecord = await AssetRepository.findByColumn('address', asset);
+          let withdrawValueUSD = closestPrice?.price ? new BigNumber(Number(utils.formatUnits(amount.toString(), assetRecord.decimals))).multipliedBy(closestPrice?.price).toFixed(2) : 0;
+          let eventFingerprint = getEventFingerprint(network, blockNumber, transactionIndex, logIndex);
+          let existingEventRecord = await WithdrawEventRepository.findByColumn('event_fingerprint', eventFingerprint);
+          if(existingEventRecord) {
+            await WithdrawEventRepository.update({usd_value_at_event_time: withdrawValueUSD}, existingEventRecord.id);
+          }
+          console.log({closestPrice, "withdraw amount USD": withdrawValueUSD, amount: utils.formatUnits(amount.toString(), assetRecord.decimals).toString(), asset});
+        }
+      }
 
       // Get interaction count totals for each event grouped by user address
       let userAddressToBorrowEventCount = await BorrowEventRepository.query().select(raw(`user_address, count(*)`)).groupBy('user_address').orderBy('count', 'DESC');
