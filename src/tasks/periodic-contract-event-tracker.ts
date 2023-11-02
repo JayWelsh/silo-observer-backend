@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js';
 import { raw } from 'objection';
 
-import { Event } from 'ethers';
+import { Event, utils } from 'ethers';
 
 BigNumber.config({ EXPONENTIAL_AT: [-1e+9, 1e+9] });
 
@@ -17,6 +17,7 @@ import {
 
 import {
   SiloUserRepository,
+  AssetRepository,
   BorrowEventRepository,
   DepositEventRepository,
   WithdrawEventRepository,
@@ -28,6 +29,10 @@ import {
   NETWORKS,
   DEPLOYMENT_CONFIGS,
 } from '../constants';
+
+import {
+  fetchCoinGeckoAssetPriceClosestToTargetTime,
+} from '../utils';
 
 interface IUserAddressToCount {
   [key: string]: number;
@@ -68,6 +73,13 @@ export const periodicContractEventTracker = async (useTimestampUnix: number, sta
         getAllSiloWithdrawEventsSinceBlock(siloAddresses, latestBlockNumber, deploymentConfig),
       ])
 
+      let [
+        borrowEvents,
+        depositEvents,
+        repayEvents,
+        withdrawEvents
+      ] = eventBatches;
+
       let allEvents = eventBatches.reduce((acc: Event[], value: Event[]) => {
         return [...acc, ...value];
       }, []);
@@ -81,27 +93,100 @@ export const periodicContractEventTracker = async (useTimestampUnix: number, sta
 
       // Store timestamps for any blocks that we fetched events for
       let unfetchedBlockNumbers = [];
+      let blockNumberToUnixTimestamp : {[key: string]: number} = {};
       for(let blockNumber of allBlockNumbers) {
         let currentRecord = await BlockMetadataRepository.getByBlockNumberAndNetwork(blockNumber, network);
         if(!currentRecord) {
           unfetchedBlockNumbers.push(blockNumber);
+        } else {
+          blockNumberToUnixTimestamp[blockNumber] = currentRecord.block_timestamp_unix;
         }
       }
-
+      
       if(unfetchedBlockNumbers && unfetchedBlockNumbers.length > 0) {
         let blockData = await getBlocks(unfetchedBlockNumbers, network);
         for(let singleBlockData of blockData) {
+          blockNumberToUnixTimestamp[singleBlockData.number] = singleBlockData.timestamp;
           let jsDate = new Date(singleBlockData.timestamp * 1000);
           await BlockMetadataRepository.create({
             block_number: singleBlockData.number,
             block_timestamp_unix: singleBlockData.timestamp,
             block_timestamp: jsDate.toISOString(),
+            block_hash: singleBlockData.hash,
             block_day_timestamp: new Date(jsDate.getFullYear(), jsDate.getMonth(), jsDate.getDate()),
             network,
           })
         }
         console.log(`Filled in block metadata for ${blockData.length} blocks`);
       }
+
+      // for(let borrowEvent of borrowEvents) {
+      //   let {
+      //     blockNumber,
+      //     args,
+      //   } = borrowEvent;
+      //   if(args && blockNumberToUnixTimestamp[blockNumber]) {
+      //     let {
+      //       asset,
+      //       amount,
+      //     } = args;
+      //     let closestPrice = await fetchCoinGeckoAssetPriceClosestToTargetTime(asset, network, blockNumberToUnixTimestamp[blockNumber]);
+      //     let assetRecord = await AssetRepository.findByColumn('address', asset);
+      //     let borrowValueUSD = closestPrice?.price ? new BigNumber(Number(utils.formatUnits(amount.toString(), assetRecord.decimals))).multipliedBy(closestPrice?.price).toString() : 0;
+      //     console.log({closestPrice, "borrow amount USD": borrowValueUSD, asset});
+      //   }
+      // }
+
+      // for(let depositEvent of depositEvents) {
+      //   let {
+      //     blockNumber,
+      //     args,
+      //   } = depositEvent;
+      //   if(args && blockNumberToUnixTimestamp[blockNumber]) {
+      //     let {
+      //       asset,
+      //       amount,
+      //     } = args;
+      //     let closestPrice = await fetchCoinGeckoAssetPriceClosestToTargetTime(asset, network, blockNumberToUnixTimestamp[blockNumber]);
+      //     let assetRecord = await AssetRepository.findByColumn('address', asset);
+      //     let depositValueUSD = closestPrice?.price ? new BigNumber(Number(utils.formatUnits(amount.toString(), assetRecord.decimals))).multipliedBy(closestPrice?.price).toString() : 0;
+      //     console.log({closestPrice, "deposit amount USD": depositValueUSD, asset});
+      //   }
+      // }
+
+      // for(let repayEvent of repayEvents) {
+      //   let {
+      //     blockNumber,
+      //     args,
+      //   } = repayEvent;
+      //   if(args && blockNumberToUnixTimestamp[blockNumber]) {
+      //     let {
+      //       asset,
+      //       amount,
+      //     } = args;
+      //     let closestPrice = await fetchCoinGeckoAssetPriceClosestToTargetTime(asset, network, blockNumberToUnixTimestamp[blockNumber]);
+      //     let assetRecord = await AssetRepository.findByColumn('address', asset);
+      //     let repayValueUSD = closestPrice?.price ? new BigNumber(Number(utils.formatUnits(amount.toString(), assetRecord.decimals))).multipliedBy(closestPrice?.price).toString() : 0;
+      //     console.log({closestPrice, "repay amount USD": repayValueUSD, asset});
+      //   }
+      // }
+
+      // for(let withdrawEvent of withdrawEvents) {
+      //   let {
+      //     blockNumber,
+      //     args,
+      //   } = withdrawEvent;
+      //   if(args && blockNumberToUnixTimestamp[blockNumber]) {
+      //     let {
+      //       asset,
+      //       amount,
+      //     } = args;
+      //     let closestPrice = await fetchCoinGeckoAssetPriceClosestToTargetTime(asset, network, blockNumberToUnixTimestamp[blockNumber]);
+      //     let assetRecord = await AssetRepository.findByColumn('address', asset);
+      //     let withdrawValueUSD = closestPrice?.price ? new BigNumber(Number(utils.formatUnits(amount.toString(), assetRecord.decimals))).multipliedBy(closestPrice?.price).toString() : 0;
+      //     console.log({closestPrice, "withdraw amount USD": withdrawValueUSD, asset});
+      //   }
+      // }
 
       // Get interaction count totals for each event grouped by user address
       let userAddressToBorrowEventCount = await BorrowEventRepository.query().select(raw(`user_address, count(*)`)).groupBy('user_address').orderBy('count', 'DESC');

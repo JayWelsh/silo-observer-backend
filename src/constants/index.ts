@@ -16,6 +16,9 @@ dotenv.config();
 export const MAX_MINUTELY_RATE_ENTRIES = 1441; // 1 day + 1 second
 export const MAX_MINUTELY_TVL_AND_BORROWED_ENTRIES = 10081; // 7 days + 1 second
 
+// CoinGecko
+export const COINGECKO_API_KEY = process.env["COINGECKO_API_KEY"];
+
 // Subgraph
 export const SUBGRAPH_ENDPOINT = "https://api.thegraph.com/subgraphs/id/QmZwDpzNPEdDFMmSghyBC6wZ3aAjJqFB2xrAsrcLCPwVQk";
 export const SUBGRAPH_VERSION = "2.2.8";
@@ -49,6 +52,11 @@ export const SILO_LENS_ADDRESS_LLAMA = '0x32a4Bcd8DEa5E18a12a50584682f8E4B77fFF2
 export const SILO_LENS_ADDRESS_ARBITRUM = '0x07b94eB6AaD663c4eaf083fBb52928ff9A15BE47';
 
 export const SILO_BLACKLIST = ["0x6543ee07Cf5Dd7Ad17AeECF22ba75860ef3bBAAa"];
+
+export const MAX_TOTAL_BLOCK_RANGE : {[key: string]: number} = {
+  "ethereum": 15000000,
+  "arbitrum": 30000000,
+}
 
 export const NETWORKS = [
   "ethereum",

@@ -17,7 +17,8 @@ import {
 } from ".";
 
 import {
-  extractFromBlockToBlock
+  extractFromBlockToBlock,
+  getEventFingerprint,
 } from '../utils'
 
 import {
@@ -46,6 +47,8 @@ export const getAllSiloRepayEventsSinceBlock = async (
     toBlock,
     blockRange,
   } = extractFromBlockToBlock(lastestBlock, eventIndexBlockTrackerRecord);
+
+  let latestSyncBlock = toBlock;
 
   // delete any records newer than latestBlock in case there was an incomplete run which occurred
   let deletedRecords = await RepayEventRepository.query().delete().where(function (this: any) {
@@ -86,6 +89,8 @@ export const getAllSiloRepayEventsSinceBlock = async (
           address,
           args,
           transactionHash,
+          transactionIndex,
+          logIndex,
         } = event;
         let {
           asset,
@@ -93,6 +98,7 @@ export const getAllSiloRepayEventsSinceBlock = async (
           amount,
         } = args;
         // create event record
+        let eventFingerprint = getEventFingerprint(network, blockNumber, transactionIndex, logIndex);
         RepayEventRepository.create({
           silo_address: address,
           asset_address: asset,
@@ -102,6 +108,9 @@ export const getAllSiloRepayEventsSinceBlock = async (
           block_number: blockNumber,
           network,
           deployment_id: deploymentId,
+          event_fingerprint: eventFingerprint,
+          log_index: logIndex,
+          tx_index: transactionIndex,
         })
       }
     }
@@ -110,7 +119,7 @@ export const getAllSiloRepayEventsSinceBlock = async (
   console.log(`Fetched ${totalRecordCount} Repay events across all silos`);
 
   await EventIndexerBlockTrackerRepository.update({
-    last_checked_block: lastestBlock,
+    last_checked_block: latestSyncBlock,
   }, eventIndexBlockTrackerRecord.id)
 
   return allEvents ? allEvents : []

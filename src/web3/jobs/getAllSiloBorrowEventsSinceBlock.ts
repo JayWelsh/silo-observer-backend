@@ -17,7 +17,8 @@ import {
 } from ".";
 
 import {
-  extractFromBlockToBlock
+  extractFromBlockToBlock,
+  getEventFingerprint,
 } from '../utils'
 
 import {
@@ -46,6 +47,8 @@ export const getAllSiloBorrowEventsSinceBlock = async (
     toBlock,
     blockRange,
   } = extractFromBlockToBlock(lastestBlock, eventIndexBlockTrackerRecord);
+
+  let latestSyncBlock = toBlock;
 
   // delete any records newer than latestBlock in case there was an incomplete run which occurred
   let deletedRecords = await BorrowEventRepository.query().delete().where(function (this: any) {
@@ -85,6 +88,8 @@ export const getAllSiloBorrowEventsSinceBlock = async (
           address,
           args,
           transactionHash,
+          transactionIndex,
+          logIndex,
         } = event;
         let {
           asset,
@@ -92,6 +97,7 @@ export const getAllSiloBorrowEventsSinceBlock = async (
           amount,
         } = args;
         // create event record
+        let eventFingerprint = getEventFingerprint(network, blockNumber, transactionIndex, logIndex);
         BorrowEventRepository.create({
           silo_address: address,
           asset_address: asset,
@@ -101,6 +107,9 @@ export const getAllSiloBorrowEventsSinceBlock = async (
           block_number: blockNumber,
           network,
           deployment_id: deploymentId,
+          event_fingerprint: eventFingerprint,
+          log_index: logIndex,
+          tx_index: transactionIndex,
         })
       }
     }
@@ -110,7 +119,7 @@ export const getAllSiloBorrowEventsSinceBlock = async (
   console.log(`Fetched ${totalRecordCount} Borrow events across all silos`);
 
   await EventIndexerBlockTrackerRepository.update({
-    last_checked_block: lastestBlock,
+    last_checked_block: latestSyncBlock,
   }, eventIndexBlockTrackerRecord.id)
 
   return allEvents ? allEvents : []

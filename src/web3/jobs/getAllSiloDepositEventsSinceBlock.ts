@@ -17,7 +17,8 @@ import {
 } from ".";
 
 import {
-  extractFromBlockToBlock
+  extractFromBlockToBlock,
+  getEventFingerprint,
 } from '../utils'
 
 import SiloABI from '../abis/SiloABI.json';
@@ -46,6 +47,8 @@ export const getAllSiloDepositEventsSinceBlock = async (
     toBlock,
     blockRange,
   } = extractFromBlockToBlock(lastestBlock, eventIndexBlockTrackerRecord);
+
+  let latestSyncBlock = toBlock;
 
   // delete any records newer than latestBlock in case there was an incomplete run which occurred
   let deletedRecords = await DepositEventRepository.query().delete().where(function (this: any) {
@@ -86,6 +89,8 @@ export const getAllSiloDepositEventsSinceBlock = async (
           address,
           args,
           transactionHash,
+          transactionIndex,
+          logIndex,
         } = event;
         let {
           asset,
@@ -94,6 +99,7 @@ export const getAllSiloDepositEventsSinceBlock = async (
           collateralOnly,
         } = args;
         // create event record
+        let eventFingerprint = getEventFingerprint(network, blockNumber, transactionIndex, logIndex);
         DepositEventRepository.create({
           silo_address: address,
           asset_address: asset,
@@ -104,6 +110,9 @@ export const getAllSiloDepositEventsSinceBlock = async (
           block_number: blockNumber,
           network,
           deployment_id: deploymentId,
+          event_fingerprint: eventFingerprint,
+          log_index: logIndex,
+          tx_index: transactionIndex,
         })
       }
     }
@@ -113,7 +122,7 @@ export const getAllSiloDepositEventsSinceBlock = async (
   console.log(`Fetched ${totalRecordCount} Deposit events across all silos`);
 
   await EventIndexerBlockTrackerRepository.update({
-    last_checked_block: lastestBlock,
+    last_checked_block: latestSyncBlock,
   }, eventIndexBlockTrackerRecord.id)
 
   return allEvents ? allEvents : []

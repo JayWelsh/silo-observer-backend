@@ -33,37 +33,47 @@ export const eventIndexer = async (
 
     let currentBatch = 0;
     let events : any[] = [];
+
+    let useFromBlock = fromBlock;
+    let useToBlock = toBlock;
+
     for(let iteration of Array.from({length: batchCount})) {
 
       let startTime = new Date().getTime();
 
       currentBatch++;
 
-      // log batch status
-      console.log(`eventIndexer fetching batch ${currentBatch} of ${batchCount} for ${meta}`);
-
       // get fromBlock and toBlock
       if(currentBatch === batchCount) {
         // last batch
         if(batchCount === 1) {
           // last batch is also first batch
-          toBlock = latestBlockNumber;
+          if((latestBlockNumber - useFromBlock) < maxBlockBatchSize) {
+            useToBlock = latestBlockNumber;
+          }
         } else {
           // last batch is not first batch
-          fromBlock = fromBlock + maxBlockBatchSize;
-          toBlock = latestBlockNumber;
+          useFromBlock = useFromBlock + maxBlockBatchSize;
+          if((useFromBlock + maxBlockBatchSize) > latestBlockNumber) {
+            useToBlock = latestBlockNumber;
+          } else {
+            useToBlock = useFromBlock + maxBlockBatchSize;
+          }
         }
       } else if (currentBatch === 1) {
         // first batch, but not the last batch (e.g. in case one one batch)
-        toBlock = fromBlock + maxBlockBatchSize;
+        useToBlock = useFromBlock + maxBlockBatchSize;
       } else {
         // middle batch, not the first and not the last
-        fromBlock = fromBlock + maxBlockBatchSize;
-        toBlock = fromBlock + maxBlockBatchSize;
+        useFromBlock = useFromBlock + maxBlockBatchSize;
+        useToBlock = useFromBlock + maxBlockBatchSize;
       }
 
+      // log batch status
+      console.log(`eventIndexer fetching batch ${currentBatch} of ${batchCount} for ${meta} (fromBlock: ${fromBlock}, toBlock: ${toBlock}, useFromBlock: ${useFromBlock}, useToBlock: ${useToBlock})`);
+
       // fetch batch
-      const eventContractEventBatch = await queryFilterRetryOnFailure(contract, eventFilter, fromBlock, toBlock, `${currentBatch} of ${batchCount} - ${meta}`);
+      const eventContractEventBatch = await queryFilterRetryOnFailure(contract, eventFilter, useFromBlock, useToBlock, `${currentBatch} of ${batchCount} - ${meta}`);
       events = [...events, ...(eventContractEventBatch ? eventContractEventBatch : [])];
 
       // log batch status

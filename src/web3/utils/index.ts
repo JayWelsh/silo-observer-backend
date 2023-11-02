@@ -11,11 +11,16 @@ import {
   MulticallProviderArbitrum,
 } from "../../app";
 
+import {
+  MAX_TOTAL_BLOCK_RANGE,
+} from "../../constants";
+
 export interface IEventIndexerBlockTracker {
   event_name: string
   last_checked_block: number
   genesis_block: number
   meta: string
+  network: string
 }
 
 export const extractFromBlockToBlock = (
@@ -26,6 +31,7 @@ export const extractFromBlockToBlock = (
     const {
       last_checked_block,
       genesis_block,
+      network,
     } = eventIndexBlockTracker;
   
     let toBlock = latestBlockNumber;
@@ -39,6 +45,13 @@ export const extractFromBlockToBlock = (
     }
 
     let blockRange = toBlock - fromBlock;
+
+    if(blockRange > MAX_TOTAL_BLOCK_RANGE[network]) {
+      toBlock = fromBlock + MAX_TOTAL_BLOCK_RANGE[network];
+      blockRange = toBlock - fromBlock;
+    }
+
+    console.log({blockRange, fromBlock, toBlock });
 
     return {
       fromBlock,
@@ -141,4 +154,8 @@ export const getBlockWithRetries = async (blockNumber: number, network: string, 
       return null;
     }
   }
+}
+
+export const getEventFingerprint = (network: string, blockNumber: string, txIndex: string, logIndex: string) => {
+  return `${network}-${blockNumber}-${txIndex}-${logIndex}`;
 }
