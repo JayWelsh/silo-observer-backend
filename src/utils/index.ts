@@ -86,7 +86,7 @@ interface ISmallestDiffEntry {
 }
 
 export const fetchCoinGeckoAssetPriceClosestToTargetTime = async (assetAddress : string, network: string, targetTime: number) => {
-  let bufferTargetTimeEachDirection = 1800; // 30 minutes 
+  let bufferTargetTimeEachDirection = 3600 * 6; // 6 hours
   let startTime = targetTime - bufferTargetTimeEachDirection;
   let endTime = targetTime + bufferTargetTimeEachDirection;
   let dataInRange = await fetchCoingeckoPriceAtHistoricalRange(assetAddress, network, startTime, endTime);
