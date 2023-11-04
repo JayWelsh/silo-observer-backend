@@ -73,6 +73,13 @@ const siloQuery = gql`
           decimals
         }
       }
+      marketAssets {
+        asset {
+          symbol
+        }
+        borrowed
+        tokenPriceUSD
+      }
     }
   }
 `;
@@ -165,9 +172,6 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
         let tvlUsdSiloAddressToAssetAddressBN : {[key: string]: {[key: string]: BigNumber}} = {};
 
         let tokenAddressToLastPrice = result?.markets.reduce((acc: ITokenAddressToLastPrice, market: IMarket) => {
-          if(utils.getAddress(market?.id) === '0x03FF864F65A69E6C025F68F5695fA243F8d2d61B') {
-            console.log({marketId: '0x03FF864F65A69E6C025F68F5695fA243F8d2d61B', market});
-          }
           let inputTokenChecksumAddress = utils.getAddress(market.inputToken.id);
           let inputTokenLastPrice = market.inputToken.lastPriceUSD;
           if(!acc[inputTokenChecksumAddress] && inputTokenLastPrice) {
@@ -429,6 +433,7 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
         // MULTI-MARKET (WHOLE PLATFORM) RECORD HANDLING BELOW
 
         if (enableTvlSync) {
+
           await TvlMinutelyRepository.create({
             tvl: tvlUsdAllSilosBN.toNumber(),
             timestamp: useTimestampPostgres,
@@ -481,6 +486,7 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
         }
 
         if(enableBorrowedSync) {
+
           await BorrowedMinutelyRepository.create({
             borrowed: borrowedUsdAllSilosBN.toNumber(),
             timestamp: useTimestampPostgres,

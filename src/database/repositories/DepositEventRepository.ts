@@ -104,6 +104,99 @@ class DepositEventRepository extends BaseRepository {
 
     return this.parserResult(new Pagination(results, perPage, page), transformer);
   }
+
+  async getDailyDepositTotals(
+    pagination: IPaginationRequest,
+    transformer: ITransformer,
+  ) {
+
+    const { 
+      perPage,
+      page
+    } = pagination;
+
+    const results = await DepositEventModel.query()
+      .leftJoinRelated('block_metadata')
+      .where(function (this: QueryBuilder<DepositEventModel>) {
+        this.where('usd_value_at_event_time', '>', 0);
+      })
+      .select(raw('SUM(usd_value_at_event_time) AS usd'))
+      .select(raw('block_metadata.block_day_timestamp as block_day_timestamp'))
+      .groupBy(`block_metadata.block_day_timestamp`)
+      .page(page - 1, perPage);
+
+      return this.parserResult(new Pagination(results, perPage, page), transformer);
+
+  }
+
+  async getDepositEventsSinceDate(
+    unixTimestampStartDate: string | number,
+  ) {
+    const results = await this.model.query()
+      .withGraphJoined('block_metadata')
+      .where(function (this: QueryBuilder<DepositEventModel>) {
+        this.where('block_metadata.block_timestamp_unix', '>=', unixTimestampStartDate);
+      })
+      .orderBy('block_metadata.block_timestamp_unix', 'ASC')
+
+      return this.parserResult(results);
+  }
+
+  async getDepositEventsSinceDateWithNullUsdValue(
+    unixTimestampStartDate: string | number,
+  ) {
+    const results = await this.model.query()
+      .withGraphJoined('block_metadata')
+      .where(function (this: QueryBuilder<DepositEventModel>) {
+        this.where('block_metadata.block_timestamp_unix', '>=', unixTimestampStartDate);
+        this.where('usd_value_at_event_time', null);
+      })
+      .orderBy('block_metadata.block_timestamp_unix', 'ASC')
+
+      return this.parserResult(results);
+  }
+
+  async getDepositEventsSinceDateWithZeroUsdValue(
+    unixTimestampStartDate: string | number,
+  ) {
+    const results = await this.model.query()
+      .withGraphJoined('block_metadata')
+      .where(function (this: QueryBuilder<DepositEventModel>) {
+        this.where('block_metadata.block_timestamp_unix', '>=', unixTimestampStartDate);
+        this.where('usd_value_at_event_time', 0);
+      })
+      .orderBy('block_metadata.block_timestamp_unix', 'ASC')
+
+      return this.parserResult(results);
+  }
+
+  async getDepositEventsSinceDateWithZeroAssetPriceValue(
+    unixTimestampStartDate: string | number,
+  ) {
+    const results = await this.model.query()
+      .withGraphJoined('block_metadata')
+      .where(function (this: QueryBuilder<DepositEventModel>) {
+        this.where('block_metadata.block_timestamp_unix', '>=', unixTimestampStartDate);
+        this.where('asset_price_at_event_time', 0);
+      })
+      .orderBy('block_metadata.block_timestamp_unix', 'ASC')
+
+      return this.parserResult(results);
+  }
+
+  async getDepositEventsSinceDateWithNullAssetPriceValue(
+    unixTimestampStartDate: string | number,
+  ) {
+    const results = await this.model.query()
+      .withGraphJoined('block_metadata')
+      .where(function (this: QueryBuilder<DepositEventModel>) {
+        this.where('block_metadata.block_timestamp_unix', '>=', unixTimestampStartDate);
+        this.where('asset_price_at_event_time', null);
+      })
+      .orderBy('block_metadata.block_timestamp_unix', 'ASC')
+
+      return this.parserResult(results);
+  }
 }
 
 export default new DepositEventRepository();

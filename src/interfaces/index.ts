@@ -134,3 +134,8 @@ export interface IDeployment {
   subgraphEndpoint: string;
   siloFactories: IFactoryConfig[];
 }
+
+export interface IVolumeTimeseriesEntry {
+  usd: string;
+  block_day_timestamp: string
+}

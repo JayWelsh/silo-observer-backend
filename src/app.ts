@@ -19,6 +19,7 @@ import registerBotCommands from './tasks/register-bot-commands';
 import botLoginAndReadyUp from './tasks/bot-login-and-ready-up';
 import { periodicSiloDataTracker } from './tasks/periodic-silo-data-tracker';
 import { periodicContractEventTracker } from './tasks/periodic-contract-event-tracker';
+import { backfillEventUsdValues } from './tasks/data-patches/backfill-event-usd-values';
 
 // minutely cycle to run indexer, 10 = 10 minutes (i.e. 10, 20, 30, 40, 50, 60 past the hour).
 // recommend to use 10 if doing a full sync, once up to speed, 3 minutes should be safe.
@@ -92,3 +93,7 @@ const runContractEventIndexer = new CronJob(
 );
 
 runContractEventIndexer.start();
+
+(async () => {
+	backfillEventUsdValues()
+})();

@@ -105,6 +105,99 @@ class BorrowEventRepository extends BaseRepository {
     return this.parserResult(new Pagination(results, perPage, page), transformer);
   }
 
+  async getDailyBorrowTotals(
+    pagination: IPaginationRequest,
+    transformer: ITransformer,
+  ) {
+
+    const { 
+      perPage,
+      page
+    } = pagination;
+
+    const results = await BorrowEventModel.query()
+      .leftJoinRelated('block_metadata')
+      .where(function (this: QueryBuilder<BorrowEventModel>) {
+        this.where('usd_value_at_event_time', '>', 0);
+      })
+      .select(raw('SUM(usd_value_at_event_time) AS usd'))
+      .select(raw('block_metadata.block_day_timestamp as block_day_timestamp'))
+      .groupBy(`block_metadata.block_day_timestamp`)
+      .page(page - 1, perPage);
+
+      return this.parserResult(new Pagination(results, perPage, page), transformer);
+
+  }
+
+  async getBorrowEventsSinceDate(
+    unixTimestampStartDate: string | number,
+  ) {
+    const results = await this.model.query()
+      .withGraphJoined('block_metadata')
+      .where(function (this: QueryBuilder<BorrowEventModel>) {
+        this.where('block_metadata.block_timestamp_unix', '>=', unixTimestampStartDate);
+      })
+      .orderBy('block_metadata.block_timestamp_unix', 'ASC')
+
+      return this.parserResult(results);
+  }
+
+  async getBorrowEventsSinceDateWithNullUsdValue(
+    unixTimestampStartDate: string | number,
+  ) {
+    const results = await this.model.query()
+      .withGraphJoined('block_metadata')
+      .where(function (this: QueryBuilder<BorrowEventModel>) {
+        this.where('block_metadata.block_timestamp_unix', '>=', unixTimestampStartDate);
+        this.where('usd_value_at_event_time', null);
+      })
+      .orderBy('block_metadata.block_timestamp_unix', 'ASC')
+
+      return this.parserResult(results);
+  }
+
+  async getBorrowEventsSinceDateWithZeroUsdValue(
+    unixTimestampStartDate: string | number,
+  ) {
+    const results = await this.model.query()
+      .withGraphJoined('block_metadata')
+      .where(function (this: QueryBuilder<BorrowEventModel>) {
+        this.where('block_metadata.block_timestamp_unix', '>=', unixTimestampStartDate);
+        this.where('usd_value_at_event_time', 0);
+      })
+      .orderBy('block_metadata.block_timestamp_unix', 'ASC')
+
+      return this.parserResult(results);
+  }
+
+  async getBorrowEventsSinceDateWithZeroAssetPriceValue(
+    unixTimestampStartDate: string | number,
+  ) {
+    const results = await this.model.query()
+      .withGraphJoined('block_metadata')
+      .where(function (this: QueryBuilder<BorrowEventModel>) {
+        this.where('block_metadata.block_timestamp_unix', '>=', unixTimestampStartDate);
+        this.where('asset_price_at_event_time', 0);
+      })
+      .orderBy('block_metadata.block_timestamp_unix', 'ASC')
+
+      return this.parserResult(results);
+  }
+
+  async getBorrowEventsSinceDateWithNullAssetPriceValue(
+    unixTimestampStartDate: string | number,
+  ) {
+    const results = await this.model.query()
+      .withGraphJoined('block_metadata')
+      .where(function (this: QueryBuilder<BorrowEventModel>) {
+        this.where('block_metadata.block_timestamp_unix', '>=', unixTimestampStartDate);
+        this.where('asset_price_at_event_time', null);
+      })
+      .orderBy('block_metadata.block_timestamp_unix', 'ASC')
+
+      return this.parserResult(results);
+  }
+
 }
 
 export default new BorrowEventRepository();
