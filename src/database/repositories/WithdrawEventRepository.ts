@@ -107,6 +107,7 @@ class WithdrawEventRepository extends BaseRepository {
 
   async getDailyWithdrawTotals(
     pagination: IPaginationRequest,
+    order: string,
     transformer: ITransformer,
   ) {
 
@@ -122,6 +123,7 @@ class WithdrawEventRepository extends BaseRepository {
       })
       .select(raw('SUM(usd_value_at_event_time) AS usd'))
       .select(raw('block_metadata.block_day_timestamp as block_day_timestamp'))
+      .orderBy('block_metadata.block_day_timestamp', order === "DESC" ? "DESC" : "ASC")
       .page(page - 1, perPage)
       .groupBy(`block_metadata.block_day_timestamp`);
 
