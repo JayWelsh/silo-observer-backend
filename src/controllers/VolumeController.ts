@@ -20,11 +20,11 @@ class VolumeController extends Controller {
 
     const {
       order = "ASC"
-    } = req.params;
+    } = req.query;
 
     const pagination = this.extractPagination(req)
 
-    let volumeTimeseries = await DepositEventRepository.getDailyDepositTotals(pagination, order, VolumeTimeseriesTransformer)
+    let volumeTimeseries = await DepositEventRepository.getDailyDepositTotals(pagination, order === "DESC" ? "DESC" : "ASC", VolumeTimeseriesTransformer)
 
     this.sendResponse(res, volumeTimeseries);
   }
@@ -33,11 +33,11 @@ class VolumeController extends Controller {
 
     const {
       order = "ASC"
-    } = req.params;
+    } = req.query;
 
     const pagination = this.extractPagination(req)
 
-    let volumeTimeseries = await WithdrawEventRepository.getDailyWithdrawTotals(pagination, order, VolumeTimeseriesTransformer)
+    let volumeTimeseries = await WithdrawEventRepository.getDailyWithdrawTotals(pagination, order === "DESC" ? "DESC" : "ASC", VolumeTimeseriesTransformer)
 
     this.sendResponse(res, volumeTimeseries);
   }
@@ -46,11 +46,11 @@ class VolumeController extends Controller {
 
     const {
       order = "ASC"
-    } = req.params;
+    } = req.query;
 
     const pagination = this.extractPagination(req)
 
-    let volumeTimeseries = await RepayEventRepository.getDailyRepayTotals(pagination, order, VolumeTimeseriesTransformer)
+    let volumeTimeseries = await RepayEventRepository.getDailyRepayTotals(pagination, order === "DESC" ? "DESC" : "ASC", VolumeTimeseriesTransformer)
 
     this.sendResponse(res, volumeTimeseries);
   }
@@ -59,11 +59,11 @@ class VolumeController extends Controller {
 
     const {
       order = "ASC"
-    } = req.params;
+    } = req.query;
 
     const pagination = this.extractPagination(req)
 
-    let volumeTimeseries = await BorrowEventRepository.getDailyBorrowTotals(pagination, order, VolumeTimeseriesTransformer)
+    let volumeTimeseries = await BorrowEventRepository.getDailyBorrowTotals(pagination, order === "DESC" ? "DESC" : "ASC", VolumeTimeseriesTransformer)
 
     this.sendResponse(res, volumeTimeseries);
   }
