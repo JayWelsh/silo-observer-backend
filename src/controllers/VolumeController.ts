@@ -19,12 +19,12 @@ class VolumeController extends Controller {
   async getDepositVolumes(req: Request, res: Response) {
 
     const {
-
+      order = "ASC"
     } = req.params;
 
     const pagination = this.extractPagination(req)
 
-    let volumeTimeseries = await DepositEventRepository.getDailyDepositTotals(pagination, VolumeTimeseriesTransformer)
+    let volumeTimeseries = await DepositEventRepository.getDailyDepositTotals(pagination, order, VolumeTimeseriesTransformer)
 
     this.sendResponse(res, volumeTimeseries);
   }
@@ -32,12 +32,12 @@ class VolumeController extends Controller {
   async getWithdrawVolumes(req: Request, res: Response) {
 
     const {
-      
+      order = "ASC"
     } = req.params;
 
     const pagination = this.extractPagination(req)
 
-    let volumeTimeseries = await WithdrawEventRepository.getDailyWithdrawTotals(pagination, VolumeTimeseriesTransformer)
+    let volumeTimeseries = await WithdrawEventRepository.getDailyWithdrawTotals(pagination, order, VolumeTimeseriesTransformer)
 
     this.sendResponse(res, volumeTimeseries);
   }
@@ -45,12 +45,12 @@ class VolumeController extends Controller {
   async getRepayVolumes(req: Request, res: Response) {
 
     const {
-      
+      order = "ASC"
     } = req.params;
 
     const pagination = this.extractPagination(req)
 
-    let volumeTimeseries = await RepayEventRepository.getDailyRepayTotals(pagination, VolumeTimeseriesTransformer)
+    let volumeTimeseries = await RepayEventRepository.getDailyRepayTotals(pagination, order, VolumeTimeseriesTransformer)
 
     this.sendResponse(res, volumeTimeseries);
   }
@@ -58,12 +58,12 @@ class VolumeController extends Controller {
   async getBorrowVolumes(req: Request, res: Response) {
 
     const {
-      
+      order = "ASC"
     } = req.params;
 
     const pagination = this.extractPagination(req)
 
-    let volumeTimeseries = await BorrowEventRepository.getDailyBorrowTotals(pagination, VolumeTimeseriesTransformer)
+    let volumeTimeseries = await BorrowEventRepository.getDailyBorrowTotals(pagination, order, VolumeTimeseriesTransformer)
 
     this.sendResponse(res, volumeTimeseries);
   }
