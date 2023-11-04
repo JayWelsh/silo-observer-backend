@@ -122,8 +122,8 @@ class DepositEventRepository extends BaseRepository {
       })
       .select(raw('SUM(usd_value_at_event_time) AS usd'))
       .select(raw('block_metadata.block_day_timestamp as block_day_timestamp'))
-      .groupBy(`block_metadata.block_day_timestamp`)
-      .page(page - 1, perPage);
+      .page(page - 1, perPage)
+      .groupBy(`block_metadata.block_day_timestamp`);
 
       return this.parserResult(new Pagination(results, perPage, page), transformer);
 
