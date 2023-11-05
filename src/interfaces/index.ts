@@ -135,6 +135,11 @@ export interface IDeployment {
   siloFactories: IFactoryConfig[];
 }
 
+export interface IVolumeTimeseriesQueryResult {
+  results: IVolumeTimeseriesEntry[],
+  total: number,
+}
+
 export interface IVolumeTimeseriesEntry {
   usd: string;
   block_day_timestamp: string

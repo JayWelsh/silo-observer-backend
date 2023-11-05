@@ -3,7 +3,7 @@ import { QueryBuilder, raw } from "objection";
 import { RepayEventModel } from "../models";
 import BaseRepository from "./BaseRepository";
 import Pagination, { IPaginationRequest } from "../../utils/Pagination";
-import { ITransformer } from "../../interfaces";
+import { ITransformer, IVolumeTimeseriesQueryResult } from "../../interfaces";
 
 class RepayEventRepository extends BaseRepository {
   getModel() {
@@ -132,7 +132,27 @@ class RepayEventRepository extends BaseRepository {
       .select(raw('block_metadata.block_day_timestamp as block_day_timestamp'))
       .orderBy('block_metadata.block_day_timestamp', order === "DESC" ? "DESC" : "ASC")
       .page(page - 1, perPage)
-      .groupBy(`block_metadata.block_day_timestamp`);
+      .groupBy(`block_metadata.block_day_timestamp`)
+      .castTo<IVolumeTimeseriesQueryResult>();
+
+      if((results?.results) && (period === "today")) {
+        let now = new Date();
+        now.setHours(0,0,0,0);
+        let todayTimestamp = now.toISOString();
+        let shimRecord = {
+          block_day_timestamp: todayTimestamp,
+          usd: "0",
+        }
+        if(order === "DESC") {
+          // Check that the first record is for today
+          let firstRecord = results?.results[0];
+          let hasTodayRecord = new Date(firstRecord.block_day_timestamp).toISOString() === todayTimestamp;
+          if(!firstRecord || !hasTodayRecord) {
+            results.results = [shimRecord, ...results?.results];
+            results.total = results.total + 1;
+          }
+        }
+      }
 
       return this.parserResult(new Pagination(results, perPage, page), transformer);
 
