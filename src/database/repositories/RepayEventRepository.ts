@@ -108,6 +108,7 @@ class RepayEventRepository extends BaseRepository {
   async getDailyRepayTotals(
     pagination: IPaginationRequest,
     order: string,
+    period: string | undefined,
     transformer: ITransformer,
   ) {
 
@@ -120,6 +121,12 @@ class RepayEventRepository extends BaseRepository {
       .leftJoinRelated('block_metadata')
       .where(function (this: QueryBuilder<RepayEventModel>) {
         this.where('usd_value_at_event_time', '>', 0);
+        if(period === "today") {
+          let now = new Date();
+          now.setHours(0,0,0,0);
+          let todayTimestamp = now.toISOString();
+          this.where('block_metadata.block_day_timestamp', '=', todayTimestamp);
+        }
       })
       .select(raw('SUM(usd_value_at_event_time) AS usd'))
       .select(raw('block_metadata.block_day_timestamp as block_day_timestamp'))
