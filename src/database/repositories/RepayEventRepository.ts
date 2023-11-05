@@ -109,6 +109,7 @@ class RepayEventRepository extends BaseRepository {
     pagination: IPaginationRequest,
     order: string,
     period: string | undefined,
+    networks: string[] | undefined,
     transformer: ITransformer,
   ) {
 
@@ -126,6 +127,17 @@ class RepayEventRepository extends BaseRepository {
           now.setHours(0,0,0,0);
           let todayTimestamp = now.toISOString();
           this.where('block_metadata.block_day_timestamp', '=', todayTimestamp);
+        }
+      })
+      .where(function (this: QueryBuilder<RepayEventModel>) {
+        if(networks) {
+          for(let [index, network] of networks.entries()) {
+            if(index === 0) {
+              this.where('block_metadata.network', '=', network);
+            } else {
+              this.orWhere('block_metadata.network', '=', network);
+            }
+          }
         }
       })
       .select(raw('SUM(usd_value_at_event_time) AS usd'))

@@ -21,13 +21,21 @@ class VolumeController extends Controller {
     let {
       order = "ASC",
       period,
+      networks,
     } = req.query;
 
     period = period as string;
+    networks = networks as string;
+
+
+    let parsedNetworks : string[] = [];
+    if(networks) {
+      parsedNetworks = networks.split(',')
+    }
 
     const pagination = this.extractPagination(req)
 
-    let volumeTimeseries = await DepositEventRepository.getDailyDepositTotals(pagination, order === "DESC" ? "DESC" : "ASC", period, VolumeTimeseriesTransformer)
+    let volumeTimeseries = await DepositEventRepository.getDailyDepositTotals(pagination, order === "DESC" ? "DESC" : "ASC", period, parsedNetworks, VolumeTimeseriesTransformer)
 
     this.sendResponse(res, volumeTimeseries);
   }
@@ -37,13 +45,21 @@ class VolumeController extends Controller {
     let {
       order = "ASC",
       period,
+      networks,
     } = req.query;
 
     period = period as string;
+    networks = networks as string;
+
+
+    let parsedNetworks : string[] = [];
+    if(networks) {
+      parsedNetworks = networks.split(',')
+    }
 
     const pagination = this.extractPagination(req)
 
-    let volumeTimeseries = await WithdrawEventRepository.getDailyWithdrawTotals(pagination, order === "DESC" ? "DESC" : "ASC", period, VolumeTimeseriesTransformer)
+    let volumeTimeseries = await WithdrawEventRepository.getDailyWithdrawTotals(pagination, order === "DESC" ? "DESC" : "ASC", period, parsedNetworks, VolumeTimeseriesTransformer)
 
     this.sendResponse(res, volumeTimeseries);
   }
@@ -53,13 +69,21 @@ class VolumeController extends Controller {
     let {
       order = "ASC",
       period,
+      networks,
     } = req.query;
 
     period = period as string;
+    networks = networks as string;
+
+
+    let parsedNetworks : string[] = [];
+    if(networks) {
+      parsedNetworks = networks.split(',')
+    }
 
     const pagination = this.extractPagination(req)
 
-    let volumeTimeseries = await RepayEventRepository.getDailyRepayTotals(pagination, order === "DESC" ? "DESC" : "ASC", period, VolumeTimeseriesTransformer)
+    let volumeTimeseries = await RepayEventRepository.getDailyRepayTotals(pagination, order === "DESC" ? "DESC" : "ASC", period, parsedNetworks, VolumeTimeseriesTransformer)
 
     this.sendResponse(res, volumeTimeseries);
   }
@@ -69,13 +93,21 @@ class VolumeController extends Controller {
     let {
       order = "ASC",
       period,
+      networks,
     } = req.query;
 
     period = period as string;
+    networks = networks as string;
+
+
+    let parsedNetworks : string[] = [];
+    if(networks) {
+      parsedNetworks = networks.split(',')
+    }
 
     const pagination = this.extractPagination(req)
 
-    let volumeTimeseries = await BorrowEventRepository.getDailyBorrowTotals(pagination, order === "DESC" ? "DESC" : "ASC", period, VolumeTimeseriesTransformer)
+    let volumeTimeseries = await BorrowEventRepository.getDailyBorrowTotals(pagination, order === "DESC" ? "DESC" : "ASC", period, parsedNetworks, VolumeTimeseriesTransformer)
 
     this.sendResponse(res, volumeTimeseries);
   }
