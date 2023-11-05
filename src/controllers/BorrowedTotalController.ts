@@ -80,18 +80,26 @@ class BorrowedTotalController extends Controller {
   }
   async getBorrowedTotalsWholePlatform(req: Request, res: Response) {
 
-    const {
-      resolution = 'minutely'
+    let {
+      resolution = 'minutely',
+      networks,
     } = req.query;
+
+    networks = networks as string;
+
+    let parsedNetworks : string[] = [];
+    if(networks) {
+      parsedNetworks = networks.split(',')
+    }
 
     const pagination = this.extractPagination(req)
 
     let borrowedTotals;
     if(resolution === 'minutely') {
-      borrowedTotals = await BorrowedMinutelyRepository.getBorrowedTotalsWholePlatform(pagination, BorrowedTotalOutputTransformer);
+      borrowedTotals = await BorrowedMinutelyRepository.getBorrowedTotalsWholePlatform(pagination, parsedNetworks, BorrowedTotalOutputTransformer);
     }
     if(resolution === 'hourly') {
-      borrowedTotals = await BorrowedHourlyRepository.getBorrowedTotalsWholePlatform(pagination, BorrowedTotalOutputTransformer);
+      borrowedTotals = await BorrowedHourlyRepository.getBorrowedTotalsWholePlatform(pagination, parsedNetworks, BorrowedTotalOutputTransformer);
     }
 
     this.sendResponse(res, borrowedTotals);

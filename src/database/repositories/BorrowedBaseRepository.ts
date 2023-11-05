@@ -122,6 +122,7 @@ abstract class BorrowedBaseRepository extends BaseRepository {
 
   async getBorrowedTotalsWholePlatform(
     pagination: IPaginationRequest,
+    networks: string[] | undefined,
     transformer: ITransformer,
   ) {
 
@@ -130,6 +131,8 @@ abstract class BorrowedBaseRepository extends BaseRepository {
       page
     } = pagination;
 
+    let tableName = this.model.tableName;
+
     const results = await this.model.query()
     .withGraphJoined('silo')
     .withGraphJoined('asset')
@@ -137,7 +140,19 @@ abstract class BorrowedBaseRepository extends BaseRepository {
       this.where('silo_address', null);
       this.where('asset_address', null);
       this.where('meta', 'all');
-    }).orderBy('timestamp', 'DESC').page(page - 1, perPage);
+    })
+    .where(function (this: QueryBuilder<BorrowedMinutelyModel>) {
+      if(networks) {
+        for(let [index, network] of networks.entries()) {
+          if(index === 0) {
+            this.where(`${tableName}.network`, '=', network);
+          } else {
+            this.orWhere(`${tableName}.network`, '=', network);
+          }
+        }
+      }
+    })
+    .orderBy('timestamp', 'DESC').page(page - 1, perPage);
 
     return this.parserResult(new Pagination(results, perPage, page), transformer);
   }

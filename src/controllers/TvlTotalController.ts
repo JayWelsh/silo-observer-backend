@@ -81,18 +81,26 @@ class TvlTotalController extends Controller {
   }
   async getTvlTotalsWholePlatform(req: Request, res: Response) {
 
-    const {
-      resolution = 'minutely'
+    let {
+      resolution = 'minutely',
+      networks,
     } = req.query;
+
+    networks = networks as string;
+
+    let parsedNetworks : string[] = [];
+    if(networks) {
+      parsedNetworks = networks.split(',')
+    }
 
     const pagination = this.extractPagination(req)
 
     let borrowedTotals;
     if(resolution === 'minutely') {
-      borrowedTotals = await TvlMinutelyRepository.getTvlTotalsWholePlatform(pagination, TvlTotalOutputTransformer);
+      borrowedTotals = await TvlMinutelyRepository.getTvlTotalsWholePlatform(pagination, parsedNetworks, TvlTotalOutputTransformer);
     }
     if(resolution === 'hourly') {
-      borrowedTotals = await TvlHourlyRepository.getTvlTotalsWholePlatform(pagination, TvlTotalOutputTransformer);
+      borrowedTotals = await TvlHourlyRepository.getTvlTotalsWholePlatform(pagination, parsedNetworks, TvlTotalOutputTransformer);
     }
 
     this.sendResponse(res, borrowedTotals);
@@ -110,7 +118,18 @@ class TvlTotalController extends Controller {
   }
   async getTvlTotalsLatestAssetsWholePlatform(req: Request, res: Response) {
 
-    let allRecords = await TvlLatestRepository.getLatestResultsGroupedByAssetsWholePlatform();
+    let {
+      networks,
+    } = req.query;
+
+    networks = networks as string;
+
+    let parsedNetworks : string[] = [];
+    if(networks) {
+      parsedNetworks = networks.split(',')
+    }
+
+    let allRecords = await TvlLatestRepository.getLatestResultsGroupedByAssetsWholePlatform(parsedNetworks);
 
     this.sendResponse(res, allRecords);
 

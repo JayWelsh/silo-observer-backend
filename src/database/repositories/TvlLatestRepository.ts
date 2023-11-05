@@ -53,7 +53,9 @@ class TvlLatestRepository extends TvlBaseRepository {
 
   }
 
-  async getLatestResultsGroupedByAssetsWholePlatform() {
+  async getLatestResultsGroupedByAssetsWholePlatform(
+    networks: string[] | undefined,
+  ) {
 
     let tableName = TvlLatestModel.tableName;
 
@@ -61,6 +63,17 @@ class TvlLatestRepository extends TvlBaseRepository {
       .withGraphFetched('asset')
       .where(function (this: QueryBuilder<TvlLatestModel>) {
         this.whereNotNull('asset_address');
+      })
+      .where(function (this: QueryBuilder<TvlLatestModel>) {
+        if(networks) {
+          for(let [index, network] of networks.entries()) {
+            if(index === 0) {
+              this.where('tvl_latest.network', '=', network);
+            } else {
+              this.orWhere('tvl_latest.network', '=', network);
+            }
+          }
+        }
       })
       .select(raw('SUM(tvl) AS tvl'))
       .groupBy(`${tableName}.asset_address`)

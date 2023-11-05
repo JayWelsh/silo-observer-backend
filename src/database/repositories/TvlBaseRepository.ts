@@ -124,8 +124,11 @@ abstract class TvlBaseRepository extends BaseRepository {
 
   async getTvlTotalsWholePlatform(
     pagination: IPaginationRequest,
+    networks: string[] | undefined,
     transformer: ITransformer,
   ) {
+
+    let tableName = this.model.tableName;
 
     const { 
       perPage,
@@ -139,7 +142,19 @@ abstract class TvlBaseRepository extends BaseRepository {
       this.where('silo_address', null);
       this.where('asset_address', null);
       this.where('meta', 'all');
-    }).orderBy('timestamp', 'DESC').page(page - 1, perPage);
+    })
+    .where(function (this: QueryBuilder<TvlHourlyModel>) {
+      if(networks) {
+        for(let [index, network] of networks.entries()) {
+          if(index === 0) {
+            this.where(`${tableName}.network`, '=', network);
+          } else {
+            this.orWhere(`${tableName}.network`, '=', network);
+          }
+        }
+      }
+    })
+    .orderBy('timestamp', 'DESC').page(page - 1, perPage);
 
     return this.parserResult(new Pagination(results, perPage, page), transformer);
   }
