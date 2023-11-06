@@ -81,10 +81,18 @@ class EventController extends Controller {
       eventType,
     } = req.params;
 
-    const {
+    let {
       page,
-      perPage
+      perPage,
+      networks,
     } = req.query;
+
+    networks = networks as string;
+
+    let parsedNetworks : string[] = [];
+    if(networks) {
+      parsedNetworks = networks.split(',')
+    }
 
     const pagination = this.extractPagination(req);
 
@@ -93,13 +101,13 @@ class EventController extends Controller {
     let events;
 
     if(eventType === 'borrow') {
-      events = await BorrowEventRepository.getBorrowEventsDistinctUsersPerDay(pagination, SiloUserEventDistinctDailyUsersOutputTransformer, skipPagination);
+      events = await BorrowEventRepository.getBorrowEventsDistinctUsersPerDay(pagination, parsedNetworks, SiloUserEventDistinctDailyUsersOutputTransformer, skipPagination);
     } else if(eventType === 'deposit') {
-      events = await DepositEventRepository.getDepositEventsDistinctUsersPerDay(pagination, SiloUserEventDistinctDailyUsersOutputTransformer, skipPagination);
+      events = await DepositEventRepository.getDepositEventsDistinctUsersPerDay(pagination, parsedNetworks, SiloUserEventDistinctDailyUsersOutputTransformer, skipPagination);
     } else if(eventType === 'repay') {
-      events = await RepayEventRepository.getRepayEventsDistinctUsersPerDay(pagination, SiloUserEventDistinctDailyUsersOutputTransformer, skipPagination);
+      events = await RepayEventRepository.getRepayEventsDistinctUsersPerDay(pagination, parsedNetworks, SiloUserEventDistinctDailyUsersOutputTransformer, skipPagination);
     } else if(eventType === 'withdraw') {
-      events = await WithdrawEventRepository.getWithdrawEventsDistinctUsersPerDay(pagination, SiloUserEventDistinctDailyUsersOutputTransformer, skipPagination);
+      events = await WithdrawEventRepository.getWithdrawEventsDistinctUsersPerDay(pagination, parsedNetworks, SiloUserEventDistinctDailyUsersOutputTransformer, skipPagination);
     }
 
     this.sendResponse(res, events);

@@ -30,6 +30,7 @@ class WithdrawEventRepository extends BaseRepository {
 
   async getWithdrawEventsDistinctUsersPerDay(
     pagination: IPaginationRequest,
+    networks: string[] | undefined,
     transformer: ITransformer,
     skipPagination?: boolean,
   ) {
@@ -45,8 +46,21 @@ class WithdrawEventRepository extends BaseRepository {
       }
     }
 
+    let tableName = this.model.tableName;
+
     const results = await this.model.query()
       .select(raw('DISTINCT user_address, block_metadata.block_day_timestamp'))
+      .where(function (this: QueryBuilder<WithdrawEventModel>) {
+        if(networks) {
+          for(let [index, network] of networks.entries()) {
+            if(index === 0) {
+              this.where(`${tableName}.network`, '=', network);
+            } else {
+              this.orWhere(`${tableName}.network`, '=', network);
+            }
+          }
+        }
+      })
       .leftJoin(
         'block_metadata',
         'block_metadata.block_number',
