@@ -107,6 +107,8 @@ export interface ISiloUserEvent {
   asset?: IAsset
   block_metadata?: IBlockMetadata
   block_day_timestamp?: string
+  event_name: string
+  usd_value_at_event_time: string
 }
 
 export interface IBlockMetadata {

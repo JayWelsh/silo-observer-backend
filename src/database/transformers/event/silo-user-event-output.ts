@@ -5,10 +5,12 @@ import { ISiloUserEvent } from "../../../interfaces";
 class SiloUserEventTransformer extends BaseTransformer {
   transform(event: ISiloUserEvent) {
     return {
+      event_name: event.event_name,
       user_address: event.user_address,
       amount: event.amount,
       tx_hash: event.tx_hash,
       block_number: event.block_number,
+      usd_value_at_event_time: event.usd_value_at_event_time,
       ...(event.receiver_address && {
         receiver_address: event.receiver_address,
       }),
