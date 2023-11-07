@@ -59,18 +59,29 @@ class EventController extends Controller {
       eventType,
     } = req.params;
 
+    let {
+      networks,
+    } = req.query;
+
+    networks = networks as string;
+
+    let parsedNetworks : string[] = [];
+    if(networks) {
+      parsedNetworks = networks.split(',')
+    }
+
     const pagination = this.extractPagination(req)
 
     let events;
 
     if(eventType === 'borrow') {
-      events = await BorrowEventRepository.getBorrowEvents(pagination, SiloUserEventOutputTransformer);
+      events = await BorrowEventRepository.getBorrowEvents(pagination, parsedNetworks, SiloUserEventOutputTransformer);
     } else if(eventType === 'deposit') {
-      events = await DepositEventRepository.getDepositEvents(pagination, SiloUserEventOutputTransformer);
+      events = await DepositEventRepository.getDepositEvents(pagination, parsedNetworks, SiloUserEventOutputTransformer);
     } else if(eventType === 'repay') {
-      events = await RepayEventRepository.getRepayEvents(pagination, SiloUserEventOutputTransformer);
+      events = await RepayEventRepository.getRepayEvents(pagination, parsedNetworks, SiloUserEventOutputTransformer);
     } else if(eventType === 'withdraw') {
-      events = await WithdrawEventRepository.getWithdrawEvents(pagination, SiloUserEventOutputTransformer);
+      events = await WithdrawEventRepository.getWithdrawEvents(pagination, parsedNetworks, SiloUserEventOutputTransformer);
     }
 
     this.sendResponse(res, events);

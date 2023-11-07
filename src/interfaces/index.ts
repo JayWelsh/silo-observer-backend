@@ -110,10 +110,12 @@ export interface ISiloUserEvent {
 }
 
 export interface IBlockMetadata {
+  block_hash: string,
   block_number: number,
   block_timestamp_unix: number,
   block_timestamp: string,
   block_day_timestamp: string,
+  network: string,
 }
 
 // Internal Interfaces Above

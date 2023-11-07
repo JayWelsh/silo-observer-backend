@@ -12,6 +12,7 @@ class BorrowEventRepository extends BaseRepository {
 
   async getBorrowEvents(
     pagination: IPaginationRequest,
+    networks: string[] | undefined,
     transformer: ITransformer,
   ) {
 
@@ -20,9 +21,23 @@ class BorrowEventRepository extends BaseRepository {
       page
     } = pagination;
 
+    let tableName = this.model.tableName;
+
     const results = await this.model.query()
     .withGraphJoined('silo')
     .withGraphJoined('asset')
+    .withGraphJoined('block_metadata')
+    .where(function (this: QueryBuilder<BorrowEventModel>) {
+      if(networks) {
+        for(let [index, network] of networks.entries()) {
+          if(index === 0) {
+            this.where(`${tableName}.network`, '=', network);
+          } else {
+            this.orWhere(`${tableName}.network`, '=', network);
+          }
+        }
+      }
+    })
     .orderBy('block_number', 'DESC').page(page - 1, perPage);
 
     return this.parserResult(new Pagination(results, perPage, page), transformer);

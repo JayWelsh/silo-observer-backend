@@ -358,9 +358,6 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
               } = rateEntry;
 
               let rateToNumericPrecision = new BigNumber(rate).precision(16).toString();
-              if(new BigNumber(rate).isGreaterThan(1000)) {
-                rateToNumericPrecision = '1000';
-              }
 
               let rateAssetChecksumAddress = utils.getAddress(tokenAddress);
 

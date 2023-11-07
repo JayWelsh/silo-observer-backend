@@ -29,6 +29,12 @@ class SiloUserEventTransformer extends BaseTransformer {
       ...(!event.asset && event.asset_address && {
         asset_address: event.asset_address,
       }),
+      ...(event.block_metadata && {
+        block_hash: event.block_metadata.block_hash,
+        block_timestamp: event.block_metadata.block_timestamp,
+        network: event.block_metadata.network,
+        block_day_timestamp: event.block_metadata.block_day_timestamp,
+      })
     }
   }
 }
