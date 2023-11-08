@@ -37,6 +37,7 @@ jobs:
             echo ALCHEMY_API_KEY=\"'${{secrets.ALCHEMY_API_KEY}}'\" >> .env
             echo ALCHEMY_API_KEY_ARBITRUM=\"'${{secrets.ALCHEMY_API_KEY_ARBITRUM}}'\" >> .env
             echo COINGECKO_API_KEY=\"'${{secrets.COINGECKO_API_KEY}}'\" >> .env
+            echo THE_GRAPH_API_KEY=\"'${{secrets.THE_GRAPH_API_KEY}}'\" >> .env
             yarn run build
             yarn run knex migrate:latest
             pm2 startOrReload ./config/ecosystem.json
