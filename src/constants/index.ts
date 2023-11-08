@@ -25,7 +25,7 @@ export const SUBGRAPH_VERSION = "2.2.8";
 export const SUBGRAPH_ENDPOINT_FALLBACK = "https://api.thegraph.com/subgraphs/id/QmQV7RB3WUFuSrCSyJsDq6FkQsVYFwak2xCZYsq3JmDrSq";
 export const SUBGRAPH_VERSION_FALLBACK = "2.0.2";
 
-export const SUBGRAPH_ENDPOINT_ARBITRUM = "https://api.thegraph.com/subgraphs/id/QmXRY3Gs39AQgdD2bFof5YgqgNLgFNpNAgJAf6Qz99vBBH";
+export const SUBGRAPH_ENDPOINT_ARBITRUM = "https://api.thegraph.com/subgraphs/id/QmQqLJVgZLcRduoszARzRi12qGheUTWAHFf3ixMeGm2xML";
 
 export const SUBGRAPH_ENDPOINT_LLAMA = "https://api.thegraph.com/subgraphs/id/QmYzeik2P18AFNKPtCrEFwuCHws66tjvZpX57KPfKbtnWw";
 export const SUBGRAPH_VERSION_LLAMA = "2.4";
