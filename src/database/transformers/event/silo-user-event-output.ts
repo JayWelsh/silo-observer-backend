@@ -35,6 +35,7 @@ class SiloUserEventTransformer extends BaseTransformer {
       ...(event.block_metadata && {
         block_hash: event.block_metadata.block_hash,
         block_timestamp: event.block_metadata.block_timestamp,
+        block_timestamp_unix: event.block_metadata.block_timestamp_unix,
         network: event.block_metadata.network,
         block_day_timestamp: event.block_metadata.block_day_timestamp,
       })

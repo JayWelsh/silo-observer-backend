@@ -82,6 +82,8 @@ class EventController extends Controller {
       events = await RepayEventRepository.getRepayEvents(pagination, parsedNetworks, SiloUserEventOutputTransformer);
     } else if(eventType === 'withdraw') {
       events = await WithdrawEventRepository.getWithdrawEvents(pagination, parsedNetworks, SiloUserEventOutputTransformer);
+    } else {
+      events = await BorrowEventRepository.getUnifiedEvents(pagination, parsedNetworks, SiloUserEventOutputTransformer);
     }
 
     this.sendResponse(res, events);

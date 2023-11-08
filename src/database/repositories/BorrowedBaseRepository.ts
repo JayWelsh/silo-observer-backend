@@ -65,6 +65,7 @@ abstract class BorrowedBaseRepository extends BaseRepository {
     .where(function (this: QueryBuilder<BorrowedMinutelyModel>) {
       this.where('asset.symbol', assetSymbol);
       this.where(`${tableName}.deployment_id`, deploymentID);
+      this.where(`silo.deployment_id`, deploymentID);
     }).orderBy('timestamp', 'DESC').page(page - 1, perPage);
 
     return this.parserResult(new Pagination(results, perPage, page), transformer);
@@ -90,6 +91,7 @@ abstract class BorrowedBaseRepository extends BaseRepository {
     .where(function (this: QueryBuilder<BorrowedMinutelyModel>) {
       this.where('silo_address', siloAddress);
       this.where(`${tableName}.deployment_id`, deploymentID);
+      this.where(`silo.deployment_id`, deploymentID);
     }).orderBy('timestamp', 'DESC').page(page - 1, perPage);
 
     return this.parserResult(new Pagination(results, perPage, page), transformer);
@@ -115,6 +117,7 @@ abstract class BorrowedBaseRepository extends BaseRepository {
     .where(function (this: QueryBuilder<BorrowedMinutelyModel>) {
       this.where('silo.name', siloName);
       this.where(`${tableName}.deployment_id`, deploymentID);
+      this.where(`silo.deployment_id`, deploymentID);
     }).orderBy('timestamp', 'DESC').page(page - 1, perPage);
 
     return this.parserResult(new Pagination(results, perPage, page), transformer);

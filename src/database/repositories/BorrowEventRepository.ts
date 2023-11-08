@@ -1,6 +1,11 @@
 import { QueryBuilder, raw } from "objection";
 
-import { BorrowEventModel } from "../models";
+import { 
+  BorrowEventModel,
+  DepositEventModel,
+  WithdrawEventModel,
+  RepayEventModel,
+} from "../models";
 import BaseRepository from "./BaseRepository";
 import Pagination, { IPaginationRequest } from "../../utils/Pagination";
 import { ITransformer, IVolumeTimeseriesQueryResult } from "../../interfaces";
@@ -39,6 +44,75 @@ class BorrowEventRepository extends BaseRepository {
       }
     })
     .orderBy('block_metadata.block_timestamp_unix', 'DESC').page(page - 1, perPage);
+
+    return this.parserResult(new Pagination(results, perPage, page), transformer);
+  }
+
+  async getUnifiedEvents(
+    pagination: IPaginationRequest,
+    networks: string[] | undefined,
+    transformer: ITransformer,
+  ) {
+
+    const { 
+      perPage,
+      page
+    } = pagination;
+
+    let tableName = this.model.tableName;
+
+    let columnsForSelection = (tableName: string) => {
+      return ["event_name", "amount", "usd_value_at_event_time", "tx_hash", `${tableName}.deployment_id`];
+    }
+
+    const results = await this.model.query()
+    .select(columnsForSelection(tableName))
+    .withGraphJoined('silo')
+    .withGraphJoined('asset')
+    .withGraphJoined('block_metadata')
+    .union(
+      RepayEventModel.query()
+      .select(columnsForSelection(RepayEventModel.tableName))
+      .withGraphJoined('silo')
+      .withGraphJoined('asset')
+      .withGraphJoined('block_metadata')
+      .where(function (this: QueryBuilder<RepayEventModel>) {
+        if(networks) {
+          this.whereIn(`${RepayEventModel.tableName}.network`, networks);
+        }
+      })
+    )
+    .union(
+      DepositEventModel.query()
+      .select(columnsForSelection(DepositEventModel.tableName))
+      .withGraphJoined('silo')
+      .withGraphJoined('asset')
+      .withGraphJoined('block_metadata')
+      .where(function (this: QueryBuilder<DepositEventModel>) {
+        if(networks) {
+          this.whereIn(`${DepositEventModel.tableName}.network`, networks);
+        }
+      })
+    )
+    .union(
+      WithdrawEventModel.query()
+      .select(columnsForSelection(WithdrawEventModel.tableName))
+      .withGraphJoined('silo')
+      .withGraphJoined('asset')
+      .withGraphJoined('block_metadata')
+      .where(function (this: QueryBuilder<WithdrawEventModel>) {
+        if(networks) {
+          this.whereIn(`${WithdrawEventModel.tableName}.network`, networks);
+        }
+      })
+    )
+    .where(function (this: QueryBuilder<BorrowEventModel>) {
+      if(networks) {
+        this.whereIn(`${tableName}.network`, networks);
+      }
+    })
+    .orderBy('block_metadata:block_timestamp_unix', 'DESC')
+    .page(page - 1, perPage);
 
     return this.parserResult(new Pagination(results, perPage, page), transformer);
   }

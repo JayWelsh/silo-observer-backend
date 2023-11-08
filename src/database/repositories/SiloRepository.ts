@@ -41,10 +41,13 @@ class SiloRepository extends BaseRepository {
       let tableName = this.model.tableName;
 
       const result = await this.model.query()
-      .withGraphFetched("latest_rates.[asset]")
+      .withGraphJoined("latest_rates.[asset]")
       .where(function (this: QueryBuilder<SiloModel>) {
         this.where('name', siloName);
-        this.where(`${tableName}.deployment_id`, deploymentID);
+        if(deploymentID) {
+          this.where(`${tableName}.deployment_id`, deploymentID);
+          this.where(`latest_rates.deployment_id`, deploymentID);
+        }
       }).first();
 
       return this.parserResult(result, transformer)
