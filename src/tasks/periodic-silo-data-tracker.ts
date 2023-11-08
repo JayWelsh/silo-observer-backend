@@ -133,6 +133,8 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
 
         let resultRaw = await subgraphRequestWithRetry(siloQuery, deploymentConfig.subgraphEndpoint);
 
+        console.log({resultRaw})
+
         let result = resultRaw.data;
 
         console.log({result, 'result.markets': result.markets});
