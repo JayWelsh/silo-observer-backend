@@ -48,7 +48,7 @@ const subgraphRequestWithRetry = async (query: string, url = SUBGRAPH_ENDPOINT, 
         query: query
       }),
     }).then((response) => {
-      response.json()
+      return response.json()
     })
     return result;
   } catch (e) {
