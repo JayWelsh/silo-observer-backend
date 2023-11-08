@@ -38,7 +38,7 @@ class DepositEventRepository extends BaseRepository {
         }
       }
     })
-    .orderBy('block_number', 'DESC').page(page - 1, perPage);
+    .orderBy('block_metadata.block_timestamp_unix', 'DESC').page(page - 1, perPage);
 
     return this.parserResult(new Pagination(results, perPage, page), transformer);
   }
