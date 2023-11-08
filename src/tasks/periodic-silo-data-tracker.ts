@@ -133,11 +133,7 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
 
         let resultRaw = await subgraphRequestWithRetry(siloQuery, deploymentConfig.subgraphEndpoint);
 
-        console.log({resultRaw})
-
         let result = resultRaw.data;
-
-        console.log({result, 'result.markets': result.markets});
 
         let tvlUsdAllSilosBN = new BigNumber(0);
         let borrowedUsdAllSilosBN = new BigNumber(0);

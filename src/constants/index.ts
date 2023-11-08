@@ -37,8 +37,6 @@ export const NETWORK_TO_SUBGRAPH : {[key: string]: string} = {
   "arbitrum": SUBGRAPH_ENDPOINT_ARBITRUM,
 }
 
-console.log({SUBGRAPH_ENDPOINT, SUBGRAPH_ENDPOINT_ARBITRUM, SUBGRAPH_ENDPOINT_LLAMA})
-
 // Web3
 export const ALCHEMY_API_KEY = process.env['ALCHEMY_API_KEY'];
 export const ALCHEMY_API_KEY_ARBITRUM = process.env['ALCHEMY_API_KEY_ARBITRUM'];

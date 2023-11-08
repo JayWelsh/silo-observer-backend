@@ -1,6 +1,5 @@
 import path from 'path';
 import axios from 'axios';
-import fetch from 'node-fetch';
 
 import BigNumber from 'bignumber.js';
 
@@ -37,25 +36,18 @@ const sleep = (ms: number) => {
 
 const subgraphRequestWithRetry = async (query: string, url = SUBGRAPH_ENDPOINT, retryMax = 3, retryCount = 0) => {
   try {
-    const headers = {
-      'Accept-Encoding': 'gzip,deflate,compress',
-      'Content-Type': 'application/json',
-    };
-    let result = fetch(url, {
-      method: 'POST',
-      headers: headers,
-      body: JSON.stringify({
-        query: query
-      }),
-    }).then((response) => {
-      return response.json()
+    let result = await axios.post(url, {
+      query: query
+    }, { 
+      headers: { 
+        "Accept-Encoding": "gzip,deflate,compress",
+        "content-type": "application/json"
+      } 
     })
-    //@ts-ignore
-    if(result?.errors) {
-      //@ts-ignore
-      console.error(result?.errors);
-      //@ts-ignore
-      throw new Error(result.error);
+    .then((response) => response.data)
+    if(result.errors) {
+      console.error(result.errors);
+      throw new Error(result.errors);
     }
     return result;
   } catch (e) {
