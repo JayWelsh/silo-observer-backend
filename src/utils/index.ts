@@ -46,10 +46,10 @@ const subgraphRequestWithRetry = async (query: string, url = SUBGRAPH_ENDPOINT, 
       } 
     })
     .then((response) => response.data)
-    .catch(function (error) {
-      // Handle any errors that occurred during the request
-      throw new Error(error);
-    });
+    if(result.errors) {
+      console.error(result.errors);
+      throw new Error(result.errors);
+    }
     return result;
   } catch (e) {
     retryCount++;
