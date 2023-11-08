@@ -24,7 +24,7 @@ import { backfillEventUsdValues } from './tasks/data-patches/backfill-event-usd-
 // minutely cycle to run indexer, 10 = 10 minutes (i.e. 10, 20, 30, 40, 50, 60 past the hour).
 // recommend to use 10 if doing a full sync, once up to speed, 3 minutes should be safe.
 // using 6 for Alchemy costs
-let contractEventIndexerPeriodMinutes = 10; // temp until new month
+let contractEventIndexerPeriodMinutes = 20; // temp until new month
 
 let corsOptions = {
   origin: ['http://localhost:3000', 'https://silo.observer', 'https://www.silo.observer'],
@@ -55,10 +55,11 @@ let discordClient = botLoginAndReadyUp();
 
 const runSiloDataTracker = new CronJob(
 	// '15 */4 * * * *',
-	'30 */10 * * * *', // temp decrease until new month
+	'30 */15 * * * *', // temp decrease until new month
 	function() {
     let useTimestampUnix = Math.floor(new Date().setSeconds(0) / 1000);
     let startTime = new Date().getTime();
+		console.log("Running SiloDataTracker", useTimestampUnix);
     periodicSiloDataTracker(useTimestampUnix, startTime);
 	},
 	null,
@@ -85,6 +86,7 @@ const runContractEventIndexer = new CronJob(
 	function() {
     let useTimestampUnix = Math.floor(new Date().setSeconds(0) / 1000);
     let startTime = new Date().getTime();
+		console.log("Running ContractEventIndexer", useTimestampUnix);
     periodicContractEventTracker(useTimestampUnix, startTime);
 	},
 	null,
