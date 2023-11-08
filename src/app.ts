@@ -96,6 +96,6 @@ const runContractEventIndexer = new CronJob(
 
 runContractEventIndexer.start();
 
-(async () => {
-	backfillEventUsdValues()
-})();
+// (async () => {
+// 	backfillEventUsdValues()
+// })();
