@@ -220,52 +220,56 @@ export const periodicContractEventTracker = async (useTimestampUnix: number, sta
         }
       }
 
+      // TEMP DISABLE USER INTERACTION COUNT SYNCS BELOW
+      
       // Get interaction count totals for each event grouped by user address
-      let userAddressToBorrowEventCount = await BorrowEventRepository.query().select(raw(`user_address, count(*)`)).groupBy('user_address').orderBy('count', 'DESC');
-      let userAddressToDepositEventCount = await DepositEventRepository.query().select(raw(`user_address, count(*)`)).groupBy('user_address').orderBy('count', 'DESC');
-      let userAddressToRepayEventCount = await RepayEventRepository.query().select(raw(`user_address, count(*)`)).groupBy('user_address').orderBy('count', 'DESC');
-      let userAddressToWithdrawEventCount = await WithdrawEventRepository.query().select(raw(`user_address, count(*)`)).groupBy('user_address').orderBy('count', 'DESC');
+      // let userAddressToBorrowEventCount = await BorrowEventRepository.query().select(raw(`user_address, count(*)`)).groupBy('user_address').orderBy('count', 'DESC');
+      // let userAddressToDepositEventCount = await DepositEventRepository.query().select(raw(`user_address, count(*)`)).groupBy('user_address').orderBy('count', 'DESC');
+      // let userAddressToRepayEventCount = await RepayEventRepository.query().select(raw(`user_address, count(*)`)).groupBy('user_address').orderBy('count', 'DESC');
+      // let userAddressToWithdrawEventCount = await WithdrawEventRepository.query().select(raw(`user_address, count(*)`)).groupBy('user_address').orderBy('count', 'DESC');
 
-      let userAddressToEventCountBatches = [userAddressToBorrowEventCount, userAddressToDepositEventCount, userAddressToRepayEventCount, userAddressToWithdrawEventCount];
+      // let userAddressToEventCountBatches = [userAddressToBorrowEventCount, userAddressToDepositEventCount, userAddressToRepayEventCount, userAddressToWithdrawEventCount];
 
-      // Rebuild interaction counts
-      let userAddressToInteractionCount : IUserAddressToCount = {};
+      // // Rebuild interaction counts
+      // let userAddressToInteractionCount : IUserAddressToCount = {};
 
-      for(let userAddressToEventCountBatch of userAddressToEventCountBatches) {
-        for(let entry of userAddressToEventCountBatch) {
-          const {
-            user_address,
-            count,
-          } = entry;
-          if(userAddressToInteractionCount[user_address]) {
-            userAddressToInteractionCount[user_address] = userAddressToInteractionCount[user_address] + Number(count);
-          } else {
-            userAddressToInteractionCount[user_address] = Number(count);
-          }
-        }
-      }
+      // for(let userAddressToEventCountBatch of userAddressToEventCountBatches) {
+      //   for(let entry of userAddressToEventCountBatch) {
+      //     const {
+      //       user_address,
+      //       count,
+      //     } = entry;
+      //     if(userAddressToInteractionCount[user_address]) {
+      //       userAddressToInteractionCount[user_address] = userAddressToInteractionCount[user_address] + Number(count);
+      //     } else {
+      //       userAddressToInteractionCount[user_address] = Number(count);
+      //     }
+      //   }
+      // }
 
-      console.log("Updating user interaction counts");
+      // console.log("Updating user interaction counts");
 
-      // Set user interaction counts
-      for(let entry of Object.entries(userAddressToInteractionCount)) {
-        let user = entry[0];
-        let count = entry[1];
-        // check if user record exists
-        let userRecord = await SiloUserRepository.findByColumn("address", user);
-        if(!userRecord) {
-          // create user record
-          await SiloUserRepository.create({
-            address: user,
-            interaction_count: count,
-          })
-        } else {
-          // increment interaction count
-          await SiloUserRepository.update({
-            interaction_count: count,
-          }, userRecord.id)
-        }
-      }
+      // // Set user interaction counts
+      // for(let entry of Object.entries(userAddressToInteractionCount)) {
+      //   let user = entry[0];
+      //   let count = entry[1];
+      //   // check if user record exists
+      //   let userRecord = await SiloUserRepository.findByColumn("address", user);
+      //   if(!userRecord) {
+      //     // create user record
+      //     await SiloUserRepository.create({
+      //       address: user,
+      //       interaction_count: count,
+      //     })
+      //   } else {
+      //     // increment interaction count
+      //     await SiloUserRepository.update({
+      //       interaction_count: count,
+      //     }, userRecord.id)
+      //   }
+      // }
+
+      // TEMP DISABLE USER INTERACTION COUNT SYNCS ABOVE
 
       console.log(`Periodic contract event tracker successful (${network} - ${deploymentConfig.id}), exec time: ${new Date().getTime() - startTime}ms`)
 
