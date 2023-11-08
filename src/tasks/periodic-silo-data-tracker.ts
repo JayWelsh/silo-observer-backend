@@ -48,41 +48,7 @@ import {
 } from '../web3/jobs';
 import e from 'express';
 
-const siloQuery = gql`
-  {
-    markets {
-      id
-      totalValueLockedUSD
-    	totalBorrowBalanceUSD
-      inputToken {
-        id
-        symbol
-        lastPriceUSD
-      }
-      outputToken {
-        id
-        lastPriceUSD
-      }
-      rates {
-        rate
-        side
-        type
-        token {
-          id
-          symbol
-          decimals
-        }
-      }
-      marketAssets {
-        asset {
-          symbol
-        }
-        borrowed
-        tokenPriceUSD
-      }
-    }
-  }
-`;
+const siloQuery =  "{\n  markets {\n    id\n    totalValueLockedUSD\n    totalBorrowBalanceUSD\n    inputToken {\n      id\n      symbol\n      lastPriceUSD\n    }\n    outputToken {\n      id\n      lastPriceUSD\n    }\n    rates {\n      rate\n      side\n      type\n      token {\n        id\n        symbol\n        decimals\n      }\n    }\n    marketAssets {\n      asset {\n        symbol\n      }\n      borrowed\n      tokenPriceUSD\n    }\n  }\n}";
 
 let enableRateSync = true;
 let enableTvlSync = true;
@@ -165,7 +131,9 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
 
         let tokenAddressToCoingeckoPrice = await fetchCoingeckoPrices(coingeckoAddressesQuery, deploymentConfig.network);
 
-        let result = await subgraphRequestWithRetry(siloQuery, deploymentConfig.subgraphEndpoint);
+        let resultRaw = await subgraphRequestWithRetry(siloQuery, deploymentConfig.subgraphEndpoint);
+
+        let result = resultRaw.data;
 
         let tvlUsdAllSilosBN = new BigNumber(0);
         let borrowedUsdAllSilosBN = new BigNumber(0);

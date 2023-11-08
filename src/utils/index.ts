@@ -37,7 +37,19 @@ const sleep = (ms: number) => {
 
 const subgraphRequestWithRetry = async (query: string, url = SUBGRAPH_ENDPOINT, retryMax = 3, retryCount = 0) => {
   try {
-    let result = await request(url, query);
+    let result = await axios.post(url, {
+      query: query
+    }, { 
+      headers: { 
+        "Accept-Encoding": "gzip,deflate,compress",
+        "content-type": "application/json"
+      } 
+    })
+    .then((response) => response.data)
+    .catch(function (error) {
+      // Handle any errors that occurred during the request
+      throw new Error(error);
+    });
     return result;
   } catch (e) {
     retryCount++;
