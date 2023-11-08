@@ -11,6 +11,7 @@ class SiloUserEventTransformer extends BaseTransformer {
       tx_hash: event.tx_hash,
       block_number: event.block_number,
       usd_value_at_event_time: event.usd_value_at_event_time,
+      deployment_id: event.deployment_id,
       ...(event.receiver_address && {
         receiver_address: event.receiver_address,
       }),

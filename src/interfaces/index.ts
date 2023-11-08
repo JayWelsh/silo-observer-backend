@@ -109,6 +109,7 @@ export interface ISiloUserEvent {
   block_day_timestamp?: string
   event_name: string
   usd_value_at_event_time: string
+  deployment_id: string
 }
 
 export interface IBlockMetadata {
