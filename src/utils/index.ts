@@ -50,6 +50,13 @@ const subgraphRequestWithRetry = async (query: string, url = SUBGRAPH_ENDPOINT, 
     }).then((response) => {
       return response.json()
     })
+    //@ts-ignore
+    if(result?.errors) {
+      //@ts-ignore
+      console.error(result?.errors);
+      //@ts-ignore
+      throw new Error(result.error);
+    }
     return result;
   } catch (e) {
     retryCount++;
