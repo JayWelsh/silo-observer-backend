@@ -53,22 +53,6 @@ console.log(`-------- ⚡ PORT: ${port} ⚡ --------`);
 registerBotCommands();
 let discordClient = botLoginAndReadyUp();
 
-const runSiloDataTracker = new CronJob(
-	// '15 */4 * * * *',
-	'30 */15 * * * *', // temp decrease until new month
-	function() {
-    let useTimestampUnix = Math.floor(new Date().setSeconds(0) / 1000);
-    let startTime = new Date().getTime();
-		console.log("Running SiloDataTracker", useTimestampUnix);
-    periodicSiloDataTracker(useTimestampUnix, startTime);
-	},
-	null,
-	true,
-	'Etc/UTC'
-);
-
-runSiloDataTracker.start();
-
 // web3
 
 // ETH MAINNET
@@ -81,20 +65,36 @@ export const EthersProviderArbitrum = new providers.AlchemyWebSocketProvider("ar
 export const MulticallProviderArbitrum = new Provider(EthersProviderArbitrum, 42161);
 MulticallProviderArbitrum.init();
 
-const runContractEventIndexer = new CronJob(
-	`15 */${contractEventIndexerPeriodMinutes} * * * *`, // runs at 40 seconds past the minute on contractEventIndexerPeriodMinutes to offset it from the minutely runner which usually takes around 30 seconds
-	function() {
+// const runContractEventIndexer = new CronJob(
+// 	`15 */${contractEventIndexerPeriodMinutes} * * * *`, // runs at 40 seconds past the minute on contractEventIndexerPeriodMinutes to offset it from the minutely runner which usually takes around 30 seconds
+// 	function() {
+//     let useTimestampUnix = Math.floor(new Date().setSeconds(0) / 1000);
+//     let startTime = new Date().getTime();
+// 		console.log("Running ContractEventIndexer", useTimestampUnix);
+//     periodicContractEventTracker(useTimestampUnix, startTime);
+// 	},
+// 	null,
+// 	true,
+// 	'Etc/UTC'
+// );
+
+// runContractEventIndexer.start();
+
+// const runSiloDataTracker = new CronJob(
+// 	// '15 */4 * * * *',
+// 	'30 */15 * * * *', // temp decrease until new month
+// 	function() {
     let useTimestampUnix = Math.floor(new Date().setSeconds(0) / 1000);
     let startTime = new Date().getTime();
-		console.log("Running ContractEventIndexer", useTimestampUnix);
-    periodicContractEventTracker(useTimestampUnix, startTime);
-	},
-	null,
-	true,
-	'Etc/UTC'
-);
+		console.log("Running SiloDataTracker", useTimestampUnix);
+    periodicSiloDataTracker(useTimestampUnix, startTime);
+// 	},
+// 	null,
+// 	true,
+// 	'Etc/UTC'
+// );
 
-runContractEventIndexer.start();
+// runSiloDataTracker.start();
 
 // (async () => {
 // 	backfillEventUsdValues()
