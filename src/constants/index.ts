@@ -19,15 +19,17 @@ export const MAX_MINUTELY_TVL_AND_BORROWED_ENTRIES = 10081; // 7 days + 1 second
 // CoinGecko
 export const COINGECKO_API_KEY = process.env["COINGECKO_API_KEY"];
 
+export const THE_GRAPH_API_KEY = process.env["THE_GRAPH_API_KEY"];
+
 // Subgraph
-export const SUBGRAPH_ENDPOINT = "https://api.thegraph.com/subgraphs/id/QmZwDpzNPEdDFMmSghyBC6wZ3aAjJqFB2xrAsrcLCPwVQk";
+export const SUBGRAPH_ENDPOINT = `https://gateway-arbitrum.network.thegraph.com/api/${THE_GRAPH_API_KEY}/deployments/id/QmZwDpzNPEdDFMmSghyBC6wZ3aAjJqFB2xrAsrcLCPwVQk`;
 export const SUBGRAPH_VERSION = "2.2.8";
 export const SUBGRAPH_ENDPOINT_FALLBACK = "https://api.thegraph.com/subgraphs/id/QmQV7RB3WUFuSrCSyJsDq6FkQsVYFwak2xCZYsq3JmDrSq";
 export const SUBGRAPH_VERSION_FALLBACK = "2.0.2";
 
-export const SUBGRAPH_ENDPOINT_ARBITRUM = "https://api.thegraph.com/subgraphs/id/QmQqLJVgZLcRduoszARzRi12qGheUTWAHFf3ixMeGm2xML";
+export const SUBGRAPH_ENDPOINT_ARBITRUM = `https://gateway-arbitrum.network.thegraph.com/api/${THE_GRAPH_API_KEY}/deployments/id/QmQqLJVgZLcRduoszARzRi12qGheUTWAHFf3ixMeGm2xML`;
 
-export const SUBGRAPH_ENDPOINT_LLAMA = "https://api.thegraph.com/subgraphs/id/QmYzeik2P18AFNKPtCrEFwuCHws66tjvZpX57KPfKbtnWw";
+export const SUBGRAPH_ENDPOINT_LLAMA = `https://gateway-arbitrum.network.thegraph.com/api/${THE_GRAPH_API_KEY}/deployments/id/QmYzeik2P18AFNKPtCrEFwuCHws66tjvZpX57KPfKbtnWw`;
 export const SUBGRAPH_VERSION_LLAMA = "2.4";
 
 export const NETWORK_TO_SUBGRAPH : {[key: string]: string} = {
