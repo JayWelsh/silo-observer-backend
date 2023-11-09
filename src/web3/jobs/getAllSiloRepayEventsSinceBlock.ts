@@ -52,7 +52,7 @@ export const getAllSiloRepayEventsSinceBlock = async (
 
   // delete any records newer than latestBlock in case there was an incomplete run which occurred
   let deletedRecords = await RepayEventRepository.query().delete().where(function (this: any) {
-    this.whereRaw(`block_number > ${fromBlock}`);
+    this.whereRaw(`block_number >= ${fromBlock}`);
     this.where(`network`, network);
     this.where(`deployment_id`, deploymentId);
   });
@@ -64,63 +64,68 @@ export const getAllSiloRepayEventsSinceBlock = async (
   let siloProgress = 0;
   let totalRecordCount = 0;
   let allEvents : Event[] = [];
-  let provider = EthersProvider;
-  if(network === "arbitrum") {
-    provider = EthersProviderArbitrum;
-  }
 
-  for(let siloAddress of siloAddresses) {
-    siloProgress++
-    const SiloContract = new Contract(siloAddress, SiloABI);
-    const siloContract = await SiloContract.connect(provider);
-    const repayEventFilter = await siloContract.filters.Repay(null, null);
+  if(blockRange > 1) {
 
-    let events = await eventIndexer(siloContract, repayEventFilter, lastestBlock, fromBlock, toBlock, blockRange, network, `${siloAddress} (Repay) - silo ${siloProgress} of ${siloAddresses.length}`);
-    if(events) {
-      allEvents = [...allEvents, ...events];
+    let provider = EthersProvider;
+    if(network === "arbitrum") {
+      provider = EthersProviderArbitrum;
     }
 
-    totalRecordCount += (events && (events?.length > 0)) ? events?.length : 0;
+    for(let siloAddress of siloAddresses) {
+      siloProgress++
+      const SiloContract = new Contract(siloAddress, SiloABI);
+      const siloContract = await SiloContract.connect(provider);
+      const repayEventFilter = await siloContract.filters.Repay(null, null);
 
-    if(events) {
-      for(let event of events) {
-        let {
-          blockNumber,
-          address,
-          args,
-          transactionHash,
-          transactionIndex,
-          logIndex,
-        } = event;
-        let {
-          asset,
-          user,
-          amount,
-        } = args;
-        // create event record
-        let eventFingerprint = getEventFingerprint(network, blockNumber, transactionIndex, logIndex);
-        RepayEventRepository.create({
-          silo_address: address,
-          asset_address: asset,
-          user_address: user,
-          amount: amount.toString(),
-          tx_hash: transactionHash,
-          block_number: blockNumber,
-          network,
-          deployment_id: deploymentId,
-          event_fingerprint: eventFingerprint,
-          log_index: logIndex,
-          tx_index: transactionIndex,
-        })
+      let events = await eventIndexer(siloContract, repayEventFilter, lastestBlock, fromBlock, toBlock, blockRange, network, `${siloAddress} (Repay) - silo ${siloProgress} of ${siloAddresses.length}`);
+      if(events) {
+        allEvents = [...allEvents, ...events];
+      }
+
+      totalRecordCount += (events && (events?.length > 0)) ? events?.length : 0;
+
+      if(events) {
+        for(let event of events) {
+          let {
+            blockNumber,
+            address,
+            args,
+            transactionHash,
+            transactionIndex,
+            logIndex,
+          } = event;
+          let {
+            asset,
+            user,
+            amount,
+          } = args;
+          // create event record
+          let eventFingerprint = getEventFingerprint(network, blockNumber, transactionIndex, logIndex);
+          RepayEventRepository.create({
+            silo_address: address,
+            asset_address: asset,
+            user_address: user,
+            amount: amount.toString(),
+            tx_hash: transactionHash,
+            block_number: blockNumber,
+            network,
+            deployment_id: deploymentId,
+            event_fingerprint: eventFingerprint,
+            log_index: logIndex,
+            tx_index: transactionIndex,
+          })
+        }
       }
     }
+
+    console.log(`Fetched ${totalRecordCount} Repay events across all silos`);
+
+    await EventIndexerBlockTrackerRepository.update({
+      last_checked_block: latestSyncBlock,
+    }, eventIndexBlockTrackerRecord.id)
+
   }
-
-  console.log(`Fetched ${totalRecordCount} Repay events across all silos`);
-
-  await EventIndexerBlockTrackerRepository.update({
-    last_checked_block: latestSyncBlock,
-  }, eventIndexBlockTrackerRecord.id)
 
   return allEvents ? allEvents : []
 

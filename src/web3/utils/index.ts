@@ -39,16 +39,16 @@ export const extractFromBlockToBlock = (
     // derive fromBlock
     let fromBlock = 0;
     if(last_checked_block) {
-      fromBlock = last_checked_block
+      fromBlock = last_checked_block + 1;
     } else if (genesis_block) { // keep else, condition is (genesis_block && !last_checked_block)
       fromBlock = genesis_block
     }
 
-    let blockRange = toBlock - fromBlock;
+    let blockRange = (toBlock - fromBlock) + 1;
 
     if(blockRange > MAX_TOTAL_BLOCK_RANGE[network]) {
       toBlock = fromBlock + MAX_TOTAL_BLOCK_RANGE[network];
-      blockRange = toBlock - fromBlock;
+      blockRange = (toBlock - fromBlock) + 1;
     }
 
     console.log({blockRange, fromBlock, toBlock });
