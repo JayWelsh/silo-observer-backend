@@ -8,8 +8,7 @@ import Knex from "knex";
 import {CronJob} from "cron";
 import {providers} from "ethers";
 import {
-  ALCHEMY_API_KEY,
-	ALCHEMY_API_KEY_ARBITRUM,
+	NETWORK_TO_ALCHEMY_ENDPOINT,
 } from "./constants"
 
 import routes from "./routes";
@@ -53,48 +52,36 @@ console.log(`-------- ⚡ PORT: ${port} ⚡ --------`);
 registerBotCommands();
 let discordClient = botLoginAndReadyUp();
 
-const runSiloDataTracker = new CronJob(
-	// '15 */4 * * * *',
-	`20 */${cronIndexerPeriodMinutes} * * * *`, // runs at 20 seconds past the minute at which it runs (staggered with runContractEventIndexer)
-	function() {
-    let useTimestampUnix = Math.floor(new Date().setSeconds(0) / 1000);
-    let startTime = new Date().getTime();
-		console.log("Running SiloDataTracker", useTimestampUnix);
-    periodicSiloDataTracker(useTimestampUnix, startTime);
-	},
-	null,
-	true,
-	'Etc/UTC'
-);
-
-runSiloDataTracker.start();
-
 // web3
 
 // ETH MAINNET
-export const EthersProvider = new providers.AlchemyWebSocketProvider("homestead", ALCHEMY_API_KEY);
+export const EthersProvider = new providers.JsonRpcProvider(NETWORK_TO_ALCHEMY_ENDPOINT["ethereum"]);
 export const MulticallProvider = new Provider(EthersProvider);
 MulticallProvider.init();
 
 // ARBITRUM
-export const EthersProviderArbitrum = new providers.AlchemyWebSocketProvider("arbitrum", ALCHEMY_API_KEY_ARBITRUM);
+export const EthersProviderArbitrum = new providers.JsonRpcProvider(NETWORK_TO_ALCHEMY_ENDPOINT["arbitrum"]);
 export const MulticallProviderArbitrum = new Provider(EthersProviderArbitrum, 42161);
 MulticallProviderArbitrum.init();
 
-const runContractEventIndexer = new CronJob(
-	`50 */${cronIndexerPeriodMinutes} * * * *`, // runs at 50 seconds past the minute at which it runs (staggered with runSiloDataTracker)
-	function() {
-    let useTimestampUnix = Math.floor(new Date().setSeconds(0) / 1000);
-    let startTime = new Date().getTime();
-		console.log("Running ContractEventIndexer", useTimestampUnix);
-    periodicContractEventTracker(useTimestampUnix, startTime);
+const runSync = new CronJob(
+	`20 */${cronIndexerPeriodMinutes} * * * *`, // runs at 20 seconds past the minute at which it runs
+	async () => {
+		let useTimestampUnixSiloDataTracker = Math.floor(new Date().setSeconds(0) / 1000);
+    let startTimeSiloDataTracker = new Date().getTime();
+		console.log("Running SiloDataTracker", new Date(useTimestampUnixSiloDataTracker * 1000));
+    await periodicSiloDataTracker(useTimestampUnixSiloDataTracker, startTimeSiloDataTracker);
+    let useTimestampUnixContractEventTracker = Math.floor(new Date().setSeconds(0) / 1000);
+    let startTimeContractEventTracker = new Date().getTime();
+		console.log("Running ContractEventIndexer", new Date(useTimestampUnixContractEventTracker * 1000));
+    await periodicContractEventTracker(useTimestampUnixContractEventTracker, startTimeContractEventTracker);
 	},
 	null,
 	true,
 	'Etc/UTC'
 );
 
-runContractEventIndexer.start();
+runSync.start();
 
 // (async () => {
 // 	backfillEventUsdValues()
