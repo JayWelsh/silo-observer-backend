@@ -131,5 +131,9 @@ export const DEPLOYMENT_CONFIGS : IDeployment[] = [
       abi: SiloFactoryABI,
       meta: "arbitrum-original",
     }],
+    incentiveControllers: [{
+      address: "0xd592F705bDC8C1B439Bd4D665Ed99C4FaAd5A680",
+      assetAddress: "0x912CE59144191C1204E64559FE8253a0e49E6548",
+    }]
   }
 ]

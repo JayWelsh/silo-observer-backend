@@ -11,6 +11,7 @@ import { getAllSiloBorrowEventsSinceBlock } from './getAllSiloBorrowEventsSinceB
 import { getAllSiloDepositEventsSinceBlock } from './getAllSiloDepositEventsSinceBlock';
 import { getAllSiloRepayEventsSinceBlock } from './getAllSiloRepayEventsSinceBlock';
 import { getAllSiloWithdrawEventsSinceBlock } from './getAllSiloWithdrawEventsSinceBlock';
+import { getAllRewardsClaimedEventsSinceBlock } from './getAllRewardsClaimedEventsSinceBlock';
 
 export {
   // general utils
@@ -25,4 +26,5 @@ export {
   getAllSiloDepositEventsSinceBlock,
   getAllSiloRepayEventsSinceBlock,
   getAllSiloWithdrawEventsSinceBlock,
+  getAllRewardsClaimedEventsSinceBlock,
 }
