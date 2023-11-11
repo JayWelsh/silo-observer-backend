@@ -12,6 +12,7 @@ import {
   getAllSiloDepositEventsSinceBlock,
   getAllSiloRepayEventsSinceBlock,
   getAllSiloWithdrawEventsSinceBlock,
+  getAllRewardsClaimedEventsSinceBlock,
   getBlocks,
 } from '../web3/jobs';
 
@@ -23,6 +24,7 @@ import {
   WithdrawEventRepository,
   RepayEventRepository,
   BlockMetadataRepository,
+  RewardEventRepository,
 } from '../database/repositories'
 
 import {
@@ -62,7 +64,7 @@ export const periodicContractEventTracker = async (useTimestampUnix: number, sta
 
   for(let deploymentConfig of DEPLOYMENT_CONFIGS) {
 
-    let { network } = deploymentConfig;
+    let { network, incentiveControllers } = deploymentConfig;
 
     try {
 
@@ -77,6 +79,18 @@ export const periodicContractEventTracker = async (useTimestampUnix: number, sta
         getAllSiloWithdrawEventsSinceBlock(siloAddresses, latestBlockNumber, deploymentConfig),
       ])
 
+      let [...rewardsClaimedEventBatches] = incentiveControllers 
+        ? 
+          await Promise.all(incentiveControllers?.map((entry) => {
+            return getAllRewardsClaimedEventsSinceBlock(entry.address, entry.assetAddress, latestBlockNumber, deploymentConfig);
+          }))
+        : 
+          [];
+
+      let allRewardsClaimedEvents = rewardsClaimedEventBatches.reduce((acc: Event[], value: Event[]) => {
+        return [...acc, ...value];
+      }, []);
+
       let [
         borrowEvents,
         depositEvents,
@@ -86,7 +100,7 @@ export const periodicContractEventTracker = async (useTimestampUnix: number, sta
 
       let allEvents = eventBatches.reduce((acc: Event[], value: Event[]) => {
         return [...acc, ...value];
-      }, []);
+      }, allRewardsClaimedEvents);
 
       let allBlockNumbers : number[] = [];
       for(let event of allEvents) {
@@ -122,6 +136,37 @@ export const periodicContractEventTracker = async (useTimestampUnix: number, sta
           })
         }
         console.log(`Filled in block metadata for ${blockData.length} blocks`);
+      }
+
+      if(deploymentConfig.incentiveControllers) {
+        for(let rewardsClaimedEvent of allRewardsClaimedEvents) {
+          let {
+            address,
+            blockNumber,
+            args,
+            transactionIndex,
+            logIndex,
+          } = rewardsClaimedEvent;
+          if(args && blockNumberToUnixTimestamp[blockNumber]) {
+            let {
+              amount,
+            } = args;
+            let assetAddress = deploymentConfig.incentiveControllers.find((entry) => entry.address === address)?.assetAddress;
+            if(assetAddress) {
+              let closestPrice = await fetchCoinGeckoAssetPriceClosestToTargetTime(assetAddress, network, blockNumberToUnixTimestamp[blockNumber]);
+              let assetRecord = await AssetRepository.findByColumn('address', assetAddress);
+              if(assetRecord) {
+                let rewardClaimedValueUSD = closestPrice?.price ? new BigNumber(Number(utils.formatUnits(amount.toString(), assetRecord.decimals))).multipliedBy(closestPrice?.price).toFixed(2) : 0;
+                let eventFingerprint = getEventFingerprint(network, blockNumber, transactionIndex, logIndex);
+                let existingEventRecord = await RewardEventRepository.findByColumn('event_fingerprint', eventFingerprint);
+                if(existingEventRecord) {
+                  await RewardEventRepository.update({usd_value_at_event_time: rewardClaimedValueUSD, asset_price_at_event_time: closestPrice?.price ? closestPrice?.price : 0}, existingEventRecord.id);
+                }
+                console.log({closestPrice, "reward claimed value": rewardClaimedValueUSD, amount: utils.formatUnits(amount.toString(), assetRecord.decimals).toString(), assetAddress});
+              }
+            }
+          }
+        }
       }
 
       for(let borrowEvent of borrowEvents) {

@@ -22,6 +22,7 @@ import BorrowEventRepository from './BorrowEventRepository';
 import DepositEventRepository from './DepositEventRepository';
 import WithdrawEventRepository from './WithdrawEventRepository';
 import RepayEventRepository from './RepayEventRepository';
+import RewardEventRepository from './RewardEventRepository';
 
 import BlockMetadataRepository from "./BlockMetadataRepository";
 
@@ -43,5 +44,6 @@ export {
   DepositEventRepository,
   WithdrawEventRepository,
   RepayEventRepository,
+  RewardEventRepository,
   BlockMetadataRepository,
 };

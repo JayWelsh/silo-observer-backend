@@ -129,6 +129,11 @@ export interface IFactoryConfig {
   meta: string;
 }
 
+export interface IIncentiveControllerConfig {
+  address: string;
+  assetAddress: string;
+}
+
 export interface IDeployment {
   id: string;
   idHumanReadable: string;
@@ -138,6 +143,7 @@ export interface IDeployment {
   siloBlacklist: string[];
   subgraphEndpoint: string;
   siloFactories: IFactoryConfig[];
+  incentiveControllers?:  IIncentiveControllerConfig[];
 }
 
 export interface IVolumeTimeseriesQueryResult {

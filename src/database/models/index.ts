@@ -25,6 +25,7 @@ import BorrowEventModel from './BorrowEventModel';
 import DepositEventModel from './DepositEventModel';
 import WithdrawEventModel from './WithdrawEventModel';
 import RepayEventModel from './RepayEventModel';
+import RewardEventModel from './RewardEventModel';
 
 // BLOCK METADATA
 import BlockMetadataModel from './BlockMetadataModel';
@@ -47,5 +48,6 @@ export {
   DepositEventModel,
   WithdrawEventModel,
   RepayEventModel,
+  RewardEventModel,
   BlockMetadataModel,
 }

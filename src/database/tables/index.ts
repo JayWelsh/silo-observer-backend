@@ -20,6 +20,7 @@ const BORROW_EVENT_TABLE = 'borrow_event';
 const REPAY_EVENT_TABLE = 'repay_event';
 const DEPOSIT_EVENT_TABLE = 'deposit_event';
 const WITHDRAW_EVENT_TABLE = 'withdraw_event';
+const REWARD_EVENT_TABLE = 'reward_event';
 
 const BLOCK_METADATA_TABLE = 'block_metadata';
 
@@ -41,5 +42,6 @@ export {
   REPAY_EVENT_TABLE,
   DEPOSIT_EVENT_TABLE,
   WITHDRAW_EVENT_TABLE,
+  REWARD_EVENT_TABLE,
   BLOCK_METADATA_TABLE,
 }
