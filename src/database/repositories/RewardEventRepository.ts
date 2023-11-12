@@ -91,46 +91,6 @@ class RewardEventRepository extends BaseRepository {
  
   }
 
-  async getRewardEventsBySiloAddress(
-    siloAddress: string,
-    pagination: IPaginationRequest,
-    transformer: ITransformer,
-  ) {
-
-    const { 
-      perPage,
-      page
-    } = pagination;
-
-    const results = await this.model.query()
-    .withGraphJoined('asset')
-    .where(function (this: QueryBuilder<RewardEventModel>) {
-      this.where('silo_address', siloAddress);
-    }).orderBy('block_number', 'DESC').page(page - 1, perPage);
-
-    return this.parserResult(new Pagination(results, perPage, page), transformer);
-  }
-
-  async getRewardEventsBySiloName(
-    siloName: string,
-    pagination: IPaginationRequest,
-    transformer: ITransformer,
-  ) {
-
-    const { 
-      perPage,
-      page
-    } = pagination;
-
-    const results = await this.model.query()
-    .withGraphJoined('asset')
-    .where(function (this: QueryBuilder<RewardEventModel>) {
-      this.where('silo.name', siloName);
-    }).orderBy('block_number', 'DESC').page(page - 1, perPage);
-
-    return this.parserResult(new Pagination(results, perPage, page), transformer);
-  }
-
   async getDailyRewardsClaimedTotals(
     pagination: IPaginationRequest,
     order: string,

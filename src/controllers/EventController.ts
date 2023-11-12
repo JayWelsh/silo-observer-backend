@@ -8,6 +8,7 @@ import {
   DepositEventRepository,
   WithdrawEventRepository,
   RepayEventRepository,
+  RewardEventRepository,
   BlockMetadataRepository,
 } from '../database/repositories';
 
@@ -122,6 +123,25 @@ class EventController extends Controller {
     } else if(eventType === 'withdraw') {
       events = await WithdrawEventRepository.getWithdrawEventsDistinctUsersPerDay(pagination, parsedNetworks, SiloUserEventDistinctDailyUsersOutputTransformer, skipPagination);
     }
+
+    this.sendResponse(res, events);
+  }
+  async getRewardEvents(req: Request, res: Response) {
+
+    let {
+      networks,
+    } = req.query;
+
+    networks = networks as string;
+
+    let parsedNetworks : string[] = [];
+    if(networks) {
+      parsedNetworks = networks.split(',')
+    }
+
+    const pagination = this.extractPagination(req)
+
+    let events = await RewardEventRepository.getRewardEvents(pagination, parsedNetworks, SiloUserEventOutputTransformer);
 
     this.sendResponse(res, events);
   }
