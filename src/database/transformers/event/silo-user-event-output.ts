@@ -15,6 +15,9 @@ class SiloUserEventTransformer extends BaseTransformer {
       ...(event.receiver_address && {
         receiver_address: event.receiver_address,
       }),
+      ...(event.gas_used && {
+        gas_used: event.gas_used,
+      }),
       ...(event.silo && {
         silo: {
           name: event.silo.name,
