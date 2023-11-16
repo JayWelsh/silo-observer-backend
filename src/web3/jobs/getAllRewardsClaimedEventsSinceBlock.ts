@@ -34,6 +34,7 @@ export const getAllRewardsClaimedEventsSinceBlock = async (
   incentiveAssetAddress: string,
   lastestBlock: number,
   deploymentConfig: IDeployment,
+  isSanityCheck?: boolean,
 ) => {
 
   console.log("Initiating RewardsClaimed Event Tracker");
@@ -42,6 +43,9 @@ export const getAllRewardsClaimedEventsSinceBlock = async (
   let deploymentId = deploymentConfig.id;
 
   let eventIndexBlockTrackerRecord = await EventIndexerBlockTrackerRepository.getByEventNameAndNetwork("RewardsClaimed", network, deploymentId);
+  if(isSanityCheck) {
+    eventIndexBlockTrackerRecord = await EventIndexerBlockTrackerRepository.getByEventNameAndNetwork("RewardsClaimed-Sanity", network, deploymentId);
+  }
 
   if(eventIndexBlockTrackerRecord) {
 
@@ -53,16 +57,18 @@ export const getAllRewardsClaimedEventsSinceBlock = async (
 
     let latestSyncBlock = toBlock;
 
-    // delete any records newer than latestBlock in case there was an incomplete run which occurred
-    let deletedRecords = await RewardEventRepository.query().delete().where(function (this: any) {
-      this.whereRaw(`block_number >= ${fromBlock}`);
-      this.where(`network`, network);
-      this.where(`deployment_id`, deploymentId);
-      this.where(`incentive_controller_address`, incentiveControllerAddress);
-    });
+    if(!isSanityCheck) {
+      // delete any records newer than latestBlock in case there was an incomplete run which occurred
+      let deletedRecords = await RewardEventRepository.query().delete().where(function (this: any) {
+        this.whereRaw(`block_number >= ${fromBlock}`);
+        this.where(`network`, network);
+        this.where(`deployment_id`, deploymentId);
+        this.where(`incentive_controller_address`, incentiveControllerAddress);
+      });
 
-    if(deletedRecords && (deletedRecords > 0)) {
-      console.log(`Deleted ${deletedRecords} records with a block_number larger than ${fromBlock}`);
+      if(deletedRecords && (deletedRecords > 0)) {
+        console.log(`Deleted ${deletedRecords} records with a block_number larger than ${fromBlock}`);
+      }
     }
 
     let totalRecordCount = 0;
@@ -79,7 +85,7 @@ export const getAllRewardsClaimedEventsSinceBlock = async (
       const incentivesControllerContract = await IncentivesControllerContract.connect(provider);
       const rewardsClaimedEventFilter = await incentivesControllerContract.filters.RewardsClaimed(null, null, null);
 
-      let events = await eventIndexer(incentivesControllerContract, rewardsClaimedEventFilter, lastestBlock, fromBlock, toBlock, blockRange, network, `${incentiveControllerAddress} (RewardsClaimed)`);
+      let events = await eventIndexer(incentivesControllerContract, rewardsClaimedEventFilter, lastestBlock, fromBlock, toBlock, blockRange, network, `${incentiveControllerAddress} - isSanityCheck: ${isSanityCheck} - (RewardsClaimed)`);
       if(events) {
         allEvents = [...allEvents, ...events];
       }
@@ -102,20 +108,23 @@ export const getAllRewardsClaimedEventsSinceBlock = async (
           } = args;
           // create event record
           let eventFingerprint = getEventFingerprint(network, blockNumber, transactionIndex, logIndex);
-          RewardEventRepository.create({
-            event_name: "RewardsClaimed",
-            incentive_controller_address: address,
-            asset_address: incentiveAssetAddress,
-            user_address: user,
-            amount: amount.toString(),
-            tx_hash: transactionHash,
-            block_number: blockNumber,
-            network,
-            deployment_id: deploymentId,
-            event_fingerprint: eventFingerprint,
-            log_index: logIndex,
-            tx_index: transactionIndex,
-          })
+          let existingEventRecord = await RewardEventRepository.findByColumn('event_fingerprint', eventFingerprint);
+          if(!existingEventRecord) {
+            RewardEventRepository.create({
+              event_name: "RewardsClaimed",
+              incentive_controller_address: address,
+              asset_address: incentiveAssetAddress,
+              user_address: user,
+              amount: amount.toString(),
+              tx_hash: transactionHash,
+              block_number: blockNumber,
+              network,
+              deployment_id: deploymentId,
+              event_fingerprint: eventFingerprint,
+              log_index: logIndex,
+              tx_index: transactionIndex,
+            })
+          }
         }
       }
 

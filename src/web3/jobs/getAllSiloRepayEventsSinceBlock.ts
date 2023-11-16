@@ -33,6 +33,7 @@ export const getAllSiloRepayEventsSinceBlock = async (
   siloAddresses: string [],
   lastestBlock: number,
   deploymentConfig: IDeployment,
+  isSanityCheck?: boolean,
 ) => {
 
   let network = deploymentConfig.network;
@@ -41,6 +42,13 @@ export const getAllSiloRepayEventsSinceBlock = async (
   console.log("Initiating Repay Event Tracker");
 
   let eventIndexBlockTrackerRecord = await EventIndexerBlockTrackerRepository.getByEventNameAndNetwork("Repay", network, deploymentId);
+  if(isSanityCheck) {
+    eventIndexBlockTrackerRecord = await EventIndexerBlockTrackerRepository.getByEventNameAndNetwork("Repay-Sanity", network, deploymentId);
+  }
+
+  if(!eventIndexBlockTrackerRecord) {
+    return [];
+  }
 
   let {
     fromBlock,
@@ -50,15 +58,17 @@ export const getAllSiloRepayEventsSinceBlock = async (
 
   let latestSyncBlock = toBlock;
 
-  // delete any records newer than latestBlock in case there was an incomplete run which occurred
-  let deletedRecords = await RepayEventRepository.query().delete().where(function (this: any) {
-    this.whereRaw(`block_number >= ${fromBlock}`);
-    this.where(`network`, network);
-    this.where(`deployment_id`, deploymentId);
-  });
+  if(!isSanityCheck) {
+    // delete any records newer than latestBlock in case there was an incomplete run which occurred
+    let deletedRecords = await RepayEventRepository.query().delete().where(function (this: any) {
+      this.whereRaw(`block_number >= ${fromBlock}`);
+      this.where(`network`, network);
+      this.where(`deployment_id`, deploymentId);
+    });
 
-  if(deletedRecords && (deletedRecords > 0)) {
-    console.log(`Deleted ${deletedRecords} records with a block_number larger than ${fromBlock}`);
+    if(deletedRecords && (deletedRecords > 0)) {
+      console.log(`Deleted ${deletedRecords} records with a block_number larger than ${fromBlock}`);
+    }
   }
 
   let siloProgress = 0;
@@ -78,7 +88,7 @@ export const getAllSiloRepayEventsSinceBlock = async (
       const siloContract = await SiloContract.connect(provider);
       const repayEventFilter = await siloContract.filters.Repay(null, null);
 
-      let events = await eventIndexer(siloContract, repayEventFilter, lastestBlock, fromBlock, toBlock, blockRange, network, `${siloAddress} (Repay) - silo ${siloProgress} of ${siloAddresses.length}`);
+      let events = await eventIndexer(siloContract, repayEventFilter, lastestBlock, fromBlock, toBlock, blockRange, network, `${siloAddress} - isSanityCheck: ${isSanityCheck} - (Repay) - silo ${siloProgress} of ${siloAddresses.length}`);
       if(events) {
         allEvents = [...allEvents, ...events];
       }
@@ -102,19 +112,22 @@ export const getAllSiloRepayEventsSinceBlock = async (
           } = args;
           // create event record
           let eventFingerprint = getEventFingerprint(network, blockNumber, transactionIndex, logIndex);
-          RepayEventRepository.create({
-            silo_address: address,
-            asset_address: asset,
-            user_address: user,
-            amount: amount.toString(),
-            tx_hash: transactionHash,
-            block_number: blockNumber,
-            network,
-            deployment_id: deploymentId,
-            event_fingerprint: eventFingerprint,
-            log_index: logIndex,
-            tx_index: transactionIndex,
-          })
+          let existingEventRecord = await RepayEventRepository.findByColumn('event_fingerprint', eventFingerprint);
+          if(!existingEventRecord) {
+            RepayEventRepository.create({
+              silo_address: address,
+              asset_address: asset,
+              user_address: user,
+              amount: amount.toString(),
+              tx_hash: transactionHash,
+              block_number: blockNumber,
+              network,
+              deployment_id: deploymentId,
+              event_fingerprint: eventFingerprint,
+              log_index: logIndex,
+              tx_index: transactionIndex,
+            })
+          }
         }
       }
     }
