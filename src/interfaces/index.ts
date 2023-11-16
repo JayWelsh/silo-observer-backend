@@ -110,6 +110,7 @@ export interface ISiloUserEvent {
   event_name: string
   usd_value_at_event_time: string
   deployment_id: string
+  gas_used?: string
 }
 
 export interface IBlockMetadata {
