@@ -142,177 +142,177 @@ export const resycAllEventsUpToLastSyncedBlocks = async (useTimestampUnix: numbe
 
       // TEMP DISABLE ALL GAS USED SYNCS
 
-      // if(deploymentConfig.incentiveControllers) {
-      //   for(let rewardsClaimedEvent of allRewardsClaimedEvents) {
-      //     let {
-      //       address,
-      //       blockNumber,
-      //       args,
-      //       transactionIndex,
-      //       logIndex,
-      //     } = rewardsClaimedEvent;
-      //     if(args && blockNumberToUnixTimestamp[blockNumber]) {
-      //       let {
-      //         amount,
-      //       } = args;
-      //       let assetAddress = deploymentConfig.incentiveControllers.find((entry) => entry.address === address)?.assetAddress;
-      //       if(assetAddress) {
-      //         // let closestPrice = await fetchCoinGeckoAssetPriceClosestToTargetTime(assetAddress, network, blockNumberToUnixTimestamp[blockNumber]);
-      //         let assetRecord = await AssetRepository.findByColumn('address', assetAddress);
-      //         if(assetRecord) {
-      //           // let rewardClaimedValueUSD = closestPrice?.price ? new BigNumber(Number(utils.formatUnits(amount.toString(), assetRecord.decimals))).multipliedBy(closestPrice?.price).toFixed(2) : 0;
-      //           let eventFingerprint = getEventFingerprint(network, blockNumber, transactionIndex, logIndex);
-      //           let existingEventRecord = await RewardEventRepository.findByColumn('event_fingerprint', eventFingerprint);
-      //           if(existingEventRecord && !existingEventRecord.gas_used) {
-      //             let transactionReceipt = await rewardsClaimedEvent.getTransactionReceipt();
-      //             let {
-      //               gasUsed,
-      //             } = transactionReceipt;
-      //             let gasUsedUsable = gasUsed.toString();
-      //             await RewardEventRepository.update({
-      //               gas_used: gasUsedUsable,
-      //               // usd_value_at_event_time: rewardClaimedValueUSD,
-      //               // asset_price_at_event_time: closestPrice?.price ? closestPrice?.price : 0
-      //             }, existingEventRecord.id);
-      //           }
-      //           // console.log({closestPrice, "reward claimed value": rewardClaimedValueUSD, amount: utils.formatUnits(amount.toString(), assetRecord.decimals).toString(), assetAddress});
-      //         }
-      //       }
-      //     }
-      //   }
-      // }
+      if(deploymentConfig.incentiveControllers) {
+        for(let rewardsClaimedEvent of allRewardsClaimedEvents) {
+          let {
+            address,
+            blockNumber,
+            args,
+            transactionIndex,
+            logIndex,
+          } = rewardsClaimedEvent;
+          if(args && blockNumberToUnixTimestamp[blockNumber]) {
+            let {
+              amount,
+            } = args;
+            let assetAddress = deploymentConfig.incentiveControllers.find((entry) => entry.address === address)?.assetAddress;
+            if(assetAddress) {
+              // let closestPrice = await fetchCoinGeckoAssetPriceClosestToTargetTime(assetAddress, network, blockNumberToUnixTimestamp[blockNumber]);
+              let assetRecord = await AssetRepository.findByColumn('address', assetAddress);
+              if(assetRecord) {
+                // let rewardClaimedValueUSD = closestPrice?.price ? new BigNumber(Number(utils.formatUnits(amount.toString(), assetRecord.decimals))).multipliedBy(closestPrice?.price).toFixed(2) : 0;
+                let eventFingerprint = getEventFingerprint(network, blockNumber, transactionIndex, logIndex);
+                let existingEventRecord = await RewardEventRepository.findByColumn('event_fingerprint', eventFingerprint);
+                if(existingEventRecord && !existingEventRecord.gas_used) {
+                  let transactionReceipt = await rewardsClaimedEvent.getTransactionReceipt();
+                  let {
+                    gasUsed,
+                  } = transactionReceipt;
+                  let gasUsedUsable = gasUsed.toString();
+                  await RewardEventRepository.update({
+                    gas_used: gasUsedUsable,
+                    // usd_value_at_event_time: rewardClaimedValueUSD,
+                    // asset_price_at_event_time: closestPrice?.price ? closestPrice?.price : 0
+                  }, existingEventRecord.id);
+                }
+                // console.log({closestPrice, "reward claimed value": rewardClaimedValueUSD, amount: utils.formatUnits(amount.toString(), assetRecord.decimals).toString(), assetAddress});
+              }
+            }
+          }
+        }
+      }
 
-      // for(let borrowEvent of borrowEvents) {
-      //   let {
-      //     blockNumber,
-      //     args,
-      //     transactionIndex,
-      //     logIndex,
-      //   } = borrowEvent;
-      //   if(args && blockNumberToUnixTimestamp[blockNumber]) {
-      //     let {
-      //       asset,
-      //       amount,
-      //     } = args;
-      //     // let closestPrice = await fetchCoinGeckoAssetPriceClosestToTargetTime(asset, network, blockNumberToUnixTimestamp[blockNumber]);
-      //     // let assetRecord = await AssetRepository.findByColumn('address', asset);
-      //     // let borrowValueUSD = closestPrice?.price ? new BigNumber(Number(utils.formatUnits(amount.toString(), assetRecord.decimals))).multipliedBy(closestPrice?.price).toFixed(2) : 0;
-      //     let eventFingerprint = getEventFingerprint(network, blockNumber, transactionIndex, logIndex);
-      //     let existingEventRecord = await BorrowEventRepository.findByColumn('event_fingerprint', eventFingerprint);
-      //     if(existingEventRecord && !existingEventRecord.gas_used) {
-      //       let transactionReceipt = await borrowEvent.getTransactionReceipt();
-      //       let {
-      //         gasUsed,
-      //       } = transactionReceipt;
-      //       let gasUsedUsable = gasUsed.toString();
-      //       await BorrowEventRepository.update({
-      //         gas_used: gasUsedUsable,
-      //         // usd_value_at_event_time: borrowValueUSD,
-      //         // asset_price_at_event_time: closestPrice?.price ? closestPrice?.price : 0
-      //       }, existingEventRecord.id);
-      //     }
-      //     // console.log({closestPrice, "borrow amount USD": borrowValueUSD, amount: utils.formatUnits(amount.toString(), assetRecord.decimals).toString(), asset});
-      //   }
-      // }
+      for(let borrowEvent of borrowEvents) {
+        let {
+          blockNumber,
+          args,
+          transactionIndex,
+          logIndex,
+        } = borrowEvent;
+        if(args && blockNumberToUnixTimestamp[blockNumber]) {
+          let {
+            asset,
+            amount,
+          } = args;
+          // let closestPrice = await fetchCoinGeckoAssetPriceClosestToTargetTime(asset, network, blockNumberToUnixTimestamp[blockNumber]);
+          // let assetRecord = await AssetRepository.findByColumn('address', asset);
+          // let borrowValueUSD = closestPrice?.price ? new BigNumber(Number(utils.formatUnits(amount.toString(), assetRecord.decimals))).multipliedBy(closestPrice?.price).toFixed(2) : 0;
+          let eventFingerprint = getEventFingerprint(network, blockNumber, transactionIndex, logIndex);
+          let existingEventRecord = await BorrowEventRepository.findByColumn('event_fingerprint', eventFingerprint);
+          if(existingEventRecord && !existingEventRecord.gas_used) {
+            let transactionReceipt = await borrowEvent.getTransactionReceipt();
+            let {
+              gasUsed,
+            } = transactionReceipt;
+            let gasUsedUsable = gasUsed.toString();
+            await BorrowEventRepository.update({
+              gas_used: gasUsedUsable,
+              // usd_value_at_event_time: borrowValueUSD,
+              // asset_price_at_event_time: closestPrice?.price ? closestPrice?.price : 0
+            }, existingEventRecord.id);
+          }
+          // console.log({closestPrice, "borrow amount USD": borrowValueUSD, amount: utils.formatUnits(amount.toString(), assetRecord.decimals).toString(), asset});
+        }
+      }
 
-      // for(let depositEvent of depositEvents) {
-      //   let {
-      //     blockNumber,
-      //     args,
-      //     transactionIndex,
-      //     logIndex,
-      //   } = depositEvent;
-      //   if(args && blockNumberToUnixTimestamp[blockNumber]) {
-      //     let {
-      //       asset,
-      //       amount,
-      //     } = args;
-      //     // let closestPrice = await fetchCoinGeckoAssetPriceClosestToTargetTime(asset, network, blockNumberToUnixTimestamp[blockNumber]);
-      //     // let assetRecord = await AssetRepository.findByColumn('address', asset);
-      //     // let depositValueUSD = closestPrice?.price ? new BigNumber(Number(utils.formatUnits(amount.toString(), assetRecord.decimals))).multipliedBy(closestPrice?.price).toFixed(2) : 0;
-      //     let eventFingerprint = getEventFingerprint(network, blockNumber, transactionIndex, logIndex);
-      //     let existingEventRecord = await DepositEventRepository.findByColumn('event_fingerprint', eventFingerprint);
-      //     if(existingEventRecord && !existingEventRecord.gas_used) {
-      //       let transactionReceipt = await depositEvent.getTransactionReceipt();
-      //       let {
-      //         gasUsed,
-      //       } = transactionReceipt;
-      //       let gasUsedUsable = gasUsed.toString();
-      //       await DepositEventRepository.update({
-      //         gas_used: gasUsedUsable,
-      //         // usd_value_at_event_time: depositValueUSD,
-      //         // asset_price_at_event_time: closestPrice?.price ? closestPrice?.price : 0
-      //       }, existingEventRecord.id);
-      //     }
-      //     // console.log({closestPrice, "deposit amount USD": depositValueUSD, amount: utils.formatUnits(amount.toString(), assetRecord.decimals).toString(), asset});
-      //   }
-      // }
+      for(let depositEvent of depositEvents) {
+        let {
+          blockNumber,
+          args,
+          transactionIndex,
+          logIndex,
+        } = depositEvent;
+        if(args && blockNumberToUnixTimestamp[blockNumber]) {
+          let {
+            asset,
+            amount,
+          } = args;
+          // let closestPrice = await fetchCoinGeckoAssetPriceClosestToTargetTime(asset, network, blockNumberToUnixTimestamp[blockNumber]);
+          // let assetRecord = await AssetRepository.findByColumn('address', asset);
+          // let depositValueUSD = closestPrice?.price ? new BigNumber(Number(utils.formatUnits(amount.toString(), assetRecord.decimals))).multipliedBy(closestPrice?.price).toFixed(2) : 0;
+          let eventFingerprint = getEventFingerprint(network, blockNumber, transactionIndex, logIndex);
+          let existingEventRecord = await DepositEventRepository.findByColumn('event_fingerprint', eventFingerprint);
+          if(existingEventRecord && !existingEventRecord.gas_used) {
+            let transactionReceipt = await depositEvent.getTransactionReceipt();
+            let {
+              gasUsed,
+            } = transactionReceipt;
+            let gasUsedUsable = gasUsed.toString();
+            await DepositEventRepository.update({
+              gas_used: gasUsedUsable,
+              // usd_value_at_event_time: depositValueUSD,
+              // asset_price_at_event_time: closestPrice?.price ? closestPrice?.price : 0
+            }, existingEventRecord.id);
+          }
+          // console.log({closestPrice, "deposit amount USD": depositValueUSD, amount: utils.formatUnits(amount.toString(), assetRecord.decimals).toString(), asset});
+        }
+      }
 
-      // for(let repayEvent of repayEvents) {
-      //   let {
-      //     blockNumber,
-      //     args,
-      //     transactionIndex,
-      //     logIndex,
-      //   } = repayEvent;
-      //   if(args && blockNumberToUnixTimestamp[blockNumber]) {
-      //     let {
-      //       asset,
-      //       amount,
-      //     } = args;
-      //     // let closestPrice = await fetchCoinGeckoAssetPriceClosestToTargetTime(asset, network, blockNumberToUnixTimestamp[blockNumber]);
-      //     // let assetRecord = await AssetRepository.findByColumn('address', asset);
-      //     // let repayValueUSD = closestPrice?.price ? new BigNumber(Number(utils.formatUnits(amount.toString(), assetRecord.decimals))).multipliedBy(closestPrice?.price).toFixed(2) : 0;
-      //     let eventFingerprint = getEventFingerprint(network, blockNumber, transactionIndex, logIndex);
-      //     let existingEventRecord = await RepayEventRepository.findByColumn('event_fingerprint', eventFingerprint);
-      //     if(existingEventRecord && !existingEventRecord.gas_used) {
-      //       let transactionReceipt = await repayEvent.getTransactionReceipt();
-      //       let {
-      //         gasUsed,
-      //       } = transactionReceipt;
-      //       let gasUsedUsable = gasUsed.toString();
-      //       await RepayEventRepository.update({
-      //         gas_used: gasUsedUsable,
-      //         // usd_value_at_event_time: repayValueUSD,
-      //         // asset_price_at_event_time: closestPrice?.price ? closestPrice?.price : 0
-      //       }, existingEventRecord.id);
-      //     }
-      //     // console.log({closestPrice, "repay amount USD": repayValueUSD, amount: utils.formatUnits(amount.toString(), assetRecord.decimals).toString(), asset});
-      //   }
-      // }
+      for(let repayEvent of repayEvents) {
+        let {
+          blockNumber,
+          args,
+          transactionIndex,
+          logIndex,
+        } = repayEvent;
+        if(args && blockNumberToUnixTimestamp[blockNumber]) {
+          let {
+            asset,
+            amount,
+          } = args;
+          // let closestPrice = await fetchCoinGeckoAssetPriceClosestToTargetTime(asset, network, blockNumberToUnixTimestamp[blockNumber]);
+          // let assetRecord = await AssetRepository.findByColumn('address', asset);
+          // let repayValueUSD = closestPrice?.price ? new BigNumber(Number(utils.formatUnits(amount.toString(), assetRecord.decimals))).multipliedBy(closestPrice?.price).toFixed(2) : 0;
+          let eventFingerprint = getEventFingerprint(network, blockNumber, transactionIndex, logIndex);
+          let existingEventRecord = await RepayEventRepository.findByColumn('event_fingerprint', eventFingerprint);
+          if(existingEventRecord && !existingEventRecord.gas_used) {
+            let transactionReceipt = await repayEvent.getTransactionReceipt();
+            let {
+              gasUsed,
+            } = transactionReceipt;
+            let gasUsedUsable = gasUsed.toString();
+            await RepayEventRepository.update({
+              gas_used: gasUsedUsable,
+              // usd_value_at_event_time: repayValueUSD,
+              // asset_price_at_event_time: closestPrice?.price ? closestPrice?.price : 0
+            }, existingEventRecord.id);
+          }
+          // console.log({closestPrice, "repay amount USD": repayValueUSD, amount: utils.formatUnits(amount.toString(), assetRecord.decimals).toString(), asset});
+        }
+      }
 
-      // for(let withdrawEvent of withdrawEvents) {
-      //   let {
-      //     blockNumber,
-      //     args,
-      //     transactionIndex,
-      //     logIndex,
-      //   } = withdrawEvent;
-      //   if(args && blockNumberToUnixTimestamp[blockNumber]) {
-      //     let {
-      //       asset,
-      //       amount,
-      //     } = args;
-      //     // let closestPrice = await fetchCoinGeckoAssetPriceClosestToTargetTime(asset, network, blockNumberToUnixTimestamp[blockNumber]);
-      //     // let assetRecord = await AssetRepository.findByColumn('address', asset);
-      //     // let withdrawValueUSD = closestPrice?.price ? new BigNumber(Number(utils.formatUnits(amount.toString(), assetRecord.decimals))).multipliedBy(closestPrice?.price).toFixed(2) : 0;
-      //     let eventFingerprint = getEventFingerprint(network, blockNumber, transactionIndex, logIndex);
-      //     let existingEventRecord = await WithdrawEventRepository.findByColumn('event_fingerprint', eventFingerprint);
-      //     if(existingEventRecord && !existingEventRecord.gas_used) {
-      //       let transactionReceipt = await withdrawEvent.getTransactionReceipt();
-      //       let {
-      //         gasUsed,
-      //       } = transactionReceipt;
-      //       let gasUsedUsable = gasUsed.toString();
-      //       await WithdrawEventRepository.update({
-      //         gas_used: gasUsedUsable,
-      //         // usd_value_at_event_time: withdrawValueUSD,
-      //         // asset_price_at_event_time: closestPrice?.price ? closestPrice?.price : 0
-      //       }, existingEventRecord.id);
-      //     }
-      //     // console.log({closestPrice, "withdraw amount USD": withdrawValueUSD, amount: utils.formatUnits(amount.toString(), assetRecord.decimals).toString(), asset});
-      //   }
-      // }
+      for(let withdrawEvent of withdrawEvents) {
+        let {
+          blockNumber,
+          args,
+          transactionIndex,
+          logIndex,
+        } = withdrawEvent;
+        if(args && blockNumberToUnixTimestamp[blockNumber]) {
+          let {
+            asset,
+            amount,
+          } = args;
+          // let closestPrice = await fetchCoinGeckoAssetPriceClosestToTargetTime(asset, network, blockNumberToUnixTimestamp[blockNumber]);
+          // let assetRecord = await AssetRepository.findByColumn('address', asset);
+          // let withdrawValueUSD = closestPrice?.price ? new BigNumber(Number(utils.formatUnits(amount.toString(), assetRecord.decimals))).multipliedBy(closestPrice?.price).toFixed(2) : 0;
+          let eventFingerprint = getEventFingerprint(network, blockNumber, transactionIndex, logIndex);
+          let existingEventRecord = await WithdrawEventRepository.findByColumn('event_fingerprint', eventFingerprint);
+          if(existingEventRecord && !existingEventRecord.gas_used) {
+            let transactionReceipt = await withdrawEvent.getTransactionReceipt();
+            let {
+              gasUsed,
+            } = transactionReceipt;
+            let gasUsedUsable = gasUsed.toString();
+            await WithdrawEventRepository.update({
+              gas_used: gasUsedUsable,
+              // usd_value_at_event_time: withdrawValueUSD,
+              // asset_price_at_event_time: closestPrice?.price ? closestPrice?.price : 0
+            }, existingEventRecord.id);
+          }
+          // console.log({closestPrice, "withdraw amount USD": withdrawValueUSD, amount: utils.formatUnits(amount.toString(), assetRecord.decimals).toString(), asset});
+        }
+      }
 
       console.log(`Sanity event resync successful (${network} - ${deploymentConfig.id}), exec time: ${new Date().getTime() - startTime}ms`)
 
