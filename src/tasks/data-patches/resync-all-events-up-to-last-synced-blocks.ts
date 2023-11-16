@@ -363,10 +363,10 @@ export const resycAllEventsUpToLastSyncedBlocks = async (useTimestampUnix: numbe
 
       // TEMP DISABLE USER INTERACTION COUNT SYNCS ABOVE
 
-      console.log(`Periodic contract event tracker successful (${network} - ${deploymentConfig.id}), exec time: ${new Date().getTime() - startTime}ms`)
+      console.log(`Sanity event resync successful (${network} - ${deploymentConfig.id}), exec time: ${new Date().getTime() - startTime}ms`)
 
     } catch (e) {
-      console.error(`Error encountered in periodicContractEventTracker (${network} - ${deploymentConfig.id}) at ${useTimestampPostgres}, exec time: ${new Date().getTime() - startTime}ms, error: ${e}`)
+      console.error(`Error encountered in sanity checker (${network} - ${deploymentConfig.id}) at ${useTimestampPostgres}, exec time: ${new Date().getTime() - startTime}ms, error: ${e}`)
     }
 
   }
