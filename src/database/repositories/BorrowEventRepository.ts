@@ -62,7 +62,7 @@ class BorrowEventRepository extends BaseRepository {
     let tableName = this.model.tableName;
 
     let columnsForSelection = (tableName: string) => {
-      return ["event_name", "amount", "usd_value_at_event_time", "tx_hash", "gas_used", `${tableName}.deployment_id`];
+      return ["event_name", "amount", "usd_value_at_event_time", "tx_hash", "gas_used", "user_address", `${tableName}.deployment_id`];
     }
 
     const results = await this.model.query()
