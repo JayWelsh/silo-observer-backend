@@ -83,6 +83,8 @@ const runSync = new CronJob(
 
 runSync.start();
 
-// (async () => {
-// 	backfillEventUsdValues()
-// })();
+(async () => {
+  let startTimeResyncEvents = new Date().getTime();
+  let useTimestampUnixResyncEvents = Math.floor(new Date().setSeconds(0) / 1000);
+	resycAllEventsUpToLastSyncedBlocks(useTimestampUnixResyncEvents, startTimeResyncEvents);
+})();

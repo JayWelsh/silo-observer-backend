@@ -61,8 +61,8 @@ export const SILO_LENS_ADDRESS_ARBITRUM = '0x07b94eB6AaD663c4eaf083fBb52928ff9A1
 export const SILO_BLACKLIST = ["0x6543ee07Cf5Dd7Ad17AeECF22ba75860ef3bBAAa"];
 
 export const MAX_TOTAL_BLOCK_RANGE : {[key: string]: number} = {
-  "ethereum": 15000000,
-  "arbitrum": 30000000,
+  "ethereum": 1500000,
+  "arbitrum": 3000000,
 }
 
 export const NETWORKS = [
