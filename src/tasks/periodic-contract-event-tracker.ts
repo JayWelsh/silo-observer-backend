@@ -147,6 +147,11 @@ export const periodicContractEventTracker = async (useTimestampUnix: number, sta
             transactionIndex,
             logIndex,
           } = rewardsClaimedEvent;
+          let transactionReceipt = await rewardsClaimedEvent.getTransactionReceipt();
+          let {
+            gasUsed,
+          } = transactionReceipt;
+          let gasUsedUsable = gasUsed.toString();
           if(args && blockNumberToUnixTimestamp[blockNumber]) {
             let {
               amount,
@@ -160,7 +165,7 @@ export const periodicContractEventTracker = async (useTimestampUnix: number, sta
                 let eventFingerprint = getEventFingerprint(network, blockNumber, transactionIndex, logIndex);
                 let existingEventRecord = await RewardEventRepository.findByColumn('event_fingerprint', eventFingerprint);
                 if(existingEventRecord) {
-                  await RewardEventRepository.update({usd_value_at_event_time: rewardClaimedValueUSD, asset_price_at_event_time: closestPrice?.price ? closestPrice?.price : 0}, existingEventRecord.id);
+                  await RewardEventRepository.update({gas_used: gasUsedUsable ? gasUsedUsable : 0, usd_value_at_event_time: rewardClaimedValueUSD, asset_price_at_event_time: closestPrice?.price ? closestPrice?.price : 0}, existingEventRecord.id);
                 }
                 console.log({closestPrice, "reward claimed value": rewardClaimedValueUSD, amount: utils.formatUnits(amount.toString(), assetRecord.decimals).toString(), assetAddress});
               }
@@ -176,6 +181,11 @@ export const periodicContractEventTracker = async (useTimestampUnix: number, sta
           transactionIndex,
           logIndex,
         } = borrowEvent;
+        let transactionReceipt = await borrowEvent.getTransactionReceipt();
+        let {
+          gasUsed,
+        } = transactionReceipt;
+        let gasUsedUsable = gasUsed.toString();
         if(args && blockNumberToUnixTimestamp[blockNumber]) {
           let {
             asset,
@@ -187,7 +197,7 @@ export const periodicContractEventTracker = async (useTimestampUnix: number, sta
           let eventFingerprint = getEventFingerprint(network, blockNumber, transactionIndex, logIndex);
           let existingEventRecord = await BorrowEventRepository.findByColumn('event_fingerprint', eventFingerprint);
           if(existingEventRecord) {
-            await BorrowEventRepository.update({usd_value_at_event_time: borrowValueUSD, asset_price_at_event_time: closestPrice?.price ? closestPrice?.price : 0}, existingEventRecord.id);
+            await BorrowEventRepository.update({gas_used: gasUsedUsable ? gasUsedUsable : 0, usd_value_at_event_time: borrowValueUSD, asset_price_at_event_time: closestPrice?.price ? closestPrice?.price : 0}, existingEventRecord.id);
           }
           console.log({closestPrice, "borrow amount USD": borrowValueUSD, amount: utils.formatUnits(amount.toString(), assetRecord.decimals).toString(), asset});
         }
@@ -200,6 +210,11 @@ export const periodicContractEventTracker = async (useTimestampUnix: number, sta
           transactionIndex,
           logIndex,
         } = depositEvent;
+        let transactionReceipt = await depositEvent.getTransactionReceipt();
+        let {
+          gasUsed,
+        } = transactionReceipt;
+        let gasUsedUsable = gasUsed.toString();
         if(args && blockNumberToUnixTimestamp[blockNumber]) {
           let {
             asset,
@@ -211,7 +226,7 @@ export const periodicContractEventTracker = async (useTimestampUnix: number, sta
           let eventFingerprint = getEventFingerprint(network, blockNumber, transactionIndex, logIndex);
           let existingEventRecord = await DepositEventRepository.findByColumn('event_fingerprint', eventFingerprint);
           if(existingEventRecord) {
-            await DepositEventRepository.update({usd_value_at_event_time: depositValueUSD, asset_price_at_event_time: closestPrice?.price ? closestPrice?.price : 0}, existingEventRecord.id);
+            await DepositEventRepository.update({gas_used: gasUsedUsable ? gasUsedUsable : 0, usd_value_at_event_time: depositValueUSD, asset_price_at_event_time: closestPrice?.price ? closestPrice?.price : 0}, existingEventRecord.id);
           }
           console.log({closestPrice, "deposit amount USD": depositValueUSD, amount: utils.formatUnits(amount.toString(), assetRecord.decimals).toString(), asset});
         }
@@ -224,6 +239,11 @@ export const periodicContractEventTracker = async (useTimestampUnix: number, sta
           transactionIndex,
           logIndex,
         } = repayEvent;
+        let transactionReceipt = await repayEvent.getTransactionReceipt();
+        let {
+          gasUsed,
+        } = transactionReceipt;
+        let gasUsedUsable = gasUsed.toString();
         if(args && blockNumberToUnixTimestamp[blockNumber]) {
           let {
             asset,
@@ -235,7 +255,7 @@ export const periodicContractEventTracker = async (useTimestampUnix: number, sta
           let eventFingerprint = getEventFingerprint(network, blockNumber, transactionIndex, logIndex);
           let existingEventRecord = await RepayEventRepository.findByColumn('event_fingerprint', eventFingerprint);
           if(existingEventRecord) {
-            await RepayEventRepository.update({usd_value_at_event_time: repayValueUSD, asset_price_at_event_time: closestPrice?.price ? closestPrice?.price : 0}, existingEventRecord.id);
+            await RepayEventRepository.update({gas_used: gasUsedUsable ? gasUsedUsable : 0, usd_value_at_event_time: repayValueUSD, asset_price_at_event_time: closestPrice?.price ? closestPrice?.price : 0}, existingEventRecord.id);
           }
           console.log({closestPrice, "repay amount USD": repayValueUSD, amount: utils.formatUnits(amount.toString(), assetRecord.decimals).toString(), asset});
         }
@@ -248,6 +268,11 @@ export const periodicContractEventTracker = async (useTimestampUnix: number, sta
           transactionIndex,
           logIndex,
         } = withdrawEvent;
+        let transactionReceipt = await withdrawEvent.getTransactionReceipt();
+        let {
+          gasUsed,
+        } = transactionReceipt;
+        let gasUsedUsable = gasUsed.toString();
         if(args && blockNumberToUnixTimestamp[blockNumber]) {
           let {
             asset,
@@ -259,7 +284,7 @@ export const periodicContractEventTracker = async (useTimestampUnix: number, sta
           let eventFingerprint = getEventFingerprint(network, blockNumber, transactionIndex, logIndex);
           let existingEventRecord = await WithdrawEventRepository.findByColumn('event_fingerprint', eventFingerprint);
           if(existingEventRecord) {
-            await WithdrawEventRepository.update({usd_value_at_event_time: withdrawValueUSD, asset_price_at_event_time: closestPrice?.price ? closestPrice?.price : 0}, existingEventRecord.id);
+            await WithdrawEventRepository.update({gas_used: gasUsedUsable ? gasUsedUsable : 0, usd_value_at_event_time: withdrawValueUSD, asset_price_at_event_time: closestPrice?.price ? closestPrice?.price : 0}, existingEventRecord.id);
           }
           console.log({closestPrice, "withdraw amount USD": withdrawValueUSD, amount: utils.formatUnits(amount.toString(), assetRecord.decimals).toString(), asset});
         }
