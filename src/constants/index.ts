@@ -62,7 +62,7 @@ export const SILO_BLACKLIST = ["0x6543ee07Cf5Dd7Ad17AeECF22ba75860ef3bBAAa"];
 
 export const MAX_TOTAL_BLOCK_RANGE : {[key: string]: number} = {
   "ethereum": 1500000,
-  "arbitrum": 15000000,
+  "arbitrum": 3500000,
 }
 
 export const NETWORKS = [

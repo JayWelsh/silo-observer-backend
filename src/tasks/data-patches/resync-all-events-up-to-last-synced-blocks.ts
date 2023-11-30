@@ -142,8 +142,13 @@ export const resycAllEventsUpToLastSyncedBlocks = async (useTimestampUnix: numbe
 
       // TEMP DISABLE ALL GAS USED SYNCS
 
+      let rewardEventProgress = 0;
       if(deploymentConfig.incentiveControllers) {
         for(let rewardsClaimedEvent of allRewardsClaimedEvents) {
+          rewardEventProgress++;
+          if((rewardEventProgress % 100) === 0) {
+            console.log(`SANITY: Fetching info for reward event ${rewardEventProgress} out of ${allRewardsClaimedEvents.length}`)
+          }
           let {
             address,
             blockNumber,
@@ -184,7 +189,12 @@ export const resycAllEventsUpToLastSyncedBlocks = async (useTimestampUnix: numbe
         }
       }
 
+      let borrowEventProgress = 0;
       for(let borrowEvent of borrowEvents) {
+        borrowEventProgress++;
+        if((borrowEventProgress % 100) === 0) {
+          console.log(`SANITY: Fetching info for borrow event ${borrowEventProgress} out of ${borrowEvents.length}`)
+        }
         let {
           blockNumber,
           args,
@@ -219,7 +229,12 @@ export const resycAllEventsUpToLastSyncedBlocks = async (useTimestampUnix: numbe
         }
       }
 
+      let depositEventProgress = 0;
       for(let depositEvent of depositEvents) {
+        depositEventProgress++;
+        if((depositEventProgress % 100) === 0) {
+          console.log(`SANITY: Fetching info for deposit event ${depositEventProgress} out of ${depositEvents.length}`)
+        }
         let {
           blockNumber,
           args,
@@ -254,7 +269,12 @@ export const resycAllEventsUpToLastSyncedBlocks = async (useTimestampUnix: numbe
         }
       }
 
+      let repayEventProgress = 0;
       for(let repayEvent of repayEvents) {
+        repayEventProgress++;
+        if((repayEventProgress % 100) === 0) {
+          console.log(`SANITY: Fetching info for repay event ${repayEventProgress} out of ${repayEvents.length}`)
+        }
         let {
           blockNumber,
           args,
@@ -289,7 +309,12 @@ export const resycAllEventsUpToLastSyncedBlocks = async (useTimestampUnix: numbe
         }
       }
 
+      let withdrawEventProgress = 0;
       for(let withdrawEvent of withdrawEvents) {
+        withdrawEventProgress++;
+        if((withdrawEventProgress % 100) === 0) {
+          console.log(`SANITY: Fetching info for withdraw event ${withdrawEventProgress} out of ${withdrawEvents.length}`)
+        }
         let {
           blockNumber,
           args,
