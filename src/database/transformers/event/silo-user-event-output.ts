@@ -21,6 +21,9 @@ class SiloUserEventTransformer extends BaseTransformer {
       ...(event.effective_gas_price && {
         effective_gas_price: event.effective_gas_price,
       }),
+      ...(event.event_fingerprint && {
+        event_fingerprint: event.event_fingerprint,
+      }),
       ...(event.silo && {
         silo: {
           name: event.silo.name,

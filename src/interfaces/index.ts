@@ -112,6 +112,7 @@ export interface ISiloUserEvent {
   deployment_id: string
   gas_used?: string
   effective_gas_price?: string
+  event_fingerprint?: string
 }
 
 export interface IBlockMetadata {
