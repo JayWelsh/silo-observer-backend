@@ -26,6 +26,7 @@ import {
   DEPLOYMENT_CONFIGS,
   NETWORK_TO_SUBGRAPH,
   SILO_BLACKLIST,
+  COINGECKO_API_KEY,
 } from '../constants'
 
 import {
@@ -71,7 +72,7 @@ let coingeckoRetryMax = 10;
 // TODO move to dedicated file to share with other files which might use it in the future
 const fetchCoingeckoPrices = async (assetAddressesQueryString : string, network: string, retryCount = 0) => {
   let results : ICoingeckoAssetPriceEntry[] = await axios.get(
-    `https://api.coingecko.com/api/v3/simple/token_price/${NETWORK_ID_TO_COINGECKO_ID[network]}?contract_addresses=${assetAddressesQueryString}&vs_currencies=USD`,
+    `https://pro-api.coingecko.com/api/v3/simple/token_price/${NETWORK_ID_TO_COINGECKO_ID[network]}?contract_addresses=${assetAddressesQueryString}&vs_currencies=USD&x_cg_pro_api_key=${COINGECKO_API_KEY}`,
     {
       headers: { "Accept-Encoding": "gzip,deflate,compress" }
     }
