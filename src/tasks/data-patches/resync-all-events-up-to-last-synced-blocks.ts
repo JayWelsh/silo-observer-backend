@@ -163,14 +163,16 @@ export const resycAllEventsUpToLastSyncedBlocks = async (useTimestampUnix: numbe
                 // let rewardClaimedValueUSD = closestPrice?.price ? new BigNumber(Number(utils.formatUnits(amount.toString(), assetRecord.decimals))).multipliedBy(closestPrice?.price).toFixed(2) : 0;
                 let eventFingerprint = getEventFingerprint(network, blockNumber, transactionIndex, logIndex);
                 let existingEventRecord = await RewardEventRepository.findByColumn('event_fingerprint', eventFingerprint);
-                if(existingEventRecord && !existingEventRecord.gas_used) {
+                if(existingEventRecord && !existingEventRecord.effective_gas_price) {
                   let transactionReceipt = await rewardsClaimedEvent.getTransactionReceipt();
                   let {
                     gasUsed,
+                    effectiveGasPrice,
                   } = transactionReceipt;
                   let gasUsedUsable = gasUsed.toString();
                   await RewardEventRepository.update({
                     gas_used: gasUsedUsable,
+                    effective_gas_price: effectiveGasPrice.toString(),
                     // usd_value_at_event_time: rewardClaimedValueUSD,
                     // asset_price_at_event_time: closestPrice?.price ? closestPrice?.price : 0
                   }, existingEventRecord.id);
@@ -199,14 +201,16 @@ export const resycAllEventsUpToLastSyncedBlocks = async (useTimestampUnix: numbe
           // let borrowValueUSD = closestPrice?.price ? new BigNumber(Number(utils.formatUnits(amount.toString(), assetRecord.decimals))).multipliedBy(closestPrice?.price).toFixed(2) : 0;
           let eventFingerprint = getEventFingerprint(network, blockNumber, transactionIndex, logIndex);
           let existingEventRecord = await BorrowEventRepository.findByColumn('event_fingerprint', eventFingerprint);
-          if(existingEventRecord && !existingEventRecord.gas_used) {
+          if(existingEventRecord && !existingEventRecord.effective_gas_price) {
             let transactionReceipt = await borrowEvent.getTransactionReceipt();
             let {
               gasUsed,
+              effectiveGasPrice,
             } = transactionReceipt;
             let gasUsedUsable = gasUsed.toString();
             await BorrowEventRepository.update({
               gas_used: gasUsedUsable,
+              effective_gas_price: effectiveGasPrice.toString(),
               // usd_value_at_event_time: borrowValueUSD,
               // asset_price_at_event_time: closestPrice?.price ? closestPrice?.price : 0
             }, existingEventRecord.id);
@@ -232,14 +236,16 @@ export const resycAllEventsUpToLastSyncedBlocks = async (useTimestampUnix: numbe
           // let depositValueUSD = closestPrice?.price ? new BigNumber(Number(utils.formatUnits(amount.toString(), assetRecord.decimals))).multipliedBy(closestPrice?.price).toFixed(2) : 0;
           let eventFingerprint = getEventFingerprint(network, blockNumber, transactionIndex, logIndex);
           let existingEventRecord = await DepositEventRepository.findByColumn('event_fingerprint', eventFingerprint);
-          if(existingEventRecord && !existingEventRecord.gas_used) {
+          if(existingEventRecord && !existingEventRecord.effective_gas_price) {
             let transactionReceipt = await depositEvent.getTransactionReceipt();
             let {
               gasUsed,
+              effectiveGasPrice,
             } = transactionReceipt;
             let gasUsedUsable = gasUsed.toString();
             await DepositEventRepository.update({
               gas_used: gasUsedUsable,
+              effective_gas_price: effectiveGasPrice.toString(),
               // usd_value_at_event_time: depositValueUSD,
               // asset_price_at_event_time: closestPrice?.price ? closestPrice?.price : 0
             }, existingEventRecord.id);
@@ -265,14 +271,16 @@ export const resycAllEventsUpToLastSyncedBlocks = async (useTimestampUnix: numbe
           // let repayValueUSD = closestPrice?.price ? new BigNumber(Number(utils.formatUnits(amount.toString(), assetRecord.decimals))).multipliedBy(closestPrice?.price).toFixed(2) : 0;
           let eventFingerprint = getEventFingerprint(network, blockNumber, transactionIndex, logIndex);
           let existingEventRecord = await RepayEventRepository.findByColumn('event_fingerprint', eventFingerprint);
-          if(existingEventRecord && !existingEventRecord.gas_used) {
+          if(existingEventRecord && !existingEventRecord.effective_gas_price) {
             let transactionReceipt = await repayEvent.getTransactionReceipt();
             let {
               gasUsed,
+              effectiveGasPrice,
             } = transactionReceipt;
             let gasUsedUsable = gasUsed.toString();
             await RepayEventRepository.update({
               gas_used: gasUsedUsable,
+              effective_gas_price: effectiveGasPrice.toString(),
               // usd_value_at_event_time: repayValueUSD,
               // asset_price_at_event_time: closestPrice?.price ? closestPrice?.price : 0
             }, existingEventRecord.id);
@@ -298,14 +306,16 @@ export const resycAllEventsUpToLastSyncedBlocks = async (useTimestampUnix: numbe
           // let withdrawValueUSD = closestPrice?.price ? new BigNumber(Number(utils.formatUnits(amount.toString(), assetRecord.decimals))).multipliedBy(closestPrice?.price).toFixed(2) : 0;
           let eventFingerprint = getEventFingerprint(network, blockNumber, transactionIndex, logIndex);
           let existingEventRecord = await WithdrawEventRepository.findByColumn('event_fingerprint', eventFingerprint);
-          if(existingEventRecord && !existingEventRecord.gas_used) {
+          if(existingEventRecord && !existingEventRecord.effective_gas_price) {
             let transactionReceipt = await withdrawEvent.getTransactionReceipt();
             let {
               gasUsed,
+              effectiveGasPrice,
             } = transactionReceipt;
             let gasUsedUsable = gasUsed.toString();
             await WithdrawEventRepository.update({
               gas_used: gasUsedUsable,
+              effective_gas_price: effectiveGasPrice.toString(),
               // usd_value_at_event_time: withdrawValueUSD,
               // asset_price_at_event_time: closestPrice?.price ? closestPrice?.price : 0
             }, existingEventRecord.id);
