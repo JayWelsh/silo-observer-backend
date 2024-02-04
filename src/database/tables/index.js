@@ -22,6 +22,9 @@ const DEPOSIT_EVENT_TABLE = 'deposit_event';
 const WITHDRAW_EVENT_TABLE = 'withdraw_event';
 const REWARD_EVENT_TABLE = 'reward_event';
 
+const SUBGRAPH_INDEXER_BLOCK_TRACKER_TABLE = 'subgraph_indexer_block_tracker';
+const SUBGRAPH_LIQUIDATION_RECORD_TABLE = 'subgraph_liquidation_record';
+
 const BLOCK_METADATA_TABLE = 'block_metadata';
 
 module.exports = {
@@ -44,4 +47,6 @@ module.exports = {
   WITHDRAW_EVENT_TABLE,
   REWARD_EVENT_TABLE,
   BLOCK_METADATA_TABLE,
+  SUBGRAPH_INDEXER_BLOCK_TRACKER_TABLE,
+  SUBGRAPH_LIQUIDATION_RECORD_TABLE,
 }

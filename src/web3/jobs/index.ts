@@ -13,6 +13,10 @@ import { getAllSiloRepayEventsSinceBlock } from './getAllSiloRepayEventsSinceBlo
 import { getAllSiloWithdrawEventsSinceBlock } from './getAllSiloWithdrawEventsSinceBlock';
 import { getAllRewardsClaimedEventsSinceBlock } from './getAllRewardsClaimedEventsSinceBlock';
 
+// Subgraph
+import { subgraphIndexer } from './subgraphIndexer';
+import { getAllSubgraphLiquidationsUntilBlock } from './getAllSubgraphLiquidationsUntilBlock';
+
 export {
   // general utils
   getAllSiloAssetBalances,
@@ -27,4 +31,7 @@ export {
   getAllSiloRepayEventsSinceBlock,
   getAllSiloWithdrawEventsSinceBlock,
   getAllRewardsClaimedEventsSinceBlock,
+  // subgraph records
+  subgraphIndexer,
+  getAllSubgraphLiquidationsUntilBlock,
 }

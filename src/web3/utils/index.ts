@@ -13,6 +13,7 @@ import {
 
 import {
   MAX_TOTAL_BLOCK_RANGE,
+  MAX_TOTAL_BLOCK_RANGE_SUBGRAPH,
 } from "../../constants";
 
 export interface IEventIndexerBlockTracker {
@@ -26,6 +27,7 @@ export interface IEventIndexerBlockTracker {
 export const extractFromBlockToBlock = (
   latestBlockNumber: number,
   eventIndexBlockTracker: IEventIndexerBlockTracker,
+  subgraphMode: boolean = false,
 ) => {
   
     const {
@@ -46,9 +48,16 @@ export const extractFromBlockToBlock = (
 
     let blockRange = (toBlock - fromBlock) + 1;
 
-    if(blockRange > MAX_TOTAL_BLOCK_RANGE[network]) {
-      toBlock = fromBlock + MAX_TOTAL_BLOCK_RANGE[network];
-      blockRange = (toBlock - fromBlock) + 1;
+    if(subgraphMode) {
+      if(blockRange > MAX_TOTAL_BLOCK_RANGE_SUBGRAPH[network]) {
+        toBlock = fromBlock + MAX_TOTAL_BLOCK_RANGE_SUBGRAPH[network];
+        blockRange = (toBlock - fromBlock) + 1;
+      }
+    } else {
+      if(blockRange > MAX_TOTAL_BLOCK_RANGE[network]) {
+        toBlock = fromBlock + MAX_TOTAL_BLOCK_RANGE[network];
+        blockRange = (toBlock - fromBlock) + 1;
+      }
     }
 
     console.log({blockRange, fromBlock, toBlock });

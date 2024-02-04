@@ -30,6 +30,10 @@ import RewardEventModel from './RewardEventModel';
 // BLOCK METADATA
 import BlockMetadataModel from './BlockMetadataModel';
 
+// SUBGRAPH INDEXING
+import SubgraphIndexerBlockTrackerModel from './SubgraphIndexerBlockTrackerModel';
+import SubgraphLiquidationRecordModel from './SubgraphLiquidationRecordModel';
+
 export {
   AssetModel,
   SiloModel,
@@ -50,4 +54,6 @@ export {
   RepayEventModel,
   RewardEventModel,
   BlockMetadataModel,
+  SubgraphIndexerBlockTrackerModel,
+  SubgraphLiquidationRecordModel,
 }
