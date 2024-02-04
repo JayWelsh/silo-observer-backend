@@ -24,6 +24,9 @@ const REWARD_EVENT_TABLE = 'reward_event';
 
 const BLOCK_METADATA_TABLE = 'block_metadata';
 
+const SUBGRAPH_INDEXER_BLOCK_TRACKER_TABLE = 'subgraph_indexer_block_tracker';
+const SUBGRAPH_LIQUIDATION_RECORD_TABLE = 'subgraph_liquidation_record';
+
 export {
   SILO_TABLE,
   ASSET_TABLE,
@@ -44,4 +47,6 @@ export {
   WITHDRAW_EVENT_TABLE,
   REWARD_EVENT_TABLE,
   BLOCK_METADATA_TABLE,
+  SUBGRAPH_INDEXER_BLOCK_TRACKER_TABLE,
+  SUBGRAPH_LIQUIDATION_RECORD_TABLE,
 }

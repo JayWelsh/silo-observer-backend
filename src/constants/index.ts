@@ -65,6 +65,11 @@ export const MAX_TOTAL_BLOCK_RANGE : {[key: string]: number} = {
   "arbitrum": 3500000,
 }
 
+export const MAX_TOTAL_BLOCK_RANGE_SUBGRAPH : {[key: string]: number} = {
+  "ethereum": 15000000,
+  "arbitrum": 35000000,
+}
+
 export const NETWORKS = [
   "ethereum",
   "arbitrum"

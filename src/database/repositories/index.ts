@@ -26,6 +26,10 @@ import RewardEventRepository from './RewardEventRepository';
 
 import BlockMetadataRepository from "./BlockMetadataRepository";
 
+// Subgraph Indexing
+import SubgraphIndexerBlockTrackerRepository from './SubgraphIndexerBlockTrackerRepository';
+import SubgraphLiquidationRecordRepository from './SubgraphLiquidationRecordRepository';
+
 export {
   AssetRepository,
   SiloRepository,
@@ -46,4 +50,6 @@ export {
   RepayEventRepository,
   RewardEventRepository,
   BlockMetadataRepository,
+  SubgraphIndexerBlockTrackerRepository,
+  SubgraphLiquidationRecordRepository,
 };
