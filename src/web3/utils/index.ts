@@ -159,7 +159,7 @@ export const getBlockWithRetries = async (blockNumber: number, network: string, 
       await sleep(randomDelay);
       return await getBlockWithRetries(blockNumber, network, retryCount, retryMax);
     } else {
-      console.error(`Unable to complete getBlock after max retries (blockNumber: ${blockNumber})`);
+      console.error(`Unable to complete getBlock after max retries (blockNumber: ${blockNumber})`, e);
       return null;
     }
   }

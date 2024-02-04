@@ -134,6 +134,7 @@ export interface ISubgraphLiquidationRecord {
   updated_at: Date;
   silo?: ISilo
   asset?: IAsset
+  block_metadata?: IBlockMetadata
 }
 
 export interface IBlockMetadata {

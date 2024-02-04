@@ -7,6 +7,7 @@ import {
   WithdrawEventRepository,
   RepayEventRepository,
   BorrowEventRepository,
+  SubgraphLiquidationRecordRepository,
 } from '../database/repositories';
 
 import {
@@ -108,6 +109,29 @@ class VolumeController extends Controller {
     const pagination = this.extractPagination(req)
 
     let volumeTimeseries = await BorrowEventRepository.getDailyBorrowTotals(pagination, order === "DESC" ? "DESC" : "ASC", period, parsedNetworks, VolumeTimeseriesTransformer)
+
+    this.sendResponse(res, volumeTimeseries);
+  }
+
+  async getLiquidationVolumes(req: Request, res: Response) {
+
+    let {
+      order = "ASC",
+      period,
+      networks,
+    } = req.query;
+
+    period = period as string;
+    networks = networks as string;
+
+    let parsedNetworks : string[] = [];
+    if(networks) {
+      parsedNetworks = networks.split(',')
+    }
+
+    const pagination = this.extractPagination(req)
+
+    let volumeTimeseries = await SubgraphLiquidationRecordRepository.getDailyLiquidationTotals(pagination, order === "DESC" ? "DESC" : "ASC", period, parsedNetworks, VolumeTimeseriesTransformer)
 
     this.sendResponse(res, volumeTimeseries);
   }

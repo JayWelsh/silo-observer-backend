@@ -75,9 +75,7 @@ export const getAllSubgraphLiquidationsUntilBlock = async (
   }`
   console.log("Getting latest block synced by subgraph");
   let latestSubgraphMeta = await subgraphRequestWithRetry(query, deploymentConfig.subgraphEndpoint);
-  let latestLiquidationBlockNumber = latestSubgraphMeta?.data?.meta?.block?.number ? latestSubgraphMeta?.data?.meta?.block?.number : 0;
-
-  console.log({latestSubgraphMeta})
+  let latestLiquidationBlockNumber = latestSubgraphMeta?.data?._meta?.block?.number ? latestSubgraphMeta?.data?._meta?.block?.number : 0;
 
   let network = deploymentConfig.network;
   let deploymentId = deploymentConfig.id;
@@ -124,6 +122,7 @@ export const getAllSubgraphLiquidationsUntilBlock = async (
     console.log({totalRecordCount});
 
     if(subgraphLiquidations) {
+      allSubgraphLiquidations = [...allSubgraphLiquidations, ...subgraphLiquidations];
       for(let liquidation of subgraphLiquidations) {
         if(new BigNumber(liquidation.blockNumber).isGreaterThan(latestSyncBlock)) {
           latestSyncBlock = liquidation.blockNumber;
@@ -168,6 +167,22 @@ export const getAllSubgraphLiquidationsUntilBlock = async (
             deployment_id: deploymentId,
             timestamp_unix: timestamp,
           })
+        } else {
+          SubgraphLiquidationRecordRepository.update({
+            record_fingerprint: recordFingerprint,
+            block_number: blockNumber,
+            silo_address: utils.getAddress(siloAddress),
+            asset_address: utils.getAddress(assetAddress),
+            liquidator: utils.getAddress(liquidatorAddress),
+            liquidatee: utils.getAddress(liquidateeAddress),
+            amount: amount.toString(),
+            amount_usd: amountUSD.toString(),
+            profit_usd: profitUSD.toString(),
+            tx_hash: transactionHash,
+            network,
+            deployment_id: deploymentId,
+            timestamp_unix: timestamp,
+          }, existingLiquidationRecord.id);
         }
       }
     }
