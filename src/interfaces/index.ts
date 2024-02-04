@@ -115,6 +115,27 @@ export interface ISiloUserEvent {
   event_fingerprint?: string
 }
 
+export interface ISubgraphLiquidationRecord {
+  id: number;
+  record_fingerprint: string;
+  block_number: number;
+  silo_address: string;
+  asset_address: string | null;
+  liquidator: string;
+  liquidatee: string;
+  amount: string;
+  amount_usd: string;
+  profit_usd: string;
+  tx_hash: string;
+  timestamp_unix: number;
+  network: string;
+  deployment_id: string;
+  created_at: Date;
+  updated_at: Date;
+  silo?: ISilo
+  asset?: IAsset
+}
+
 export interface IBlockMetadata {
   block_hash: string,
   block_number: number,

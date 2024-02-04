@@ -10,11 +10,13 @@ import {
   RepayEventRepository,
   RewardEventRepository,
   BlockMetadataRepository,
+  SubgraphLiquidationRecordRepository,
 } from '../database/repositories';
 
 import {
   SiloUserEventOutputTransformer,
   SiloUserEventDistinctDailyUsersOutputTransformer,
+  SubgraphLiquidationRecordTransformer,
 } from '../database/transformers';
 
 import Controller from './Controller';
@@ -83,6 +85,8 @@ class EventController extends Controller {
       events = await RepayEventRepository.getRepayEvents(pagination, parsedNetworks, SiloUserEventOutputTransformer);
     } else if(eventType === 'withdraw') {
       events = await WithdrawEventRepository.getWithdrawEvents(pagination, parsedNetworks, SiloUserEventOutputTransformer);
+    } else if(eventType === 'liquidations') {
+      events = await SubgraphLiquidationRecordRepository.getLiquidationRecords(pagination, parsedNetworks, SubgraphLiquidationRecordTransformer);
     } else {
       events = await BorrowEventRepository.getUnifiedEvents(pagination, parsedNetworks, SiloUserEventOutputTransformer);
     }
