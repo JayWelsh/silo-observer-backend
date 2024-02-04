@@ -35,14 +35,13 @@ class SubgraphLiquidationRecordTransformer extends BaseTransformer {
       ...(!subgraphRecord.asset && subgraphRecord.asset_address && {
         asset_address: subgraphRecord.asset_address,
       }),
-      // TODO ADD BLOCK METADATA TRACKING
-      // ...(subgraphRecord.block_metadata && {
-      //   block_hash: subgraphRecord.block_metadata.block_hash,
-      //   block_timestamp: subgraphRecord.block_metadata.block_timestamp,
-      //   block_timestamp_unix: subgraphRecord.block_metadata.block_timestamp_unix,
-      //   network: subgraphRecord.block_metadata.network,
-      //   block_day_timestamp: subgraphRecord.block_metadata.block_day_timestamp,
-      // })
+      ...(subgraphRecord.block_metadata && {
+        block_hash: subgraphRecord.block_metadata.block_hash,
+        block_timestamp: subgraphRecord.block_metadata.block_timestamp,
+        block_timestamp_unix: subgraphRecord.block_metadata.block_timestamp_unix,
+        network: subgraphRecord.block_metadata.network,
+        block_day_timestamp: subgraphRecord.block_metadata.block_day_timestamp,
+      })
     }
   }
 }

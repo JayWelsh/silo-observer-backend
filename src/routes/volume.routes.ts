@@ -12,4 +12,6 @@ Router.get('/volume/repay', [], 'VolumeController@getRepayVolumes');
 
 Router.get('/volume/borrow', [], 'VolumeController@getBorrowVolumes');
 
+Router.get('/volume/liquidation', [], 'VolumeController@getLiquidationVolumes');
+
 module.exports = Router.export();
