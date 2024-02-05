@@ -5,6 +5,7 @@ import {
   DepositEventModel,
   WithdrawEventModel,
   RepayEventModel,
+  SubgraphLiquidationRecordModel,
 } from "../models";
 import BaseRepository from "./BaseRepository";
 import Pagination, { IPaginationRequest } from "../../utils/Pagination";
@@ -103,6 +104,18 @@ class BorrowEventRepository extends BaseRepository {
       .where(function (this: QueryBuilder<WithdrawEventModel>) {
         if(networks) {
           this.whereIn(`${WithdrawEventModel.tableName}.network`, networks);
+        }
+      })
+    )
+    .union(
+      SubgraphLiquidationRecordModel.query()
+      .select(columnsForSelection(SubgraphLiquidationRecordModel.tableName))
+      .withGraphJoined('silo')
+      .withGraphJoined('asset')
+      .withGraphJoined('block_metadata')
+      .where(function (this: QueryBuilder<SubgraphLiquidationRecordModel>) {
+        if(networks) {
+          this.whereIn(`${SubgraphLiquidationRecordModel.tableName}.network`, networks);
         }
       })
     )

@@ -166,6 +166,10 @@ export const getAllSubgraphLiquidationsUntilBlock = async (
             network,
             deployment_id: deploymentId,
             timestamp_unix: timestamp,
+            // columns to keep records able to be in union with tracked on-chain events
+            usd_value_at_event_time: amountUSD.toString(),
+            event_fingerprint: recordFingerprint,
+            user_address: utils.getAddress(liquidatorAddress),
           })
         } else {
           SubgraphLiquidationRecordRepository.update({
@@ -182,6 +186,10 @@ export const getAllSubgraphLiquidationsUntilBlock = async (
             network,
             deployment_id: deploymentId,
             timestamp_unix: timestamp,
+            // columns to keep records able to be in union with tracked on-chain events
+            usd_value_at_event_time: amountUSD.toString(),
+            event_fingerprint: recordFingerprint,
+            user_address: utils.getAddress(liquidatorAddress),
           }, existingLiquidationRecord.id);
         }
       }
