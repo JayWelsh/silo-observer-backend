@@ -19,6 +19,10 @@ import {
 } from '../interfaces';
 
 import {
+  getLatestBlockNumber,
+} from '../web3/jobs';
+
+import {
   MAX_MINUTELY_RATE_ENTRIES,
   MAX_MINUTELY_TVL_AND_BORROWED_ENTRIES,
   NETWORK_ID_TO_COINGECKO_ID,
@@ -82,8 +86,8 @@ const siloQuery =  `{
   }
 }`;
 
-const siloQueryTempArbitrumForceHeadIndexers =  `{
-  markets(block: {number_gte: 178000000}) {
+const siloQueryTempArbitrumForceHeadIndexers = (latestBlockNumber: number) => `{
+  markets(block: {number_gte: ${latestBlockNumber}}) {
     id
     totalValueLockedUSD
     totalBorrowBalanceUSD
@@ -196,7 +200,9 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
 
         let tokenAddressToCoingeckoPrice = await fetchCoingeckoPrices(coingeckoAddressesQuery, deploymentConfig.network);
 
-        let resultRaw = await subgraphRequestWithRetry(deploymentConfig.network === 'arbitrum' ? siloQueryTempArbitrumForceHeadIndexers : siloQuery, deploymentConfig.subgraphEndpoint);
+        let latestBlockNumber = await getLatestBlockNumber(deploymentConfig.network);
+
+        let resultRaw = await subgraphRequestWithRetry(deploymentConfig.network === 'arbitrum' ? siloQueryTempArbitrumForceHeadIndexers(latestBlockNumber - 1000) : siloQuery, deploymentConfig.subgraphEndpoint);
 
         let result = resultRaw.data;
 
@@ -325,11 +331,6 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
             console.log({"could not process asset balances for": siloChecksumAddress});
           }
           const borrowedUsdSiloSpecificBN = new BigNumber(market.totalBorrowBalanceUSD);
-
-          if(siloChecksumAddress === "0x69eC552BE56E6505703f0C861c40039e5702037A") {
-            //@ts-ignore
-            console.log({result: result.markets.filter(market => market.id.split("-")[0] === "0x69ec552be56e6505703f0c861c40039e5702037a"), borrowedUsdSiloSpecific: borrowedUsdSiloSpecificBN.toString(), meta: result._meta})
-          }
 
           if(!hasCountedSiloTVL?.[siloChecksumAddress]) {
             tvlUsdAllSilosBN = tvlUsdAllSilosBN.plus(tvlUsdSiloSpecificBN);
