@@ -19,6 +19,10 @@ import {
 } from '../interfaces';
 
 import {
+  getLatestBlockNumber,
+} from '../web3/jobs';
+
+import {
   MAX_MINUTELY_RATE_ENTRIES,
   MAX_MINUTELY_TVL_AND_BORROWED_ENTRIES,
   NETWORK_ID_TO_COINGECKO_ID,
@@ -49,7 +53,71 @@ import {
 } from '../web3/jobs';
 import e from 'express';
 
-const siloQuery =  "{\n  markets {\n    id\n    totalValueLockedUSD\n    totalBorrowBalanceUSD\n    inputToken {\n      id\n      symbol\n      lastPriceUSD\n    }\n    outputToken {\n      id\n      lastPriceUSD\n    }\n    rates {\n      rate\n      side\n      type\n      token {\n        id\n        symbol\n        decimals\n      }\n    }\n    marketAssets {\n      asset {\n        symbol\n      }\n      borrowed\n      tokenPriceUSD\n    }\n  }\n}";
+const siloQuery =  `{
+  markets {
+    id
+    totalValueLockedUSD
+    totalBorrowBalanceUSD
+    inputToken {
+      id
+      symbol
+      lastPriceUSD
+    }
+    outputToken {
+      id
+      lastPriceUSD
+    }
+    rates {
+      rate
+      side
+      type
+      token {
+        id
+        symbol
+        decimals
+      }
+    }
+  }
+  _meta {
+    block {
+      hash
+      timestamp
+    }
+  }
+}`;
+
+const siloQueryTempArbitrumForceHeadIndexers = (latestBlockNumber: number) => `{
+  markets(block: {number_gte: ${latestBlockNumber}}) {
+    id
+    totalValueLockedUSD
+    totalBorrowBalanceUSD
+    inputToken {
+      id
+      symbol
+      lastPriceUSD
+    }
+    outputToken {
+      id
+      lastPriceUSD
+    }
+    rates {
+      rate
+      side
+      type
+      token {
+        id
+        symbol
+        decimals
+      }
+    }
+  }
+  _meta {
+    block {
+      hash
+      timestamp
+    }
+  }
+}`;
 
 let enableRateSync = true;
 let enableTvlSync = true;
@@ -132,13 +200,16 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
 
         let tokenAddressToCoingeckoPrice = await fetchCoingeckoPrices(coingeckoAddressesQuery, deploymentConfig.network);
 
-        let resultRaw = await subgraphRequestWithRetry(siloQuery, deploymentConfig.subgraphEndpoint);
+        let latestBlockNumber = await getLatestBlockNumber(deploymentConfig.network);
+
+        let resultRaw = await subgraphRequestWithRetry(deploymentConfig.network === 'arbitrum' ? siloQueryTempArbitrumForceHeadIndexers(latestBlockNumber - 1000) : siloQuery, deploymentConfig.subgraphEndpoint);
 
         let result = resultRaw.data;
 
         let tvlUsdAllSilosBN = new BigNumber(0);
         let borrowedUsdAllSilosBN = new BigNumber(0);
         let tvlUsdSiloAddressToAssetAddressBN : {[key: string]: {[key: string]: BigNumber}} = {};
+        let hasCountedSiloTVL : {[key: string]: boolean} = {};
 
         let tokenAddressToLastPrice = result?.markets.reduce((acc: ITokenAddressToLastPrice, market: IMarket) => {
           let inputTokenChecksumAddress = utils.getAddress(market.inputToken.id);
@@ -156,11 +227,11 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
           return acc;
         }, {});
 
-        let nonBlacklistedMarkets = result?.markets.filter((market: any) => SILO_BLACKLIST.indexOf(utils.getAddress(market.id)) === -1);
+        let nonBlacklistedMarkets = result?.markets.filter((market: any) => SILO_BLACKLIST.indexOf(utils.getAddress(market.id.split("-")[0])) === -1);
 
         for(let market of nonBlacklistedMarkets) {
 
-          let siloChecksumAddress = utils.getAddress(market.id);
+          let siloChecksumAddress = utils.getAddress(market.id.split("-")[0]);
           let inputTokenChecksumAddress = utils.getAddress(market.inputToken.id);
           let inputTokenSymbol = market.inputToken.symbol;
 
@@ -261,7 +332,10 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
           }
           const borrowedUsdSiloSpecificBN = new BigNumber(market.totalBorrowBalanceUSD);
 
-          tvlUsdAllSilosBN = tvlUsdAllSilosBN.plus(tvlUsdSiloSpecificBN);
+          if(!hasCountedSiloTVL?.[siloChecksumAddress]) {
+            tvlUsdAllSilosBN = tvlUsdAllSilosBN.plus(tvlUsdSiloSpecificBN);
+            hasCountedSiloTVL[siloChecksumAddress] = true;
+          }
           borrowedUsdAllSilosBN = borrowedUsdAllSilosBN.plus(borrowedUsdSiloSpecificBN);
 
           if (enableTvlSync) {
