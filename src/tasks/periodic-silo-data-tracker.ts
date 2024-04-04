@@ -10,7 +10,10 @@ import {
 
 BigNumber.config({ EXPONENTIAL_AT: [-1e+9, 1e+9] });
 
-import { subgraphRequestWithRetry } from '../utils';
+import { 
+  subgraphRequestWithRetry,
+  getCoingeckoOverrides,
+} from '../utils';
 
 import {
   IRateEntrySubgraph,
@@ -139,14 +142,27 @@ let coingeckoRetryMax = 10;
 
 // TODO move to dedicated file to share with other files which might use it in the future
 const fetchCoingeckoPrices = async (assetAddressesQueryString : string, network: string, retryCount = 0) => {
+
+  let {
+    assetAddressesQueryString: assetAddressesQueryStringWithOverrides,
+    proxyToOrigin: coingeckoOverridesProxyToOrigin
+  } = getCoingeckoOverrides(assetAddressesQueryString, network);
+
   let results : ICoingeckoAssetPriceEntry[] = await axios.get(
-    `https://pro-api.coingecko.com/api/v3/simple/token_price/${NETWORK_ID_TO_COINGECKO_ID[network]}?contract_addresses=${assetAddressesQueryString}&vs_currencies=USD&x_cg_pro_api_key=${COINGECKO_API_KEY}`,
+    `https://pro-api.coingecko.com/api/v3/simple/token_price/${NETWORK_ID_TO_COINGECKO_ID[network]}?contract_addresses=${assetAddressesQueryStringWithOverrides}&vs_currencies=USD&x_cg_pro_api_key=${COINGECKO_API_KEY}`,
     {
       headers: { "Accept-Encoding": "gzip,deflate,compress" }
     }
   )
   .then(function (response) {
     // handle success
+    if(response?.data) {
+      for (const [proxyAddress, originAddress] of Object.entries(coingeckoOverridesProxyToOrigin)) {
+        if (proxyAddress && originAddress && response?.data[proxyAddress.toLowerCase()]) {
+          response.data[originAddress.toLowerCase()] = response?.data[proxyAddress.toLowerCase()];
+        }
+      }
+    }
     return response?.data ? response?.data : {};
   })
   .catch(async (e) => {
@@ -154,7 +170,7 @@ const fetchCoingeckoPrices = async (assetAddressesQueryString : string, network:
     if(retryCount < coingeckoRetryMax) {
       console.error(`error fetching coingecko prices at ${Math.floor(new Date().getTime() / 1000)}, retry #${retryCount}...`, e);
       await sleep(5000);
-      return await fetchCoingeckoPrices(assetAddressesQueryString, network, retryCount);
+      return await fetchCoingeckoPrices(assetAddressesQueryStringWithOverrides, network, retryCount);
     } else {
       console.error(`retries failed, error fetching coingecko prices at ${Math.floor(new Date().getTime() / 1000)}`, e);
     }
@@ -202,7 +218,7 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
 
         let latestBlockNumber = await getLatestBlockNumber(deploymentConfig.network);
 
-        let resultRaw = await subgraphRequestWithRetry(deploymentConfig.network === 'arbitrum' ? siloQueryTempArbitrumForceHeadIndexers(latestBlockNumber - 1000) : siloQuery, deploymentConfig.subgraphEndpoint);
+        let resultRaw = await subgraphRequestWithRetry(deploymentConfig.network === 'arbitrum' ? siloQuery : siloQuery, deploymentConfig.subgraphEndpoint);
 
         let result = resultRaw.data;
 
@@ -265,7 +281,6 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
             } = siloAsset;
 
             let assetChecksumAddress = utils.getAddress(address);
-            
             let assetRecord = await AssetRepository.getAssetByAddress(assetChecksumAddress);
             if(!assetRecord) {
               await AssetRepository.create({
@@ -404,11 +419,13 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
 
               let rateAssetChecksumAddress = utils.getAddress(tokenAddress);
 
+              let assetRecord = await AssetRepository.getAssetByAddress(rateAssetChecksumAddress);
+
               // All rates show as variable on subgraph at the moment
               // TODO: Figure out actual rate types via chain query
               let type = "VARIABLE";
 
-              if(enableRateSync) {
+              if(enableRateSync && assetRecord) {
 
                 let latestRecord = await RateLatestRepository.getLatestRateByAssetOnSideInSilo(rateAssetChecksumAddress, side, siloChecksumAddress, deploymentConfig.id);
                 if(latestRecord) {
