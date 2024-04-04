@@ -7,6 +7,7 @@ import {
   SUBGRAPH_ENDPOINT,
   COINGECKO_API_KEY,
   NETWORK_ID_TO_COINGECKO_ID,
+  PRICE_PROXIES,
 } from '../constants';
 
 import {
@@ -66,8 +67,13 @@ const subgraphRequestWithRetry = async (query: string, url = SUBGRAPH_ENDPOINT, 
 let coingeckoRetryMax = 10;
 
 export const fetchCoingeckoPriceAtHistoricalRange = async (assetAddress : string, network: string, startTime: number, endTime: number, retryCount = 0) => {
+
+  let {
+    assetAddressesQueryString: assetAddressWithOverride,
+  } = getCoingeckoOverrides(assetAddress, network);
+
   let results : number[][] = await axios.get(
-    `https://pro-api.coingecko.com/api/v3/coins/${NETWORK_ID_TO_COINGECKO_ID[network]}/contract/${assetAddress}/market_chart/range?vs_currency=usd&from=${startTime}&to=${endTime}&x_cg_pro_api_key=${COINGECKO_API_KEY}`,
+    `https://pro-api.coingecko.com/api/v3/coins/${NETWORK_ID_TO_COINGECKO_ID[network]}/contract/${assetAddressWithOverride}/market_chart/range?vs_currency=usd&from=${startTime}&to=${endTime}&x_cg_pro_api_key=${COINGECKO_API_KEY}`,
     {
       headers: { "Accept-Encoding": "gzip,deflate,compress" }
     }
@@ -81,7 +87,7 @@ export const fetchCoingeckoPriceAtHistoricalRange = async (assetAddress : string
     if(retryCount < coingeckoRetryMax) {
       console.error(`error fetching coingecko prices at ${Math.floor(new Date().getTime() / 1000)}, retry #${retryCount}...`, e);
       await sleep(5000);
-      return await fetchCoingeckoPriceAtHistoricalRange(assetAddress, network, startTime, endTime, retryCount);
+      return await fetchCoingeckoPriceAtHistoricalRange(assetAddressWithOverride, network, startTime, endTime, retryCount);
     } else {
       console.error(`retries failed, error fetching coingecko prices at ${Math.floor(new Date().getTime() / 1000)}`, e);
     }
@@ -118,6 +124,23 @@ export const fetchCoinGeckoAssetPriceClosestToTargetTime = async (assetAddress :
   return smallestDiffEntry;
 }
 
+const getCoingeckoOverrides = (assetAddressesQueryString : string, network: string) => {
+  let originToProxy : {[key: string]: string} = {};
+  let proxyToOrigin : {[key: string]: string} = {};
+  let assets = assetAddressesQueryString.split(",");
+  for (let asset of assets) {
+    let override = PRICE_PROXIES?.[network]?.[asset];
+    if(override?.proxyAddress) {
+      originToProxy[asset] = override.proxyAddress;
+      proxyToOrigin[override.proxyAddress] = asset;
+    }
+  }
+  for(let originAddress of Object.keys(originToProxy)) {
+    assetAddressesQueryString = assetAddressesQueryString.replace(originAddress, originToProxy[originAddress]);
+  }
+  return {assetAddressesQueryString, proxyToOrigin, originToProxy};
+}
+
 export {
   sleep,
   srcPath,
@@ -126,4 +149,5 @@ export {
   formatPercentage,
   formatDecimal,
   subgraphRequestWithRetry,
+  getCoingeckoOverrides,
 }
