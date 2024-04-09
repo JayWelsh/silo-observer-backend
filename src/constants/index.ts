@@ -150,6 +150,9 @@ export const PRICE_PROXIES : {[key: string]: {[key: string]: {proxyAddress: stri
     "0xeEE8aED1957ca1545a0508AfB51b53cCA7e3c0d1": { // PT-ezETH-25APR2024
       proxyAddress: "0xbf5495Efe5DB9ce00f80364C8B423567e58d2110",
       // proxyNetwork: "ethereum",
+    },
+    "0x5cb12D56F5346a016DBBA8CA90635d82e6D1bcEa": { // PT-rswETH-27JUN2024
+      proxyAddress: "0xFAe103DC9cf190eD75350761e95403b7b8aFa6c0",
     }
   },
   arbitrum: {
@@ -160,6 +163,6 @@ export const PRICE_PROXIES : {[key: string]: {[key: string]: {proxyAddress: stri
     "0x9bEcd6b4Fb076348A455518aea23d3799361FE95": { // PT-weETH-25APR2024
       proxyAddress: "0x35751007a407ca6FEFfE80b3cB397736D2cf4dbe",
       // proxyNetwork: "arbitrum",
-    }
+    },
   },
 }
