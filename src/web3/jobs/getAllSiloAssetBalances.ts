@@ -48,16 +48,28 @@ export const getAllSiloAssetBalances = async (deploymentConfig: IDeployment) => 
 
   let siloFactories = [];
 
-  for(let siloFactoryConfig of deploymentConfig.siloFactories) {
-    if(deploymentConfig.network === 'ethereum') {
-      let FactoryContract = new Contract(siloFactoryConfig.address, siloFactoryConfig.abi);
-      let factoryContract = await FactoryContract.connect(EthersProvider);
-      siloFactories.push({contract: factoryContract, meta: siloFactoryConfig.meta});
-    } else if (deploymentConfig.network === 'arbitrum') {
-      let FactoryContract = new Contract(siloFactoryConfig.address, siloFactoryConfig.abi);
-      let factoryContract = await FactoryContract.connect(EthersProviderArbitrum);
-      siloFactories.push({contract: factoryContract, meta: siloFactoryConfig.meta});
-    }
+  // for(let siloFactoryConfig of deploymentConfig.siloFactories) {
+  //   if(deploymentConfig.network === 'ethereum') {
+  //     let FactoryContract = new Contract(siloFactoryConfig.address, siloFactoryConfig.abi);
+  //     let factoryContract = await FactoryContract.connect(EthersProvider);
+  //     siloFactories.push({contract: factoryContract, meta: siloFactoryConfig.meta});
+  //   } else if (deploymentConfig.network === 'arbitrum') {
+  //     let FactoryContract = new Contract(siloFactoryConfig.address, siloFactoryConfig.abi);
+  //     let factoryContract = await FactoryContract.connect(EthersProviderArbitrum);
+  //     siloFactories.push({contract: factoryContract, meta: siloFactoryConfig.meta});
+  //   }
+  // }
+
+  let siloRepositories = [];
+
+  if(deploymentConfig.network === 'ethereum') {
+    let RepositoryContract = new Contract(deploymentConfig.siloRepository.address, deploymentConfig.siloRepository.abi);
+    let repositoryContract = await RepositoryContract.connect(EthersProvider);
+    siloRepositories.push({contract: repositoryContract, meta: deploymentConfig.siloRepository.meta});
+  } else if (deploymentConfig.network === 'arbitrum') {
+    let RepositoryContract = new Contract(deploymentConfig.siloRepository.address, deploymentConfig.siloRepository.abi);
+    let repositoryContract = await RepositoryContract.connect(EthersProviderArbitrum);
+    siloRepositories.push({contract: repositoryContract, meta: deploymentConfig.siloRepository.meta});
   }
   
   // if(network === 'ethereum') {
@@ -89,16 +101,16 @@ export const getAllSiloAssetBalances = async (deploymentConfig: IDeployment) => 
     assetAddresses: assetAddresses,
   }
 
-  for(let siloFactoryContractEntry of siloFactories) {
+  for(let siloRepositoryContractEntry of siloRepositories) {
     let {
-      contract: siloFactoryContract,
+      contract: siloRepositoryContract,
       meta,
-    } = siloFactoryContractEntry;
-    if(siloFactoryContract) {
+    } = siloRepositoryContractEntry;
+    if(siloRepositoryContract) {
 
-      const siloCreationEventFilter = await siloFactoryContract.filters.NewSiloCreated(null, null);
+      const siloCreationEventFilter = await siloRepositoryContract.filters.NewSilo(null, null);
 
-      const siloCreationEvents = await queryFilterRetryOnFailure(siloFactoryContract, siloCreationEventFilter);
+      const siloCreationEvents = await queryFilterRetryOnFailure(siloRepositoryContract, siloCreationEventFilter);
 
       const siloAddresses = siloCreationEvents ? siloCreationEvents.map((entry) => entry?.args?.silo).filter((item) => SILO_BLACKLIST.indexOf(item) === -1) : [];
 
