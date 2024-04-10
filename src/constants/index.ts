@@ -9,6 +9,7 @@ import SiloConvexFactoryABI from '../web3/abis/SiloConvexFactoryABI.json';
 import SiloLlamaFactoryABI from '../web3/abis/SiloLlamaFactoryABI.json';
 import SiloLensABI from '../web3/abis/SiloLensABI.json';
 import SiloLensLlamaABI from '../web3/abis/SiloLensLlamaABI.json';
+import SiloRepositoryABI from '../web3/abis/SiloRepositoryABI.json';
 
 dotenv.config();
 
@@ -27,6 +28,8 @@ export const SUBGRAPH_VERSION = "2.2.8";
 export const SUBGRAPH_ENDPOINT_FALLBACK = "https://api.thegraph.com/subgraphs/id/QmQV7RB3WUFuSrCSyJsDq6FkQsVYFwak2xCZYsq3JmDrSq";
 export const SUBGRAPH_VERSION_FALLBACK = "2.0.2";
 
+// export const SUBGRAPH_ENDPOINT_ARBITRUM = `https://api.thegraph.com/subgraphs/id/QmQqLJVgZLcRduoszARzRi12qGheUTWAHFf3ixMeGm2xML`;
+// export const SUBGRAPH_ENDPOINT_ARBITRUM = `https://gateway-arbitrum.network.thegraph.com/api/${THE_GRAPH_API_KEY}/deployments/id/QmTMKqty5yZvZtB3SwzXUG92aZUH1YQw3VjByGw4wgaMhW`;
 export const SUBGRAPH_ENDPOINT_ARBITRUM = `https://gateway-arbitrum.network.thegraph.com/api/${THE_GRAPH_API_KEY}/deployments/id/QmQqLJVgZLcRduoszARzRi12qGheUTWAHFf3ixMeGm2xML`;
 
 export const SUBGRAPH_ENDPOINT_LLAMA = `https://gateway-arbitrum.network.thegraph.com/api/${THE_GRAPH_API_KEY}/deployments/id/QmYzeik2P18AFNKPtCrEFwuCHws66tjvZpX57KPfKbtnWw`;
@@ -49,8 +52,12 @@ export const NETWORK_TO_ALCHEMY_ENDPOINT: {[key: string]: string} = {
 }
 
 export const SILO_FACTORY_ADDRESS = '0x4D919CEcfD4793c0D47866C8d0a02a0950737589';
+export const SILO_REPOSITORY_ADDRESS = "0xd998C35B7900b344bbBe6555cc11576942Cf309d";
 export const SILO_LLAMA_FACTORY_ADDRESS = '0x2c0fA05281730EFd3ef71172d8992500B36b56eA';
+export const SILO_LLAMA_REPOSITORY_ADDRESS = '0xBCd67f35c7A2F212db0AD7f68fC773b5aC15377c';
+
 export const SILO_FACTORY_ADDRESS_ARBITRUM = '0x4166487056A922D784b073d4d928a516B074b719';
+export const SILO_REPOSITORY_ADDRESS_ARBITRUM = "0x8658047e48CC09161f4152c79155Dac1d710Ff0a";
 
 export const SILO_CONVEX_FACTORY_ADDRESS = '0x6d4A256695586F61b77B09bc3D28333A91114d5a';
 
@@ -106,6 +113,11 @@ export const DEPLOYMENT_CONFIGS : IDeployment[] = [
         meta: 'ethereum-convex',
       }
     ],
+    siloRepository: {
+      address: SILO_REPOSITORY_ADDRESS,
+      abi: SiloRepositoryABI,
+      meta: 'ethereum-original-and-convex'
+    },
   },
   {
     id: 'ethereum-llama',
@@ -122,6 +134,11 @@ export const DEPLOYMENT_CONFIGS : IDeployment[] = [
         meta: 'ethereum-llama'
       },
     ],
+    siloRepository: {
+      address: SILO_LLAMA_REPOSITORY_ADDRESS,
+      abi: SiloRepositoryABI,
+      meta: 'ethereum-llama-repository'
+    },
   },
   {
     id: 'arbitrum-original',
@@ -139,7 +156,12 @@ export const DEPLOYMENT_CONFIGS : IDeployment[] = [
     incentiveControllers: [{
       address: "0xd592F705bDC8C1B439Bd4D665Ed99C4FaAd5A680",
       assetAddress: "0x912CE59144191C1204E64559FE8253a0e49E6548",
-    }]
+    }],
+    siloRepository: {
+      address: SILO_REPOSITORY_ADDRESS_ARBITRUM,
+      abi: SiloRepositoryABI,
+      meta: 'arbitrum-repository'
+    },
   }
 ]
 
@@ -153,6 +175,9 @@ export const PRICE_PROXIES : {[key: string]: {[key: string]: {proxyAddress: stri
     },
     "0x5cb12D56F5346a016DBBA8CA90635d82e6D1bcEa": { // PT-rswETH-27JUN2024
       proxyAddress: "0xFAe103DC9cf190eD75350761e95403b7b8aFa6c0",
+    },
+    "0xB05cABCd99cf9a73b19805edefC5f67CA5d1895E": { // PT-rsETH-27JUN2024
+      proxyAddress: "0xA1290d69c65A6Fe4DF752f95823fae25cB99e5A7",
     }
   },
   arbitrum: {
@@ -164,5 +189,11 @@ export const PRICE_PROXIES : {[key: string]: {[key: string]: {proxyAddress: stri
       proxyAddress: "0x35751007a407ca6FEFfE80b3cB397736D2cf4dbe",
       // proxyNetwork: "arbitrum",
     },
+    "0x1c27Ad8a19Ba026ADaBD615F6Bc77158130cfBE4": {// PT-weETH-27JUN2024
+      proxyAddress: "0x35751007a407ca6FEFfE80b3cB397736D2cf4dbe",
+    },
+    // "0xAFD22F824D51Fb7EeD4778d303d4388AC644b026": { // PT-rsETH-27JUN2024
+    //   proxyAddress: "", // needs coingecko link to arbitrum token
+    // }
   },
 }

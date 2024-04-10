@@ -154,6 +154,12 @@ export interface IFactoryConfig {
   meta: string;
 }
 
+export interface IRepositoryConfig {
+  address: string;
+  abi: any;
+  meta: string;
+}
+
 export interface IIncentiveControllerConfig {
   address: string;
   assetAddress: string;
@@ -168,6 +174,7 @@ export interface IDeployment {
   siloBlacklist: string[];
   subgraphEndpoint: string;
   siloFactories: IFactoryConfig[];
+  siloRepository: IRepositoryConfig;
   incentiveControllers?:  IIncentiveControllerConfig[];
 }
 
