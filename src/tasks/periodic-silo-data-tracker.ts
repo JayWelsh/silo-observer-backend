@@ -18,7 +18,7 @@ import {
 import {
   IRateEntrySubgraph,
   IToken,
-  IMarket,
+  ISilo,
 } from '../interfaces';
 
 import {
@@ -57,16 +57,16 @@ import {
 import e from 'express';
 
 const siloQuery =  `{
-  markets {
+  silos {
     id
     totalValueLockedUSD
     totalBorrowBalanceUSD
-    inputToken {
+    baseAsset {
       id
       symbol
       lastPriceUSD
     }
-    outputToken {
+    bridgeAsset {
       id
       lastPriceUSD
     }
@@ -90,16 +90,16 @@ const siloQuery =  `{
 }`;
 
 const siloQueryTempArbitrumForceHeadIndexers = (latestBlockNumber: number) => `{
-  markets(block: {number_gte: ${latestBlockNumber}}) {
+  silos(block: {number_gte: ${latestBlockNumber}}) {
     id
     totalValueLockedUSD
     totalBorrowBalanceUSD
-    inputToken {
+    baseAsset {
       id
       symbol
       lastPriceUSD
     }
-    outputToken {
+    bridgeAsset {
       id
       lastPriceUSD
     }
@@ -227,29 +227,29 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
         let tvlUsdSiloAddressToAssetAddressBN : {[key: string]: {[key: string]: BigNumber}} = {};
         let hasCountedSiloTVL : {[key: string]: boolean} = {};
 
-        let tokenAddressToLastPrice = result?.markets.reduce((acc: ITokenAddressToLastPrice, market: IMarket) => {
-          let inputTokenChecksumAddress = utils.getAddress(market.inputToken.id);
-          let inputTokenLastPrice = market.inputToken.lastPriceUSD;
+        let tokenAddressToLastPrice = result?.silos.reduce((acc: ITokenAddressToLastPrice, silo: ISilo) => {
+          let inputTokenChecksumAddress = utils.getAddress(silo.baseAsset.id);
+          let inputTokenLastPrice = silo.baseAsset.lastPriceUSD;
           if(!acc[inputTokenChecksumAddress] && inputTokenLastPrice) {
             acc[inputTokenChecksumAddress] = inputTokenLastPrice;
           }
-          for(let outputToken of market.outputToken) {
-            let outputTokenAddress = utils.getAddress(outputToken.id);
-            let outputTokenLastPrice = outputToken.lastPriceUSD;
-            if(!acc[outputTokenAddress] && outputTokenLastPrice) {
-              acc[outputTokenAddress] = outputTokenLastPrice;
+          for(let bridgeAsset of silo.bridgeAsset) {
+            let bridgeAssetAddress = utils.getAddress(bridgeAsset.id);
+            let bridgeAssetLastPrice = bridgeAsset.lastPriceUSD;
+            if(!acc[bridgeAssetAddress] && bridgeAssetLastPrice) {
+              acc[bridgeAssetAddress] = bridgeAssetLastPrice;
             }
           }
           return acc;
         }, {});
 
-        let nonBlacklistedMarkets = result?.markets.filter((market: any) => SILO_BLACKLIST.indexOf(utils.getAddress(market.id.split("-")[0])) === -1);
+        let nonBlacklistedMarkets = result?.silos.filter((market: any) => SILO_BLACKLIST.indexOf(utils.getAddress(market.id.split("-")[0])) === -1);
 
         for(let market of nonBlacklistedMarkets) {
 
           let siloChecksumAddress = utils.getAddress(market.id.split("-")[0]);
-          let inputTokenChecksumAddress = utils.getAddress(market.inputToken.id);
-          let inputTokenSymbol = market.inputToken.symbol;
+          let inputTokenChecksumAddress = utils.getAddress(market.baseAsset.id);
+          let inputTokenSymbol = market.baseAsset.symbol;
 
           // --------------------------------------------------
 

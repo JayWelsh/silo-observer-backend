@@ -41,7 +41,7 @@ const buildQuery = (
       id
       blockNumber
       logIndex
-      market {
+      silo {
         id
       }
       asset {
@@ -66,17 +66,6 @@ export const getAllSubgraphLiquidationsUntilBlock = async (
 
   console.log("Initiating Subgraph Liquidations Tracker");
 
-  let query = `{
-    _meta {
-      block {
-        number
-      }
-    }
-  }`
-  console.log("Getting latest block synced by subgraph");
-  let latestSubgraphMeta = await subgraphRequestWithRetry(query, deploymentConfig.subgraphEndpoint);
-  let latestLiquidationBlockNumber = latestSubgraphMeta?.data?._meta?.block?.number ? latestSubgraphMeta?.data?._meta?.block?.number : 0;
-
   let network = deploymentConfig.network;
   let deploymentId = deploymentConfig.id;
 
@@ -95,7 +84,7 @@ export const getAllSubgraphLiquidationsUntilBlock = async (
     blockRange,
   } = extractFromBlockToBlock(latestBlock, subgraphIndexBlockTrackerRecord, true);
 
-  let latestSyncBlock = new BigNumber(toBlock).isLessThanOrEqualTo(latestLiquidationBlockNumber) ? toBlock : latestLiquidationBlockNumber;
+  let latestSyncBlock = subgraphIndexBlockTrackerRecord?.last_checked_block ? subgraphIndexBlockTrackerRecord?.last_checked_block : 0;
 
   // if(!isSanityCheck) {
   //   // delete any records newer than latestBlock in case there was an incomplete run which occurred
@@ -131,7 +120,7 @@ export const getAllSubgraphLiquidationsUntilBlock = async (
         let {
           id: recordFingerprint,
           blockNumber,
-          market: {
+          silo: {
             id: siloAddress,
           },
           asset: {
@@ -150,12 +139,15 @@ export const getAllSubgraphLiquidationsUntilBlock = async (
           timestamp
         } = liquidation;
 
+        console.log({recordFingerprint})
+
         let existingLiquidationRecord = await SubgraphLiquidationRecordRepository.findByColumn('record_fingerprint', recordFingerprint);
+
         if(!existingLiquidationRecord) {
           SubgraphLiquidationRecordRepository.create({
             record_fingerprint: recordFingerprint,
             block_number: blockNumber,
-            silo_address: utils.getAddress(siloAddress),
+            silo_address: utils.getAddress(siloAddress.split("-")[0]),
             asset_address: utils.getAddress(assetAddress),
             liquidator: utils.getAddress(liquidatorAddress),
             liquidatee: utils.getAddress(liquidateeAddress),
@@ -175,7 +167,7 @@ export const getAllSubgraphLiquidationsUntilBlock = async (
           SubgraphLiquidationRecordRepository.update({
             record_fingerprint: recordFingerprint,
             block_number: blockNumber,
-            silo_address: utils.getAddress(siloAddress),
+            silo_address: utils.getAddress(siloAddress.split("-")[0]),
             asset_address: utils.getAddress(assetAddress),
             liquidator: utils.getAddress(liquidatorAddress),
             liquidatee: utils.getAddress(liquidateeAddress),
