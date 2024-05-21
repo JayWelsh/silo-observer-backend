@@ -6,7 +6,7 @@ import { formatPercentage } from '../../utils';
 
 const rateQuery = gql`
   query rateQuery($inputTokenSymbol: String!) {
-    markets(where: { name: $inputTokenSymbol }) {
+    silos(where: { name: $inputTokenSymbol }) {
       id
       name
       rates {
@@ -37,7 +37,7 @@ module.exports = {
       inputTokenSymbol: silo,
     });
     let sortOrder = ["WETH", "XAI"].indexOf(silo) === -1 ? [silo, "WETH", "XAI"] : [silo, silo === "XAI" ? "WETH" : "XAI"];
-    let sortedRates = result?.markets?.[0]?.rates.sort((a: any, b: any) => sortOrder.indexOf(a.token.symbol) - sortOrder.indexOf(b.token.symbol));
+    let sortedRates = result?.silos?.[0]?.rates.sort((a: any, b: any) => sortOrder.indexOf(a.token.symbol) - sortOrder.indexOf(b.token.symbol));
     let buildRateResult = [];
     let entryCount = 0;
     buildRateResult.push({ name: '\u200B', value: '\u200B' });

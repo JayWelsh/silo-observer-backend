@@ -126,14 +126,17 @@ export const periodicContractEventTracker = async (useTimestampUnix: number, sta
         for(let singleBlockData of blockData) {
           blockNumberToUnixTimestamp[singleBlockData.number] = singleBlockData.timestamp;
           let jsDate = new Date(singleBlockData.timestamp * 1000);
-          await BlockMetadataRepository.create({
-            block_number: singleBlockData.number,
-            block_timestamp_unix: singleBlockData.timestamp,
-            block_timestamp: jsDate.toISOString(),
-            block_hash: singleBlockData.hash,
-            block_day_timestamp: new Date(jsDate.getFullYear(), jsDate.getMonth(), jsDate.getDate()),
-            network,
-          })
+          let currentRecord = await BlockMetadataRepository.getByBlockNumberAndNetwork(singleBlockData.number, network);
+          if(!currentRecord) {
+            await BlockMetadataRepository.create({
+              block_number: singleBlockData.number,
+              block_timestamp_unix: singleBlockData.timestamp,
+              block_timestamp: jsDate.toISOString(),
+              block_hash: singleBlockData.hash,
+              block_day_timestamp: new Date(jsDate.getFullYear(), jsDate.getMonth(), jsDate.getDate()),
+              network,
+            })
+          }
         }
         console.log(`Filled in block metadata for ${blockData.length} blocks`);
       }

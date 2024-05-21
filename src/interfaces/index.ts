@@ -20,6 +20,12 @@ export interface IMarket {
   outputToken: ITokenSubgraph[]
 }
 
+export interface ISilo {
+  id: string,
+  baseAsset: ITokenSubgraph,
+  bridgeAsset: ITokenSubgraph[]
+}
+
 // Subgraph Interfaces Above
 
 // -------------------------
