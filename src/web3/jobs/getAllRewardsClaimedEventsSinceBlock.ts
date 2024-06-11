@@ -5,6 +5,7 @@ import BigNumber from 'bignumber.js';
 import {
   EthersProvider,
   EthersProviderArbitrum,
+  EthersProviderOptimism,
 } from "../../app";
 
 import {
@@ -79,6 +80,8 @@ export const getAllRewardsClaimedEventsSinceBlock = async (
       let provider = EthersProvider;
       if(network === "arbitrum") {
         provider = EthersProviderArbitrum;
+      } else if (network === "optimism") {
+        provider = EthersProviderOptimism;
       }
       
       const IncentivesControllerContract = new Contract(incentiveControllerAddress, ArbIncentivesControllerABI);

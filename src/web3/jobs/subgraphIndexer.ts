@@ -10,6 +10,7 @@ const SUBGRAPH_RECORD_LIMIT_PER_QUERY = 100;
 
 const queryUntilAllRecordsFound = async (
   subgraphEndpoint: any,
+  subgraphEndpointFallback: string,
   buildQuery: (blockNumberStart: number, blockNumberEnd: number, first: number, skip: number) => string,
   fromBlock: number,
   toBlock: number,
@@ -20,7 +21,7 @@ const queryUntilAllRecordsFound = async (
   console.log("Running queryUntilAllRecordsFound", `skip: ${skip}`, `fromBlock: ${fromBlock}`, `toBlock: ${toBlock}`, `logHelper: ${logHelper}`);
 
   let query = buildQuery(fromBlock, toBlock, SUBGRAPH_RECORD_LIMIT_PER_QUERY, skip);
-  let result = await subgraphRequestWithRetry(query, subgraphEndpoint);
+  let result = await subgraphRequestWithRetry(query, subgraphEndpoint, subgraphEndpointFallback);
 
   // Check if the result array is not empty and has reached the limit
   if (result?.data?.liquidates?.length > 0) {
@@ -32,6 +33,7 @@ const queryUntilAllRecordsFound = async (
       // Recursively call the function with updated skip value
       return await queryUntilAllRecordsFound(
         subgraphEndpoint,
+        subgraphEndpointFallback,
         buildQuery,
         fromBlock,
         toBlock,
@@ -50,6 +52,7 @@ const queryUntilAllRecordsFound = async (
 
 export const subgraphIndexer = async (
   subgraphEndpoint: any,
+  subgraphEndpointFallback: string,
   buildQuery: (blockNumberStart: number, blockNumberEnd: number, first: number, skip: number) => string,
   latestBlockNumber: number,
   fromBlock: number,
@@ -117,7 +120,7 @@ export const subgraphIndexer = async (
       console.log(`subgraphIndexer fetching batch ${currentBatch} of ${batchCount} for ${meta} (fromBlock: ${fromBlock}, toBlock: ${toBlock}, useFromBlock: ${useFromBlock}, useToBlock: ${useToBlock})`);
 
       // fetch batch
-      const eventContractEventBatch = await queryUntilAllRecordsFound(subgraphEndpoint, buildQuery, useFromBlock, useToBlock, `${currentBatch} of ${batchCount} - ${meta}`);
+      const eventContractEventBatch = await queryUntilAllRecordsFound(subgraphEndpoint, subgraphEndpointFallback, buildQuery, useFromBlock, useToBlock, `${currentBatch} of ${batchCount} - ${meta}`);
       events = [...events, ...(eventContractEventBatch ? eventContractEventBatch : [])];
 
       // log batch status

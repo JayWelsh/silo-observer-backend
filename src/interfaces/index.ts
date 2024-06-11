@@ -179,6 +179,7 @@ export interface IDeployment {
   siloLensABI: any;
   siloBlacklist: string[];
   subgraphEndpoint: string;
+  subgraphEndpointFallback: string;
   siloFactories: IFactoryConfig[];
   siloRepository: IRepositoryConfig;
   incentiveControllers?:  IIncentiveControllerConfig[];

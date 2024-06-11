@@ -7,8 +7,10 @@ import {
 import {
   EthersProvider,
   EthersProviderArbitrum,
+  EthersProviderOptimism,
   MulticallProvider,
   MulticallProviderArbitrum,
+  MulticallProviderOptimism,
 } from "../../app";
 
 import {
@@ -119,18 +121,20 @@ export const multicallProviderRetryOnFailure = async (
     let useProvider = MulticallProvider;
     if(network === "arbitrum") {
       useProvider = MulticallProviderArbitrum;
+    } else if(network === "optimism") {
+      useProvider = MulticallProviderOptimism;
     }
     const [...results] = await useProvider.all(calls);
     return results;
   } catch (e) {
     retryCount++;
     if(retryCount <= retryMax) {
-      console.error(`Multicall failed, starting retry #${retryCount} (meta: ${meta})`);
+      console.error(`Multicall failed, starting retry #${retryCount} (meta: ${meta})`, {error: e});
       let randomDelay = 1000 + Math.floor(Math.random() * 1000);
       await sleep(randomDelay);
       return await multicallProviderRetryOnFailure(calls, meta, network, retryCount, retryMax);
     } else {
-      console.error(`Unable to complete multicallProviderRetryOnFailure after max retries (meta: ${meta})`);
+      console.error(`Unable to complete multicallProviderRetryOnFailure after max retries (meta: ${meta})`, {error: e});
       return [];
     }
   }
@@ -147,6 +151,8 @@ export const getBlockWithRetries = async (blockNumber: number, network: string, 
     let provider = EthersProvider;
     if(network === "arbitrum") {
       provider = EthersProviderArbitrum;
+    } else if(network === "optimism") {
+      provider = EthersProviderOptimism;
     }
 
     let block = await provider.getBlock(blockNumber).catch(e => {throw new Error(e)});

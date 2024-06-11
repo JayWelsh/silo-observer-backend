@@ -218,7 +218,7 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
 
         let latestBlockNumber = await getLatestBlockNumber(deploymentConfig.network);
 
-        let resultRaw = await subgraphRequestWithRetry(deploymentConfig.network === 'arbitrum' ? siloQuery : siloQuery, deploymentConfig.subgraphEndpoint);
+        let resultRaw = await subgraphRequestWithRetry(deploymentConfig.network === 'arbitrum' ? siloQuery : siloQuery, deploymentConfig.subgraphEndpoint, deploymentConfig.subgraphEndpointFallback);
 
         let result = resultRaw.data;
 

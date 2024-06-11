@@ -5,6 +5,7 @@ import BigNumber from 'bignumber.js';
 
 import { 
   SUBGRAPH_ENDPOINT,
+  SUBGRAPH_ENDPOINT_FALLBACK,
   COINGECKO_API_KEY,
   NETWORK_ID_TO_COINGECKO_ID,
   PRICE_PROXIES,
@@ -35,7 +36,7 @@ const sleep = (ms: number) => {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-const subgraphRequestWithRetry = async (query: string, url = SUBGRAPH_ENDPOINT, retryMax = 3, retryCount = 0) => {
+const subgraphRequestWithRetry = async (query: string, url = SUBGRAPH_ENDPOINT, fallbackUrl = SUBGRAPH_ENDPOINT_FALLBACK, retryFallback = 3, retryMax = 6, retryCount = 0) : Promise<any> => {
   try {
     let result = await axios.post(url, {
       query: query
@@ -56,7 +57,7 @@ const subgraphRequestWithRetry = async (query: string, url = SUBGRAPH_ENDPOINT, 
     if(retryCount < retryMax) {
       console.log(`Query failed, retry #${retryCount}`);
       await sleep(4000);
-      await subgraphRequestWithRetry(query, url, retryMax, retryCount);
+      return await subgraphRequestWithRetry(query, retryCount < retryFallback ? url : fallbackUrl, fallbackUrl, retryFallback, retryMax, retryCount);
     } else {
       //@ts-ignore
       throw new Error(e);

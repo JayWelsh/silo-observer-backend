@@ -1,5 +1,5 @@
 import express from "express";
-import { Provider } from 'ethers-multicall';
+import { Provider } from '@kargakis/ethers-multicall';
 import cors from "cors";
 import dotenv from "dotenv";
 import bodyParser from "body-parser";
@@ -61,10 +61,15 @@ export const EthersProvider = new providers.JsonRpcProvider(NETWORK_TO_ALCHEMY_E
 export const MulticallProvider = new Provider(EthersProvider);
 MulticallProvider.init();
 
-// ARBITRUM
+// ARBITRUM MAINNET
 export const EthersProviderArbitrum = new providers.JsonRpcProvider(NETWORK_TO_ALCHEMY_ENDPOINT["arbitrum"]);
 export const MulticallProviderArbitrum = new Provider(EthersProviderArbitrum, 42161);
 MulticallProviderArbitrum.init();
+
+// OPTIMISM MAINNET
+export const EthersProviderOptimism = new providers.JsonRpcProvider(NETWORK_TO_ALCHEMY_ENDPOINT["optimism"]);
+export const MulticallProviderOptimism = new Provider(EthersProviderOptimism, 10);
+MulticallProviderOptimism.init();
 
 const runSync = new CronJob(
 	`20 */${cronIndexerPeriodMinutes} * * * *`, // runs at 20 seconds past the minute at which it runs

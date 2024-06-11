@@ -104,7 +104,7 @@ export const getAllSubgraphLiquidationsUntilBlock = async (
 
   if(blockRange > 1) {
 
-    let subgraphLiquidations = await subgraphIndexer(deploymentConfig.subgraphEndpoint, buildQuery, latestBlock, fromBlock, toBlock, blockRange, network, `${deploymentConfig.idHumanReadable} - isSanityCheck: ${isSanityCheck} - (Subgraph Liquidations)`);
+    let subgraphLiquidations = await subgraphIndexer(deploymentConfig.subgraphEndpoint, deploymentConfig.subgraphEndpointFallback, buildQuery, latestBlock, fromBlock, toBlock, blockRange, network, `${deploymentConfig.idHumanReadable} - isSanityCheck: ${isSanityCheck} - (Subgraph Liquidations)`);
 
     totalRecordCount += (subgraphLiquidations && (subgraphLiquidations?.length > 0)) ? subgraphLiquidations?.length : 0;
 
