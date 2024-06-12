@@ -3,13 +3,8 @@ import { Contract } from 'ethers';
 import {
   EthersProvider,
   EthersProviderArbitrum,
+  EthersProviderOptimism,
 } from "../../app";
-
-import {
-  SILO_FACTORY_ADDRESS,
-  SILO_LLAMA_FACTORY_ADDRESS,
-  SILO_FACTORY_ADDRESS_ARBITRUM,
-} from "../../constants";
 
 import {
   queryFilterRetryOnFailure
@@ -33,6 +28,10 @@ export const getAllSiloAddresses = async (deploymentConfig: IDeployment) => {
     } else if (deploymentConfig.network === 'arbitrum') {
       let FactoryContract = new Contract(siloFactoryConfig.address, siloFactoryConfig.abi);
       let factoryContract = await FactoryContract.connect(EthersProviderArbitrum);
+      siloFactories.push({contract: factoryContract, meta: siloFactoryConfig.meta});
+    } else if (deploymentConfig.network === 'optimism') {
+      let FactoryContract = new Contract(siloFactoryConfig.address, siloFactoryConfig.abi);
+      let factoryContract = await FactoryContract.connect(EthersProviderOptimism);
       siloFactories.push({contract: factoryContract, meta: siloFactoryConfig.meta});
     }
   }

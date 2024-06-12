@@ -5,6 +5,7 @@ import BigNumber from 'bignumber.js';
 import {
   EthersProvider,
   EthersProviderArbitrum,
+  EthersProviderOptimism,
 } from "../../app";
 
 import {
@@ -80,6 +81,8 @@ export const getAllSiloBorrowEventsSinceBlock = async (
     let provider = EthersProvider;
     if(network === "arbitrum") {
       provider = EthersProviderArbitrum;
+    } else if(network === "optimism") {
+      provider = EthersProviderOptimism;
     }
     for(let siloAddress of siloAddresses) {
       siloProgress++

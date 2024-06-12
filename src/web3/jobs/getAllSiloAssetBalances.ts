@@ -1,4 +1,4 @@
-import { Contract as MulticallContract } from 'ethers-multicall';
+import { Contract as MulticallContract } from '@kargakis/ethers-multicall';
 
 import { Contract, utils } from 'ethers';
 
@@ -7,13 +7,10 @@ import BigNumber from 'bignumber.js';
 import {
   EthersProvider,
   EthersProviderArbitrum,
+  EthersProviderOptimism,
 } from "../../app";
 
 import {
-  SILO_FACTORY_ADDRESS,
-  SILO_CONVEX_FACTORY_ADDRESS,
-  SILO_LLAMA_FACTORY_ADDRESS,
-  SILO_FACTORY_ADDRESS_ARBITRUM,
   SILO_BLACKLIST,
 } from "../../constants";
 
@@ -69,6 +66,10 @@ export const getAllSiloAssetBalances = async (deploymentConfig: IDeployment) => 
   } else if (deploymentConfig.network === 'arbitrum') {
     let RepositoryContract = new Contract(deploymentConfig.siloRepository.address, deploymentConfig.siloRepository.abi);
     let repositoryContract = await RepositoryContract.connect(EthersProviderArbitrum);
+    siloRepositories.push({contract: repositoryContract, meta: deploymentConfig.siloRepository.meta});
+  } else if (deploymentConfig.network === 'optimism') {
+    let RepositoryContract = new Contract(deploymentConfig.siloRepository.address, deploymentConfig.siloRepository.abi);
+    let repositoryContract = await RepositoryContract.connect(EthersProviderOptimism);
     siloRepositories.push({contract: repositoryContract, meta: deploymentConfig.siloRepository.meta});
   }
   

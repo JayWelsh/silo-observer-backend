@@ -1,24 +1,12 @@
-import { Contract as MulticallContract } from 'ethers-multicall';
+import { Contract as MulticallContract } from '@kargakis/ethers-multicall';
 
 import { Contract, utils } from 'ethers';
 
 import BigNumber from 'bignumber.js';
 
 import {
-  SILO_LENS_ADDRESS,
-  SILO_LENS_ADDRESS_LLAMA,
-  SILO_LENS_ADDRESS_ARBITRUM,
-} from "../../constants";
-
-import {
   multicallProviderRetryOnFailure,
 } from '../utils';
-
-import SiloFactoryABI from '../abis/SiloFactoryABI.json';
-import SiloABI from '../abis/SiloABI.json';
-import ERC20ABI from '../abis/ERC20ABI.json';
-import SiloLensABI from '../abis/SiloLensABI.json';
-import SiloLensLlamaABI from '../abis/SiloLensLlamaABI.json';
 
 import {
   IDeployment,
