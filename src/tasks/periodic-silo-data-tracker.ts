@@ -89,7 +89,7 @@ const siloQuery =  `{
   }
 }`;
 
-const siloQueryTempArbitrumForceHeadIndexers = (latestBlockNumber: number) => `{
+const siloQueryTempArbitrumForceHeadIndexers = (latestBlockNumber: number | string) => `{
   silos(block: {number_gte: ${latestBlockNumber}}) {
     id
     totalValueLockedUSD
@@ -218,7 +218,15 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
 
         let latestBlockNumber = await getLatestBlockNumber(deploymentConfig.network);
 
-        let resultRaw = await subgraphRequestWithRetry(deploymentConfig.network === 'arbitrum' ? siloQuery : siloQuery, deploymentConfig.subgraphEndpoint, deploymentConfig.subgraphEndpointFallback);
+        // use these to make use of the special logic for querying Arbitrum subgraph
+        let initialQuery = deploymentConfig.network === 'arbitrum' ? siloQueryTempArbitrumForceHeadIndexers(latestBlockNumber - 1000) : siloQuery;
+        let backupQuery = deploymentConfig.network === 'arbitrum' ? (overrideBlock: string) => siloQueryTempArbitrumForceHeadIndexers(`${overrideBlock}`) : (overrideBlock: string) => siloQuery;
+
+        // use these to avoid the special logic for querying querying Arbitrum subgraph
+        // let initialQuery = siloQuery;
+        // let backupQuery = (overrideBlock: string) => siloQuery;
+
+        let resultRaw = await subgraphRequestWithRetry(initialQuery, backupQuery, deploymentConfig.subgraphEndpoint, deploymentConfig.subgraphEndpointFallback);
 
         let result = resultRaw.data;
 

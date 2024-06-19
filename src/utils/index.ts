@@ -36,7 +36,7 @@ const sleep = (ms: number) => {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-const subgraphRequestWithRetry = async (query: string, url = SUBGRAPH_ENDPOINT, fallbackUrl = SUBGRAPH_ENDPOINT_FALLBACK, retryFallback = 3, retryMax = 6, retryCount = 0) : Promise<any> => {
+const subgraphRequestWithRetry = async (query: string, backupQuery: (arg0: string) => string, url = SUBGRAPH_ENDPOINT, fallbackUrl = SUBGRAPH_ENDPOINT_FALLBACK, retryFallback = 3, retryMax = 6, retryCount = 0) : Promise<any> => {
   try {
     let result = await axios.post(url, {
       query: query
@@ -49,15 +49,29 @@ const subgraphRequestWithRetry = async (query: string, url = SUBGRAPH_ENDPOINT, 
     .then((response) => response.data)
     if(result.errors) {
       console.error(result.errors);
-      throw new Error(result.errors);
+      throw new Error(result.errors?.[0].message);
     }
     return result;
-  } catch (e) {
+  } catch (e: any) {
     retryCount++;
     if(retryCount < retryMax) {
       console.log(`Query failed, retry #${retryCount}`);
+      const regex = /latest: (\d+)/g;
+      const matches = e.message.match(regex);
+
+      console.log({e})
+
+      if (matches) {
+        const latestValues = matches.map((match: string) => parseInt(match.split(': ')[1], 10));
+        const highestLatest = Math.max(...latestValues);
+        console.log(`The highest "latest" value is: ${highestLatest}`);
+        await sleep(4000);
+        return await subgraphRequestWithRetry(backupQuery(`${highestLatest}`), backupQuery, retryCount < retryFallback ? url : fallbackUrl, fallbackUrl, retryFallback, retryMax, retryCount);
+      } else {
+        console.log('No "latest" values found in the error message.');
+      }
       await sleep(4000);
-      return await subgraphRequestWithRetry(query, retryCount < retryFallback ? url : fallbackUrl, fallbackUrl, retryFallback, retryMax, retryCount);
+      return await subgraphRequestWithRetry(query, backupQuery, retryCount < retryFallback ? url : fallbackUrl, fallbackUrl, retryFallback, retryMax, retryCount);
     } else {
       //@ts-ignore
       throw new Error(e);
