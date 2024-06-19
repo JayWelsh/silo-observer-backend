@@ -218,9 +218,13 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
 
         let latestBlockNumber = await getLatestBlockNumber(deploymentConfig.network);
 
+        // use these to make use of the special logic for querying Arbitrum subgraph
         let initialQuery = deploymentConfig.network === 'arbitrum' ? siloQueryTempArbitrumForceHeadIndexers(latestBlockNumber - 1000) : siloQuery;
-
         let backupQuery = deploymentConfig.network === 'arbitrum' ? (overrideBlock: string) => siloQueryTempArbitrumForceHeadIndexers(`${overrideBlock}`) : (overrideBlock: string) => siloQuery;
+
+        // use these to avoid the special logic for querying querying Arbitrum subgraph
+        // let initialQuery = siloQuery;
+        // let backupQuery = (overrideBlock: string) => siloQuery;
 
         let resultRaw = await subgraphRequestWithRetry(initialQuery, backupQuery, deploymentConfig.subgraphEndpoint, deploymentConfig.subgraphEndpointFallback);
 
