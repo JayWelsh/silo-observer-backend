@@ -37,8 +37,8 @@ export const SUBGRAPH_ENDPOINT_ARBITRUM = `https://gateway-arbitrum.network.theg
 export const SUBGRAPH_ENDPOINT_ARBITRUM_FALLBACK = `https://api.thegraph.com/subgraphs/id/QmTMKqty5yZvZtB3SwzXUG92aZUH1YQw3VjByGw4wgaMhW`;
 export const SUBGRAPH_VERSION_ARBITRUM = "3.5.1";
 
-export const SUBGRAPH_ENDPOINT_OPTIMISM = `https://gateway-arbitrum.network.thegraph.com/api/${THE_GRAPH_API_KEY}/deployments/id/QmaFvc6f6ud5LeFgpB4mNTAqRkitj85gyfrWoVGuktMnwD`; // TODO find correct subgraph ID
-export const SUBGRAPH_ENDPOINT_OPTIMISM_FALLBACK = `https://api.thegraph.com/subgraphs/id/QmaFvc6f6ud5LeFgpB4mNTAqRkitj85gyfrWoVGuktMnwD`;
+export const SUBGRAPH_ENDPOINT_OPTIMISM = `https://gateway-arbitrum.network.thegraph.com/api/${THE_GRAPH_API_KEY}/deployments/id/QmQapCKp7Ux411BdULtXBrL8VRjdEqq8inwJd3Fqi6BwEV`; // TODO find correct subgraph ID
+export const SUBGRAPH_ENDPOINT_OPTIMISM_FALLBACK = `https://api.thegraph.com/subgraphs/id/QmQapCKp7Ux411BdULtXBrL8VRjdEqq8inwJd3Fqi6BwEV`;
 export const SUBGRAPH_VERSION_OPTIMISM = "3.5.1";
 
 // export const SUBGRAPH_ENDPOINT_LLAMA = `https://gateway-arbitrum.network.thegraph.com/api/${THE_GRAPH_API_KEY}/deployments/id/QmYzeik2P18AFNKPtCrEFwuCHws66tjvZpX57KPfKbtnWw`;

@@ -21,7 +21,7 @@ const queryUntilAllRecordsFound = async (
   console.log("Running queryUntilAllRecordsFound", `skip: ${skip}`, `fromBlock: ${fromBlock}`, `toBlock: ${toBlock}`, `logHelper: ${logHelper}`);
 
   let query = buildQuery(fromBlock, toBlock, SUBGRAPH_RECORD_LIMIT_PER_QUERY, skip);
-  let result = await subgraphRequestWithRetry(query, subgraphEndpoint, subgraphEndpointFallback);
+  let result = await subgraphRequestWithRetry(query, (arg0: string) => query, subgraphEndpoint, subgraphEndpointFallback);
 
   // Check if the result array is not empty and has reached the limit
   if (result?.data?.liquidates?.length > 0) {
