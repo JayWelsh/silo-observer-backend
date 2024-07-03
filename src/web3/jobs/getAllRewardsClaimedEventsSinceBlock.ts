@@ -33,6 +33,7 @@ BigNumber.config({ EXPONENTIAL_AT: [-1e+9, 1e+9] });
 export const getAllRewardsClaimedEventsSinceBlock = async (
   incentiveControllerAddress: string,
   incentiveAssetAddress: string,
+  incentiveMeta: string,
   lastestBlock: number,
   deploymentConfig: IDeployment,
   isSanityCheck?: boolean,
@@ -43,9 +44,9 @@ export const getAllRewardsClaimedEventsSinceBlock = async (
   let network = deploymentConfig.network;
   let deploymentId = deploymentConfig.id;
 
-  let eventIndexBlockTrackerRecord = await EventIndexerBlockTrackerRepository.getByEventNameAndNetwork("RewardsClaimed", network, deploymentId);
+  let eventIndexBlockTrackerRecord = await EventIndexerBlockTrackerRepository.getByEventNameAndNetworkAndMeta("RewardsClaimed", network, deploymentId, incentiveMeta);
   if(isSanityCheck) {
-    eventIndexBlockTrackerRecord = await EventIndexerBlockTrackerRepository.getByEventNameAndNetwork("RewardsClaimed-Sanity", network, deploymentId);
+    eventIndexBlockTrackerRecord = await EventIndexerBlockTrackerRepository.getByEventNameAndNetworkAndMeta("RewardsClaimed-Sanity", network, deploymentId, incentiveMeta);
   }
 
   if(eventIndexBlockTrackerRecord) {

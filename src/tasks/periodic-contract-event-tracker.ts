@@ -82,7 +82,7 @@ export const periodicContractEventTracker = async (useTimestampUnix: number, sta
       let [...rewardsClaimedEventBatches] = incentiveControllers 
         ? 
           await Promise.all(incentiveControllers?.map((entry) => {
-            return getAllRewardsClaimedEventsSinceBlock(entry.address, entry.assetAddress, latestBlockNumber, deploymentConfig);
+            return getAllRewardsClaimedEventsSinceBlock(entry.address, entry.assetAddress, entry.meta, latestBlockNumber, deploymentConfig);
           }))
         : 
           [];

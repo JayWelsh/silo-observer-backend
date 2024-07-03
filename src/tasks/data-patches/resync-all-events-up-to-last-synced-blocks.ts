@@ -84,7 +84,7 @@ export const resycAllEventsUpToLastSyncedBlocks = async (useTimestampUnix: numbe
       let [...rewardsClaimedEventBatches] = incentiveControllers 
         ? 
           await Promise.all(incentiveControllers?.map((entry) => {
-            return getAllRewardsClaimedEventsSinceBlock(entry.address, entry.assetAddress, latestBlockNumber, deploymentConfig, true);
+            return getAllRewardsClaimedEventsSinceBlock(entry.address, entry.assetAddress, entry.meta, latestBlockNumber, deploymentConfig, true);
           }))
         : 
           [];

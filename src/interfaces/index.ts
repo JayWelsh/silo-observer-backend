@@ -169,6 +169,7 @@ export interface IRepositoryConfig {
 export interface IIncentiveControllerConfig {
   address: string;
   assetAddress: string;
+  meta: string;
 }
 
 export interface IDeployment {

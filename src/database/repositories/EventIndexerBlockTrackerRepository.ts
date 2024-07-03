@@ -24,6 +24,24 @@ class EventIndexerBlockTrackerRepository extends BaseRepository {
     return this.parserResult(result);
   }
 
+  async getByEventNameAndNetworkAndMeta(
+    eventName: string,
+    network: string,
+    deploymentId: string,
+    meta: string,
+  ) {
+
+    const result = await this.model.query()
+    .where(function (this: QueryBuilder<EventIndexerBlockTrackerModel>) {
+      this.where('event_name', eventName);
+      this.where('network', network);
+      this.where('deployment_id', deploymentId);
+      this.where('meta', meta);
+    }).first();
+
+    return this.parserResult(result);
+  }
+
   async getLowestLastCheckedBlockRecordByNetworkAndDeploymentId(
     network: string,
     deploymentId: string,

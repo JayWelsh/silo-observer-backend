@@ -138,6 +138,13 @@ export const DEPLOYMENT_CONFIGS : IDeployment[] = [
         meta: 'ethereum-convex',
       }
     ],
+    incentiveControllers: [
+      {
+        address: "0x6c1603aB6CecF89DD60C24530DdE23F97DA3C229",
+        assetAddress: "0x6f80310CA7F2C654691D1383149Fa1A57d8AB1f8",
+        meta: "silo_rewards_q1_2023"
+      },
+    ],
     siloRepository: {
       address: SILO_REPOSITORY_ADDRESS,
       abi: SiloRepositoryABI,
@@ -180,10 +187,18 @@ export const DEPLOYMENT_CONFIGS : IDeployment[] = [
       abi: SiloFactoryABI,
       meta: "arbitrum-original",
     }],
-    incentiveControllers: [{
-      address: "0xd592F705bDC8C1B439Bd4D665Ed99C4FaAd5A680",
-      assetAddress: "0x912CE59144191C1204E64559FE8253a0e49E6548",
-    }],
+    incentiveControllers: [
+      {
+        address: "0xd592F705bDC8C1B439Bd4D665Ed99C4FaAd5A680",
+        assetAddress: "0x912CE59144191C1204E64559FE8253a0e49E6548",
+        meta: "arb_rewards_q4_2023"
+      },
+      {
+        address: "0x7e5BFBb25b33f335e34fa0d78b878092931F8D20",
+        assetAddress: "0x0341C0C0ec423328621788d4854119B97f44E391",
+        meta: "silo_rewards_q1_2024"
+      }
+    ],
     siloRepository: {
       address: SILO_REPOSITORY_ADDRESS_ARBITRUM,
       abi: SiloRepositoryABI,
@@ -204,6 +219,13 @@ export const DEPLOYMENT_CONFIGS : IDeployment[] = [
       abi: SiloFactoryABI,
       meta: "optimism-original",
     }],
+    incentiveControllers: [
+      {
+        address: "0x847D9420643e117798e803d9C5F0e406277CB622",
+        assetAddress: "0x4200000000000000000000000000000000000042",
+        meta: "op_rewards_q1_2024"
+      },
+    ],
     siloRepository: {
       address: SILO_REPOSITORY_ADDRESS_OPTIMISM,
       abi: SiloRepositoryABI,
