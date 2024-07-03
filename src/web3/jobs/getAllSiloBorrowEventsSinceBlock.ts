@@ -116,7 +116,7 @@ export const getAllSiloBorrowEventsSinceBlock = async (
           let eventFingerprint = getEventFingerprint(network, blockNumber, transactionIndex, logIndex);
           let existingEventRecord = await BorrowEventRepository.findByColumn('event_fingerprint', eventFingerprint);
           if(!existingEventRecord) {
-            BorrowEventRepository.create({
+            await BorrowEventRepository.create({
               silo_address: address,
               asset_address: asset,
               user_address: user,

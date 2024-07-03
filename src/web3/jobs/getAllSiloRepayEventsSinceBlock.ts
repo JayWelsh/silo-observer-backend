@@ -117,7 +117,7 @@ export const getAllSiloRepayEventsSinceBlock = async (
           let eventFingerprint = getEventFingerprint(network, blockNumber, transactionIndex, logIndex);
           let existingEventRecord = await RepayEventRepository.findByColumn('event_fingerprint', eventFingerprint);
           if(!existingEventRecord) {
-            RepayEventRepository.create({
+            await RepayEventRepository.create({
               silo_address: address,
               asset_address: asset,
               user_address: user,

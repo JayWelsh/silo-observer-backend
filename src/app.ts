@@ -25,7 +25,7 @@ import { periodicSubgraphLiquidationTracker } from "./tasks/periodic-subgraph-li
 // minutely cycle to run indexer, 10 = 10 minutes (i.e. 10, 20, 30, 40, 50, 60 past the hour).
 // recommend to use 10 if doing a full sync, once up to speed, 3 minutes should be safe.
 // using 6 for Alchemy costs
-let cronIndexerPeriodMinutes = 10; // temp until new month
+let cronIndexerPeriodMinutes = 30; // temp until new month
 
 let corsOptions = {
   origin: ['http://localhost:3000', 'https://silo.observer', 'https://www.silo.observer'],

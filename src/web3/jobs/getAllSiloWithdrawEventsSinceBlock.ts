@@ -118,7 +118,7 @@ export const getAllSiloWithdrawEventsSinceBlock = async (
           let eventFingerprint = getEventFingerprint(network, blockNumber, transactionIndex, logIndex);
           let existingEventRecord = await WithdrawEventRepository.findByColumn('event_fingerprint', eventFingerprint);
           if(!existingEventRecord) {
-            WithdrawEventRepository.create({
+            await WithdrawEventRepository.create({
               silo_address: address,
               asset_address: asset,
               user_address: user,
