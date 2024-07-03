@@ -118,7 +118,7 @@ export const getAllSiloDepositEventsSinceBlock = async (
           let eventFingerprint = getEventFingerprint(network, blockNumber, transactionIndex, logIndex);
           let existingEventRecord = await DepositEventRepository.findByColumn('event_fingerprint', eventFingerprint);
           if(!existingEventRecord) {
-            DepositEventRepository.create({
+            await DepositEventRepository.create({
               silo_address: address,
               asset_address: asset,
               user_address: user,

@@ -51,6 +51,15 @@ export const getAllRewardsClaimedEventsSinceBlock = async (
 
   if(eventIndexBlockTrackerRecord) {
 
+    if(eventIndexBlockTrackerRecord.in_progress) {
+      console.log(`Skipping Rewards Claimed Sync for ${incentiveMeta} on ${deploymentConfig.network} for deploymentID ${deploymentId} due to currently being in progress`)
+      return [];
+    } else {
+      await EventIndexerBlockTrackerRepository.update({
+        in_progress: true,
+      }, eventIndexBlockTrackerRecord.id)
+    }
+
     let {
       fromBlock,
       toBlock,
@@ -114,7 +123,7 @@ export const getAllRewardsClaimedEventsSinceBlock = async (
           let eventFingerprint = getEventFingerprint(network, blockNumber, transactionIndex, logIndex);
           let existingEventRecord = await RewardEventRepository.findByColumn('event_fingerprint', eventFingerprint);
           if(!existingEventRecord) {
-            RewardEventRepository.create({
+            await RewardEventRepository.create({
               event_name: "RewardsClaimed",
               incentive_controller_address: address,
               asset_address: incentiveAssetAddress,
@@ -136,6 +145,7 @@ export const getAllRewardsClaimedEventsSinceBlock = async (
 
       await EventIndexerBlockTrackerRepository.update({
         last_checked_block: latestSyncBlock,
+        in_progress: false,
       }, eventIndexBlockTrackerRecord.id)
 
     }
