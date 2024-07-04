@@ -1,9 +1,18 @@
 import { QueryBuilder, raw } from "objection";
 
-import { RewardEventModel } from "../models";
+import { RewardEventModel, AssetModel } from "../models";
 import BaseRepository from "./BaseRepository";
 import Pagination, { IPaginationRequest } from "../../utils/Pagination";
 import { ITransformer, IVolumeTimeseriesQueryResult } from "../../interfaces";
+
+type AssetReward = {
+  asset_address: string;
+  amount: string;
+  decimals: string;
+  symbol: string;
+};
+
+type UserRewards = Record<string, AssetReward[]>;
 
 class RewardEventRepository extends BaseRepository {
   getModel() {
@@ -223,6 +232,54 @@ class RewardEventRepository extends BaseRepository {
       .orderBy('block_metadata.block_timestamp_unix', 'ASC')
 
       return this.parserResult(results);
+  }
+
+  async getCumulativeRewardsPerAddress(
+    networks?: string[]
+  ): Promise<Record<string, UserRewards>> {
+    let tableName = this.model.tableName;
+
+    let assetTableName = AssetModel.tableName;
+  
+    const results = await this.model.query()
+      .select(
+        `${tableName}.user_address`,
+        `${tableName}.asset_address`,
+        `${tableName}.network`,
+        this.model.raw(`SUM(${tableName}.amount) as total_amount`),
+        `${assetTableName}.decimals`,
+        `${assetTableName}.symbol`
+      )
+      .join('asset', `${tableName}.asset_address`, '=', `${assetTableName}.address`)
+      .groupBy(`${tableName}.user_address`, `${tableName}.asset_address`, `${tableName}.network`, `${assetTableName}.decimals`, `${assetTableName}.symbol`)
+      .modify((queryBuilder: QueryBuilder<RewardEventModel>) => {
+        if (networks && networks.length > 0) {
+          queryBuilder.whereIn(`${tableName}.network`, networks);
+        }
+      });
+  
+    const cumulativeRewards: Record<string, UserRewards> = {};
+  
+    for(let result of results) {
+      const { user_address, asset_address, network, total_amount, decimals, symbol } = result;
+      
+      if (!cumulativeRewards[user_address]) {
+        cumulativeRewards[user_address] = {};
+      }
+      
+      if (!cumulativeRewards[user_address][network]) {
+        cumulativeRewards[user_address][network] = [];
+      }
+      
+      cumulativeRewards[user_address][network].push({
+        asset_address,
+        amount: total_amount.toString(),
+        decimals: decimals.toString(),
+        symbol
+      });
+    };
+  
+    return cumulativeRewards;
   }
 }
 
