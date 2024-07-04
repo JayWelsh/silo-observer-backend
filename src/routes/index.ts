@@ -8,6 +8,7 @@ const TvlTotalRoutes = require('./tvl_total.routes');
 const BorrowedTotalRoutes = require('./borrowed_total.routes');
 const EventRoutes = require('./event.routes');
 const VolumeRoutes = require('./volume.routes');
+const RewardRoutes = require('./reward.routes');
 
 export default function routes(app: Express) {
     app.use("", SiloRoutes);
@@ -16,4 +17,5 @@ export default function routes(app: Express) {
     app.use("", BorrowedTotalRoutes);
     app.use("", EventRoutes);
     app.use("", VolumeRoutes);
+    app.use("", RewardRoutes);
 }

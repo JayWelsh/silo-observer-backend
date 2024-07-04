@@ -5,6 +5,7 @@ import TvlTotalController from './TvlTotalController';
 import BorrowedTotalController from './BorrowedTotalController';
 import EventController from './EventController';
 import VolumeController from './VolumeController';
+import RewardController from './RewardController';
 
 // Authed routes
 
@@ -15,4 +16,5 @@ export default {
   BorrowedTotalController,
   EventController,
   VolumeController,
+  RewardController,
 };
