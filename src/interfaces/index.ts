@@ -195,3 +195,12 @@ export interface IVolumeTimeseriesEntry {
   usd: string;
   block_day_timestamp: string
 }
+
+export type MerklAssetReward = {
+  asset_address: string;
+  amount: string;
+  decimals: string;
+  symbol: string;
+};
+
+export type MerklUserRewards = Record<string, MerklAssetReward[]>;
