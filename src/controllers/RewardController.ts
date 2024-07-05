@@ -26,34 +26,29 @@ type AddressRewards = {
   [address: string]: NetworkRewards;
 };
 
-function mergeRewards(rewards1: AddressRewards, rewards2: AddressRewards): AddressRewards {
-  const mergedRewards: AddressRewards = JSON.parse(JSON.stringify(rewards1));
+function mergeRewards(...rewardObjects: Record<string, MerklUserRewards>[]): Record<string, MerklUserRewards> {
+  const merged: Record<string, MerklUserRewards> = {};
 
-  for (const [address, networkRewards] of Object.entries(rewards2)) {
-    if (!mergedRewards[address]) {
-      mergedRewards[address] = {};
-    }
+  for (let rewardObject of rewardObjects) {
+    for (let [userAddress, networks] of Object.entries(rewardObject)) {
+      if (!merged[userAddress]) merged[userAddress] = {};
 
-    for (const [network, rewards] of Object.entries(networkRewards)) {
-      if (!mergedRewards[address][network]) {
-        mergedRewards[address][network] = [];
-      }
+      for (let [network, rewards] of Object.entries(networks)) {
+        if (!merged[userAddress][network]) merged[userAddress][network] = [];
 
-      for (const reward of rewards) {
-        const existingReward = mergedRewards[address][network].find(
-          r => r.asset_address === reward.asset_address
-        );
-
-        if (existingReward) {
-          existingReward.amount = (BigInt(existingReward.amount) + BigInt(reward.amount)).toString();
-        } else {
-          mergedRewards[address][network].push({ ...reward });
+        for (let reward of rewards) {
+          const existingReward = merged[userAddress][network].find(r => r.asset_address === reward.asset_address);
+          if (existingReward) {
+            existingReward.amount = (BigInt(existingReward.amount) + BigInt(reward.amount)).toString();
+          } else {
+            merged[userAddress][network].push({...reward});
+          }
         }
       }
     }
   }
 
-  return mergedRewards;
+  return merged;
 }
 
 class RewardController extends Controller {

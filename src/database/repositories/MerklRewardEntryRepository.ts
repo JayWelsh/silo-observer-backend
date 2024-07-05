@@ -30,7 +30,7 @@ class MerklRewardEntryRepository extends BaseRepository {
         `${assetTableName}.symbol`
       )
       .join('asset', `${tableName}.asset_address`, '=', `${assetTableName}.address`)
-      .groupBy(`${tableName}.user_address`, `${tableName}.asset_address`, `${tableName}.network`, `${assetTableName}.decimals`, `${assetTableName}.symbol`);
+      .groupBy(`${tableName}.user_address`, `${tableName}.asset_address`, `${tableName}.network`);
 
     if (networks && networks.length > 0) {
       query = query.whereIn(`${tableName}.network`, networks);
