@@ -26,8 +26,8 @@ class MerklRewardEntryRepository extends BaseRepository {
         `${tableName}.asset_address`,
         `${tableName}.network`,
         this.model.raw(`SUM(${tableName}.amount) as total_amount`),
-        `${assetTableName}.decimals`,
-        `${assetTableName}.symbol`
+        this.model.raw(`MAX(${assetTableName}.decimals) as decimals`),
+        this.model.raw(`MAX(${assetTableName}.symbol) as symbol`),
       )
       .join('asset', `${tableName}.asset_address`, '=', `${assetTableName}.address`)
       .groupBy(`${tableName}.user_address`, `${tableName}.asset_address`, `${tableName}.network`);
