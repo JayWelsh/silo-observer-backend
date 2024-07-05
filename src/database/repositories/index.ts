@@ -30,6 +30,9 @@ import BlockMetadataRepository from "./BlockMetadataRepository";
 import SubgraphIndexerBlockTrackerRepository from './SubgraphIndexerBlockTrackerRepository';
 import SubgraphLiquidationRecordRepository from './SubgraphLiquidationRecordRepository';
 
+// Merkl Rewards
+import MerklRewardEntryRepository from './MerklRewardEntryRepository';
+
 export {
   AssetRepository,
   SiloRepository,
@@ -52,4 +55,5 @@ export {
   BlockMetadataRepository,
   SubgraphIndexerBlockTrackerRepository,
   SubgraphLiquidationRecordRepository,
+  MerklRewardEntryRepository,
 };

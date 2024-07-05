@@ -21,11 +21,13 @@ import { periodicContractEventTracker } from './tasks/periodic-contract-event-tr
 import { backfillEventUsdValues } from './tasks/data-patches/backfill-event-usd-values';
 import { resycAllEventsUpToLastSyncedBlocks } from './tasks/data-patches/resync-all-events-up-to-last-synced-blocks';
 import { periodicSubgraphLiquidationTracker } from "./tasks/periodic-subgraph-liquidation-tracker";
+import { merklRewardSync } from './tasks/periodic-merkl-reward-sync';
 
 // minutely cycle to run indexer, 10 = 10 minutes (i.e. 10, 20, 30, 40, 50, 60 past the hour).
 // recommend to use 10 if doing a full sync, once up to speed, 3 minutes should be safe.
 // using 6 for Alchemy costs
-let cronIndexerPeriodMinutes = 10; // temp until new month
+let cronIndexerPeriodMinutes = 10;
+let cronMerklIndexerPeriodHours = 2;
 
 let corsOptions = {
   origin: ['http://localhost:3000', 'https://silo.observer', 'https://www.silo.observer'],
@@ -93,6 +95,20 @@ const runSync = new CronJob(
 );
 
 runSync.start();
+
+const runMerklSync = new CronJob(
+	`0 0 */${cronMerklIndexerPeriodHours} * * *`, // runs at 0 seconds past the 0th minute of the hour at which it runs
+	async () => {
+		let startTimeMerklRewardSync = new Date().getTime();
+    let useTimestampUnixMerklRewardSync = Math.floor(new Date().setSeconds(0) / 1000);
+    await merklRewardSync(useTimestampUnixMerklRewardSync, startTimeMerklRewardSync);
+	},
+	null,
+	true,
+	'Etc/UTC'
+);
+
+runMerklSync.start();
 
 (async () => {
   let startTimeResyncEvents = new Date().getTime();

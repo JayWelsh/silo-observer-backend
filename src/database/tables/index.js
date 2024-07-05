@@ -27,6 +27,8 @@ const SUBGRAPH_LIQUIDATION_RECORD_TABLE = 'subgraph_liquidation_record';
 
 const BLOCK_METADATA_TABLE = 'block_metadata';
 
+const MERKL_REWARD_ENTRY_TABLE = 'merkl_reward_entry';
+
 module.exports = {
   SILO_TABLE,
   ASSET_TABLE,
@@ -49,4 +51,5 @@ module.exports = {
   BLOCK_METADATA_TABLE,
   SUBGRAPH_INDEXER_BLOCK_TRACKER_TABLE,
   SUBGRAPH_LIQUIDATION_RECORD_TABLE,
+  MERKL_REWARD_ENTRY_TABLE,
 }

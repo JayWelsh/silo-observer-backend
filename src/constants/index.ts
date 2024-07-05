@@ -53,6 +53,18 @@ export const NETWORK_TO_SUBGRAPH : {[key: string]: string} = {
   "optimism": SUBGRAPH_ENDPOINT_OPTIMISM,
 }
 
+export const CHAIN_ID_TO_CHAIN_NAME : {[key: number]: string} = {
+  1: "ethereum",
+  10: "optimism",
+  42161: "arbitrum",
+}
+
+export const CHAIN_NAME_TO_CHAIN_ID = {
+  "ethereum": 1,
+  "optimism": 10,
+  "arbitrum": 42161,
+}
+
 // Web3
 export const ALCHEMY_API_KEY = process.env['ALCHEMY_API_KEY'];
 export const ALCHEMY_API_KEY_ARBITRUM = process.env['ALCHEMY_API_KEY_ARBITRUM'];

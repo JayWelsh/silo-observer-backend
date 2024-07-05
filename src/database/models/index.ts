@@ -34,6 +34,9 @@ import BlockMetadataModel from './BlockMetadataModel';
 import SubgraphIndexerBlockTrackerModel from './SubgraphIndexerBlockTrackerModel';
 import SubgraphLiquidationRecordModel from './SubgraphLiquidationRecordModel';
 
+// MERKL REWARDS
+import MerklRewardEntryModel from './MerklRewardEntryModel';
+
 export {
   AssetModel,
   SiloModel,
@@ -56,4 +59,5 @@ export {
   BlockMetadataModel,
   SubgraphIndexerBlockTrackerModel,
   SubgraphLiquidationRecordModel,
+  MerklRewardEntryModel,
 }
