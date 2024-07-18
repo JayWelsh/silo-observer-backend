@@ -83,6 +83,8 @@ class TurtleController extends Controller {
   async getUserTvl(req: Request, res: Response) {
     const { userAddress } = req.params;
 
+    const { groupBy } = req.query;
+
     try {
       const fetchPromises = DEPLOYMENT_CONFIGS.map(async (deploymentConfig) => {
         const { network } = deploymentConfig;
@@ -95,25 +97,41 @@ class TurtleController extends Controller {
             `user positions on ${deploymentConfig.idHumanReadable}`
           );
 
-          const networkResult: { [key: string]: any } = {};
+          if(groupBy === 'network' || groupBy === 'all') {
 
-          for (let deploymentPosition of deploymentPositions) {
-            let checksumAddress = utils.getAddress(deploymentPosition.silo.id);
-            if (!networkResult[checksumAddress]) {
-              networkResult[checksumAddress] = {
-                silo_name: deploymentPosition.silo.name,
-                total_collateral_value: deploymentPosition.totalCollateralValue,
-              };
-            } else {
-              networkResult[checksumAddress].total_collateral_value = new BigNumber(
-                networkResult[checksumAddress].total_collateral_value
-              )
-                .plus(deploymentPosition.totalCollateralValue)
-                .toString();
+            const networkResult = { total_collateral_value: "0" };
+
+            for (let deploymentPosition of deploymentPositions) {
+              networkResult.total_collateral_value = new BigNumber(
+                networkResult.total_collateral_value
+              ).plus(deploymentPosition.totalCollateralValue).toString();
             }
-          }
 
-          return { network, result: networkResult };
+            return { network, result: networkResult };
+
+          } else {
+
+            const networkResult: { [key: string]: any } = {};
+
+            for (let deploymentPosition of deploymentPositions) {
+              let checksumAddress = utils.getAddress(deploymentPosition.silo.id);
+              if (!networkResult[checksumAddress]) {
+                networkResult[checksumAddress] = {
+                  silo_name: deploymentPosition.silo.name,
+                  total_collateral_value: deploymentPosition.totalCollateralValue,
+                };
+              } else {
+                networkResult[checksumAddress].total_collateral_value = new BigNumber(
+                  networkResult[checksumAddress].total_collateral_value
+                )
+                  .plus(deploymentPosition.totalCollateralValue)
+                  .toString();
+              }
+            }
+
+            return { network, result: networkResult };
+
+          }
         } catch (e) {
           console.error(`Error fetching data for ${network}:`, e);
           return { network, result: {} };
@@ -122,10 +140,23 @@ class TurtleController extends Controller {
 
       const results = await Promise.all(fetchPromises);
 
-      const finalResult = results.reduce((acc, { network, result }) => {
+      let finalResult = results.reduce((acc, { network, result }) => {
         acc[network] = result;
         return acc;
       }, {} as { [key: string]: any });
+
+      if(groupBy === 'all') {
+        let groupedByAllResults = {
+          total_collateral_value: "0"
+        }
+        
+        for(let networkKey of Object.keys(finalResult)) {
+          groupedByAllResults.total_collateral_value = new BigNumber(
+            groupedByAllResults.total_collateral_value
+          ).plus(finalResult[networkKey].total_collateral_value).toString();
+        }
+        finalResult = groupedByAllResults;
+      }
 
       this.sendResponse(res, finalResult);
     } catch (error) {
