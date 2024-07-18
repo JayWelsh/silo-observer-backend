@@ -6,6 +6,7 @@ import BorrowedTotalController from './BorrowedTotalController';
 import EventController from './EventController';
 import VolumeController from './VolumeController';
 import RewardController from './RewardController';
+import TurtleController from './TurtleController';
 
 // Authed routes
 
@@ -17,4 +18,5 @@ export default {
   EventController,
   VolumeController,
   RewardController,
+  TurtleController,
 };

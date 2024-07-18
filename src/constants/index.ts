@@ -21,6 +21,7 @@ export const MAX_MINUTELY_TVL_AND_BORROWED_ENTRIES = 10081; // 7 days + 1 second
 export const COINGECKO_API_KEY = process.env["COINGECKO_API_KEY"];
 
 export const THE_GRAPH_API_KEY = process.env["THE_GRAPH_API_KEY"];
+export const TURTLE_THE_GRAPH_API_KEY = process.env["TURTLE_THE_GRAPH_API_KEY"];
 
 // Subgraph
 // export const SUBGRAPH_ENDPOINT = `https://gateway-arbitrum.network.thegraph.com/api/${THE_GRAPH_API_KEY}/deployments/id/QmZwDpzNPEdDFMmSghyBC6wZ3aAjJqFB2xrAsrcLCPwVQk`;
@@ -28,22 +29,26 @@ export const THE_GRAPH_API_KEY = process.env["THE_GRAPH_API_KEY"];
 // export const SUBGRAPH_ENDPOINT_FALLBACK = "https://api.thegraph.com/subgraphs/id/QmQV7RB3WUFuSrCSyJsDq6FkQsVYFwak2xCZYsq3JmDrSq";
 // export const SUBGRAPH_VERSION_FALLBACK = "2.0.2";
 export const SUBGRAPH_ENDPOINT = `https://gateway-arbitrum.network.thegraph.com/api/${THE_GRAPH_API_KEY}/deployments/id/QmeDLbKHYypURMRigRxSspUm8w5zrDfXc3Skw2PiDxqCFu`;
+export const SUBGRAPH_ENDPOINT_TURTLE = `https://gateway-arbitrum.network.thegraph.com/api/${TURTLE_THE_GRAPH_API_KEY}/deployments/id/QmeDLbKHYypURMRigRxSspUm8w5zrDfXc3Skw2PiDxqCFu`;
 export const SUBGRAPH_ENDPOINT_FALLBACK = `https://api.thegraph.com/subgraphs/id/QmeDLbKHYypURMRigRxSspUm8w5zrDfXc3Skw2PiDxqCFu`;
 export const SUBGRAPH_VERSION = "3.5.1";
 
 // export const SUBGRAPH_ENDPOINT_ARBITRUM = `https://api.thegraph.com/subgraphs/id/QmQqLJVgZLcRduoszARzRi12qGheUTWAHFf3ixMeGm2xML`;
 // export const SUBGRAPH_ENDPOINT_ARBITRUM = `https://gateway-arbitrum.network.thegraph.com/api/${THE_GRAPH_API_KEY}/deployments/id/QmQqLJVgZLcRduoszARzRi12qGheUTWAHFf3ixMeGm2xML`;
 export const SUBGRAPH_ENDPOINT_ARBITRUM = `https://gateway-arbitrum.network.thegraph.com/api/${THE_GRAPH_API_KEY}/deployments/id/QmTMKqty5yZvZtB3SwzXUG92aZUH1YQw3VjByGw4wgaMhW`;
+export const SUBGRAPH_ENDPOINT_ARBITRUM_TURTLE = `https://gateway-arbitrum.network.thegraph.com/api/${TURTLE_THE_GRAPH_API_KEY}/deployments/id/QmTMKqty5yZvZtB3SwzXUG92aZUH1YQw3VjByGw4wgaMhW`;
 export const SUBGRAPH_ENDPOINT_ARBITRUM_FALLBACK = `https://api.thegraph.com/subgraphs/id/QmTMKqty5yZvZtB3SwzXUG92aZUH1YQw3VjByGw4wgaMhW`;
 export const SUBGRAPH_VERSION_ARBITRUM = "3.5.1";
 
-export const SUBGRAPH_ENDPOINT_OPTIMISM = `https://gateway-arbitrum.network.thegraph.com/api/${THE_GRAPH_API_KEY}/deployments/id/QmQapCKp7Ux411BdULtXBrL8VRjdEqq8inwJd3Fqi6BwEV`; // TODO find correct subgraph ID
+export const SUBGRAPH_ENDPOINT_OPTIMISM = `https://gateway-arbitrum.network.thegraph.com/api/${THE_GRAPH_API_KEY}/deployments/id/QmQapCKp7Ux411BdULtXBrL8VRjdEqq8inwJd3Fqi6BwEV`;
+export const SUBGRAPH_ENDPOINT_OPTIMISM_TURTLE = `https://gateway-arbitrum.network.thegraph.com/api/${TURTLE_THE_GRAPH_API_KEY}/deployments/id/QmQapCKp7Ux411BdULtXBrL8VRjdEqq8inwJd3Fqi6BwEV`;
 export const SUBGRAPH_ENDPOINT_OPTIMISM_FALLBACK = `https://api.thegraph.com/subgraphs/id/QmQapCKp7Ux411BdULtXBrL8VRjdEqq8inwJd3Fqi6BwEV`;
 export const SUBGRAPH_VERSION_OPTIMISM = "3.5.1";
 
 // export const SUBGRAPH_ENDPOINT_LLAMA = `https://gateway-arbitrum.network.thegraph.com/api/${THE_GRAPH_API_KEY}/deployments/id/QmYzeik2P18AFNKPtCrEFwuCHws66tjvZpX57KPfKbtnWw`;
 // export const SUBGRAPH_VERSION_LLAMA = "2.4";
 export const SUBGRAPH_ENDPOINT_LLAMA = `https://gateway-arbitrum.network.thegraph.com/api/${THE_GRAPH_API_KEY}/deployments/id/QmU6W7w6gAjDoE637hAVLjizp2cc7RYtUQsEzKnGp26VVa`;
+export const SUBGRAPH_ENDPOINT_LLAMA_TURTLE = `https://gateway-arbitrum.network.thegraph.com/api/${TURTLE_THE_GRAPH_API_KEY}/deployments/id/QmU6W7w6gAjDoE637hAVLjizp2cc7RYtUQsEzKnGp26VVa`;
 export const SUBGRAPH_ENDPOINT_LLAMA_FALLBACK = `https://api.thegraph.com/subgraphs/id/QmU6W7w6gAjDoE637hAVLjizp2cc7RYtUQsEzKnGp26VVa`;
 export const SUBGRAPH_VERSION_LLAMA = "3.5.1";
 
@@ -138,6 +143,7 @@ export const DEPLOYMENT_CONFIGS : IDeployment[] = [
     siloBlacklist: SILO_BLACKLIST,
     subgraphEndpoint: SUBGRAPH_ENDPOINT,
     subgraphEndpointFallback: SUBGRAPH_ENDPOINT_FALLBACK,
+    subgraphEndpointTurtle: SUBGRAPH_ENDPOINT_TURTLE,
     siloFactories: [
       {
         address: SILO_FACTORY_ADDRESS,
@@ -172,6 +178,7 @@ export const DEPLOYMENT_CONFIGS : IDeployment[] = [
     siloBlacklist: SILO_BLACKLIST,
     subgraphEndpoint: SUBGRAPH_ENDPOINT_LLAMA,
     subgraphEndpointFallback: SUBGRAPH_ENDPOINT_LLAMA_FALLBACK,
+    subgraphEndpointTurtle: SUBGRAPH_ENDPOINT_LLAMA_TURTLE,
     siloFactories: [
       {
         address: SILO_LLAMA_FACTORY_ADDRESS,
@@ -194,6 +201,7 @@ export const DEPLOYMENT_CONFIGS : IDeployment[] = [
     siloBlacklist: SILO_BLACKLIST,
     subgraphEndpoint: SUBGRAPH_ENDPOINT_ARBITRUM,
     subgraphEndpointFallback: SUBGRAPH_ENDPOINT_ARBITRUM_FALLBACK,
+    subgraphEndpointTurtle: SUBGRAPH_ENDPOINT_ARBITRUM_TURTLE,
     siloFactories: [{
       address: SILO_FACTORY_ADDRESS_ARBITRUM,
       abi: SiloFactoryABI,
@@ -226,6 +234,7 @@ export const DEPLOYMENT_CONFIGS : IDeployment[] = [
     siloBlacklist: SILO_BLACKLIST,
     subgraphEndpoint: SUBGRAPH_ENDPOINT_OPTIMISM,
     subgraphEndpointFallback: SUBGRAPH_ENDPOINT_OPTIMISM_FALLBACK,
+    subgraphEndpointTurtle: SUBGRAPH_ENDPOINT_OPTIMISM_TURTLE,
     siloFactories: [{
       address: SILO_FACTORY_ADDRESS_OPTIMISM,
       abi: SiloFactoryABI,
