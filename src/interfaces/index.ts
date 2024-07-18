@@ -181,6 +181,7 @@ export interface IDeployment {
   siloBlacklist: string[];
   subgraphEndpoint: string;
   subgraphEndpointFallback: string;
+  subgraphEndpointTurtle: string;
   siloFactories: IFactoryConfig[];
   siloRepository: IRepositoryConfig;
   incentiveControllers?:  IIncentiveControllerConfig[];
