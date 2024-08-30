@@ -247,6 +247,7 @@ export const merklRewardSync = async (useTimestampUnix: number, startTime: numbe
       }
     } catch(e) {
       console.error("Unable to sync unrecognised assets", e);
+      // trigger build, todo remove this comment
     }
 
     // Store data (we separate collection & storage due to added latency of collection)
