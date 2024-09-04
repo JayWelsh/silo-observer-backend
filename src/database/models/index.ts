@@ -37,6 +37,9 @@ import SubgraphLiquidationRecordModel from './SubgraphLiquidationRecordModel';
 // MERKL REWARDS
 import MerklRewardEntryModel from './MerklRewardEntryModel';
 
+// SYNC METADATA
+import DeploymentIdToSyncMetadataModel from './DeploymentIdToSyncMetadataModel';
+
 export {
   AssetModel,
   SiloModel,
@@ -60,4 +63,5 @@ export {
   SubgraphIndexerBlockTrackerModel,
   SubgraphLiquidationRecordModel,
   MerklRewardEntryModel,
+  DeploymentIdToSyncMetadataModel,
 }

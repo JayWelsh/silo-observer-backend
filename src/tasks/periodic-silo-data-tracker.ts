@@ -140,6 +140,8 @@ interface ICoingeckoAssetPriceEntry {
 
 let coingeckoRetryMax = 10;
 
+let unrecognisedTokens : any[] = [];
+
 // TODO move to dedicated file to share with other files which might use it in the future
 const fetchCoingeckoPrices = async (assetAddressesQueryString : string, network: string, retryCount = 0) => {
 
@@ -168,7 +170,12 @@ const fetchCoingeckoPrices = async (assetAddressesQueryString : string, network:
   .catch(async (e) => {
     retryCount++;
     if(retryCount < coingeckoRetryMax) {
-      console.error(`error fetching coingecko prices at ${Math.floor(new Date().getTime() / 1000)}, retry #${retryCount}...`, e);
+      console.error(`error fetching coingecko prices at ${Math.floor(new Date().getTime() / 1000)}, retry #${retryCount}...`, e?.response?.data?.error === "coin not found" ? "" : e);
+      if(e?.response?.data?.error === "coin not found") {
+        unrecognisedTokens.push(assetAddressesQueryStringWithOverrides);
+        console.log(`skipping retries since coin is not found on ${assetAddressesQueryStringWithOverrides}`);
+        return {};
+      }
       await sleep(5000);
       return await fetchCoingeckoPrices(assetAddressesQueryStringWithOverrides, network, retryCount);
     } else {
@@ -188,6 +195,7 @@ const fetchCoingeckoPrices = async (assetAddressesQueryString : string, network:
       }
     }
   }
+  console.log({unrecognisedTokens})
   return assetAddressToCoingeckoUsdPrice;
 }
 

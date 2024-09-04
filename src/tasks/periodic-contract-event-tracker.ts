@@ -25,6 +25,7 @@ import {
   RepayEventRepository,
   BlockMetadataRepository,
   RewardEventRepository,
+  DeploymentIdToSyncMetadataRepository,
 } from '../database/repositories'
 
 import {
@@ -64,9 +65,25 @@ export const periodicContractEventTracker = async (useTimestampUnix: number, sta
 
   for(let deploymentConfig of DEPLOYMENT_CONFIGS) {
 
-    let { network, incentiveControllers } = deploymentConfig;
+    let { network, incentiveControllers, id } = deploymentConfig;
+
+    // Get sync metadata record for deployment config
+    let existingSyncRecord = await DeploymentIdToSyncMetadataRepository.getSyncRecord(id, network, 'periodic-contract-event-tracker');
+
+    console.log({existingSyncRecord})
 
     try {
+
+      if(!existingSyncRecord) {
+        existingSyncRecord = await DeploymentIdToSyncMetadataRepository.create({deployment_id: id, network, sync_type: 'periodic-contract-event-tracker', in_progress: true, last_started_timestamp_unix: Math.floor(new Date().getTime() / 1000)});
+      } else {
+        if(existingSyncRecord.in_progress) {
+          console.log(`Periodic contract event tracker SKIPPED due to IN PROGRESS status (${network} - ${deploymentConfig.id}, last started: ${existingSyncRecord.last_started_timestamp_unix}, last ended: ${existingSyncRecord.last_ended_timestamp_unix}), exec time: ${new Date().getTime() - startTime}ms`)
+          return;
+        } else {
+          await DeploymentIdToSyncMetadataRepository.update({in_progress: true, last_started_timestamp_unix: Math.floor(new Date().getTime() / 1000)}, existingSyncRecord.id);
+        }
+      }
 
       let latestBlockNumber = await getLatestBlockNumber(network);
 
@@ -349,9 +366,12 @@ export const periodicContractEventTracker = async (useTimestampUnix: number, sta
 
       // TEMP DISABLE USER INTERACTION COUNT SYNCS ABOVE
 
+      await DeploymentIdToSyncMetadataRepository.update({in_progress: false, ended_by_error: false, last_ended_timestamp_unix: Math.floor(new Date().getTime() / 1000)}, existingSyncRecord.id);
+      
       console.log(`Periodic contract event tracker successful (${network} - ${deploymentConfig.id}), exec time: ${new Date().getTime() - startTime}ms`)
 
     } catch (e) {
+      await DeploymentIdToSyncMetadataRepository.update({in_progress: false, ended_by_error: true, error_message: e, last_ended_timestamp_unix: Math.floor(new Date().getTime() / 1000)}, existingSyncRecord.id);
       console.error(`Error encountered in periodicContractEventTracker (${network} - ${deploymentConfig.id}) at ${useTimestampPostgres}, exec time: ${new Date().getTime() - startTime}ms, error: ${e}`)
     }
 
