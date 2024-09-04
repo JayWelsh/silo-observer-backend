@@ -36,6 +36,8 @@ const sleep = (ms: number) => {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+let unrecognisedTokens : any[] = [];
+
 const subgraphRequestWithRetry = async (query: string, backupQuery: (arg0: string) => string, url = SUBGRAPH_ENDPOINT, fallbackUrl = SUBGRAPH_ENDPOINT_FALLBACK, retryFallback = 3, retryMax = 6, retryCount = 0) : Promise<any> => {
   try {
     let result = await axios.post(url, {
@@ -100,14 +102,22 @@ export const fetchCoingeckoPriceAtHistoricalRange = async (assetAddress : string
   .catch(async (e) => {
     retryCount++;
     if(retryCount < coingeckoRetryMax) {
-      console.error(`error fetching coingecko prices at ${Math.floor(new Date().getTime() / 1000)}, retry #${retryCount}...`, e);
+      console.error(`error fetching coingecko prices at ${Math.floor(new Date().getTime() / 1000)}, retry #${retryCount}...`, e?.response?.data?.error === "coin not found" ? "" : e);
+      if(e?.response?.data?.error === "coin not found") {
+        unrecognisedTokens.push(assetAddressWithOverride);
+        console.log({unrecognisedTokens})
+        console.log(`skipping retries since coin is not found on ${assetAddressWithOverride}`);
+        return {};
+      }
       await sleep(5000);
       return await fetchCoingeckoPriceAtHistoricalRange(assetAddressWithOverride, network, startTime, endTime, retryCount);
     } else {
       console.error(`retries failed, error fetching coingecko prices at ${Math.floor(new Date().getTime() / 1000)}`, e);
     }
+    console.log({unrecognisedTokens})
     return {};
   })
+  console.log({unrecognisedTokens})
   return results;
 }
 
@@ -127,13 +137,15 @@ export const fetchCoinGeckoAssetPriceClosestToTargetTime = async (assetAddress :
     timestamp: 0,
     price: 0,
   }
-  for(let entry of dataInRange) {
-    let entryTime = Math.floor(entry[0] / 1000);
-    let diff = Math.abs(targetTime - entryTime);
-    if((smallestDiffEntry.timeDiff === undefined) || (diff < smallestDiffEntry.timeDiff)) {
-        smallestDiffEntry.timeDiff = diff;
-        smallestDiffEntry.timestamp = entryTime;
-        smallestDiffEntry.price = entry[1];
+  if(dataInRange && dataInRange?.length > 0) {
+    for(let entry of dataInRange) {
+      let entryTime = Math.floor(entry[0] / 1000);
+      let diff = Math.abs(targetTime - entryTime);
+      if((smallestDiffEntry.timeDiff === undefined) || (diff < smallestDiffEntry.timeDiff)) {
+          smallestDiffEntry.timeDiff = diff;
+          smallestDiffEntry.timestamp = entryTime;
+          smallestDiffEntry.price = entry[1];
+      }
     }
   }
   return smallestDiffEntry;

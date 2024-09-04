@@ -33,6 +33,9 @@ import SubgraphLiquidationRecordRepository from './SubgraphLiquidationRecordRepo
 // Merkl Rewards
 import MerklRewardEntryRepository from './MerklRewardEntryRepository';
 
+// Sync Metadata
+import DeploymentIdToSyncMetadataRepository from './DeploymentIdToSyncMetadataRepository';
+
 export {
   AssetRepository,
   SiloRepository,
@@ -56,4 +59,5 @@ export {
   SubgraphIndexerBlockTrackerRepository,
   SubgraphLiquidationRecordRepository,
   MerklRewardEntryRepository,
+  DeploymentIdToSyncMetadataRepository,
 };

@@ -29,6 +29,8 @@ const SUBGRAPH_LIQUIDATION_RECORD_TABLE = 'subgraph_liquidation_record';
 
 const MERKL_REWARD_ENTRY_TABLE = 'merkl_reward_entry';
 
+const DEPLOYMENT_ID_TO_SYNC_METADATA = 'deployment_id_to_sync_metadata';
+
 export {
   SILO_TABLE,
   ASSET_TABLE,
@@ -52,4 +54,5 @@ export {
   SUBGRAPH_INDEXER_BLOCK_TRACKER_TABLE,
   SUBGRAPH_LIQUIDATION_RECORD_TABLE,
   MERKL_REWARD_ENTRY_TABLE,
+  DEPLOYMENT_ID_TO_SYNC_METADATA,
 }
