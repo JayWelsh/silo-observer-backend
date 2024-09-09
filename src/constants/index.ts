@@ -43,10 +43,10 @@ export const SUBGRAPH_VERSION_MAIN = "3.5.1";
 
 // export const SUBGRAPH_ENDPOINT_ARBITRUM = `https://api.thegraph.com/subgraphs/id/QmQqLJVgZLcRduoszARzRi12qGheUTWAHFf3ixMeGm2xML`;
 // export const SUBGRAPH_ENDPOINT_ARBITRUM = `https://gateway-arbitrum.network.thegraph.com/api/${THE_GRAPH_API_KEY}/deployments/id/QmQqLJVgZLcRduoszARzRi12qGheUTWAHFf3ixMeGm2xML`;
-export const SUBGRAPH_ENDPOINT_ARBITRUM = `https://gateway-arbitrum.network.thegraph.com/api/${THE_GRAPH_API_KEY}/deployments/id/QmTMKqty5yZvZtB3SwzXUG92aZUH1YQw3VjByGw4wgaMhW`;
-export const SUBGRAPH_ENDPOINT_ARBITRUM_TURTLE = `https://gateway-arbitrum.network.thegraph.com/api/${TURTLE_THE_GRAPH_API_KEY}/deployments/id/QmTMKqty5yZvZtB3SwzXUG92aZUH1YQw3VjByGw4wgaMhW`;
-export const SUBGRAPH_ENDPOINT_ARBITRUM_FALLBACK = `https://api.thegraph.com/subgraphs/id/QmTMKqty5yZvZtB3SwzXUG92aZUH1YQw3VjByGw4wgaMhW`;
-export const SUBGRAPH_VERSION_ARBITRUM = "3.5.1";
+export const SUBGRAPH_ENDPOINT_ARBITRUM = `https://gateway-arbitrum.network.thegraph.com/api/${THE_GRAPH_API_KEY}/deployments/id/QmWjFnj4q2bF7K4BDz9MoPvgfXsixvUDFZUfpHMrJCimc1`;
+export const SUBGRAPH_ENDPOINT_ARBITRUM_TURTLE = `https://gateway-arbitrum.network.thegraph.com/api/${TURTLE_THE_GRAPH_API_KEY}/deployments/id/QmWjFnj4q2bF7K4BDz9MoPvgfXsixvUDFZUfpHMrJCimc1`;
+export const SUBGRAPH_ENDPOINT_ARBITRUM_FALLBACK = `https://api.thegraph.com/subgraphs/id/QmWjFnj4q2bF7K4BDz9MoPvgfXsixvUDFZUfpHMrJCimc1`;
+export const SUBGRAPH_VERSION_ARBITRUM = "3.7.0.1";
 
 export const SUBGRAPH_ENDPOINT_OPTIMISM = `https://gateway-arbitrum.network.thegraph.com/api/${THE_GRAPH_API_KEY}/deployments/id/QmQapCKp7Ux411BdULtXBrL8VRjdEqq8inwJd3Fqi6BwEV`;
 export const SUBGRAPH_ENDPOINT_OPTIMISM_TURTLE = `https://gateway-arbitrum.network.thegraph.com/api/${TURTLE_THE_GRAPH_API_KEY}/deployments/id/QmQapCKp7Ux411BdULtXBrL8VRjdEqq8inwJd3Fqi6BwEV`;
