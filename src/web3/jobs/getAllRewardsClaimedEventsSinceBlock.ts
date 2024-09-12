@@ -6,6 +6,7 @@ import {
   EthersProvider,
   EthersProviderArbitrum,
   EthersProviderOptimism,
+  EthersProviderBase,
 } from "../../app";
 
 import {
@@ -92,6 +93,8 @@ export const getAllRewardsClaimedEventsSinceBlock = async (
         provider = EthersProviderArbitrum;
       } else if (network === "optimism") {
         provider = EthersProviderOptimism;
+      } else if (network === "base") {
+        provider = EthersProviderBase;
       }
       
       const IncentivesControllerContract = new Contract(incentiveControllerAddress, ArbIncentivesControllerABI);
