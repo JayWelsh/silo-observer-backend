@@ -2,6 +2,7 @@ import {
   EthersProvider,
   EthersProviderArbitrum,
   EthersProviderOptimism,
+  EthersProviderBase,
 } from "../../app";
 
 export const getLatestBlockNumber = async (network: string) => {
@@ -11,6 +12,8 @@ export const getLatestBlockNumber = async (network: string) => {
     provider = EthersProviderArbitrum;
   } else if(network === "optimism") {
     provider = EthersProviderOptimism;
+  } else if (network === "base") {
+    provider = EthersProviderBase;
   }
   
   let blockNumber = await provider.getBlockNumber();

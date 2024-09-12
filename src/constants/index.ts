@@ -60,35 +60,46 @@ export const SUBGRAPH_ENDPOINT_LLAMA_TURTLE = `https://gateway-arbitrum.network.
 export const SUBGRAPH_ENDPOINT_LLAMA_FALLBACK = `https://api.thegraph.com/subgraphs/id/QmU6W7w6gAjDoE637hAVLjizp2cc7RYtUQsEzKnGp26VVa`;
 export const SUBGRAPH_VERSION_LLAMA = "3.5.1";
 
+// BASE
+export const SUBGRAPH_ENDPOINT_BASE = `https://gateway-arbitrum.network.thegraph.com/api/${THE_GRAPH_API_KEY}/deployments/id/QmZrZec3HXgnHtpxGdpqntfLnHHEtTSsXiM15JkXo7PVow`;
+export const SUBGRAPH_ENDPOINT_BASE_TURTLE = `https://gateway-arbitrum.network.thegraph.com/api/${TURTLE_THE_GRAPH_API_KEY}/deployments/id/QmZrZec3HXgnHtpxGdpqntfLnHHEtTSsXiM15JkXo7PVow`;
+export const SUBGRAPH_ENDPOINT_BASE_FALLBACK = `https://api.thegraph.com/subgraphs/id/QmZrZec3HXgnHtpxGdpqntfLnHHEtTSsXiM15JkXo7PVow`;
+export const SUBGRAPH_VERSION_BASE = "3.5.1";
+
 export const NETWORK_TO_SUBGRAPH : {[key: string]: string} = {
   "ethereum": SUBGRAPH_ENDPOINT,
   "arbitrum": SUBGRAPH_ENDPOINT_ARBITRUM,
   "optimism": SUBGRAPH_ENDPOINT_OPTIMISM,
+  "base": SUBGRAPH_ENDPOINT_BASE,
 }
 
 export const CHAIN_ID_TO_CHAIN_NAME : {[key: number]: string} = {
   1: "ethereum",
   10: "optimism",
   42161: "arbitrum",
+  8453: "base",
 }
 
 export const CHAIN_NAME_TO_CHAIN_ID = {
   "ethereum": 1,
   "optimism": 10,
   "arbitrum": 42161,
+  "base": 8453,
 }
 
 // Web3
 export const ALCHEMY_API_KEY = process.env['ALCHEMY_API_KEY'];
 export const ALCHEMY_API_KEY_ARBITRUM = process.env['ALCHEMY_API_KEY_ARBITRUM'];
 export const ALCHEMY_API_KEY_OPTIMISM = process.env['ALCHEMY_API_KEY_OPTIMISM'];
+export const ALCHEMY_API_KEY_BASE = process.env['ALCHEMY_API_KEY_BASE'];
 export const ALCHEMY_ENDPOINT = `https://eth-mainnet.g.alchemy.com/v2/${process.env['ALCHEMY_API_KEY']}`;
 export const START_BLOCK = 15307294;
 
 export const NETWORK_TO_ALCHEMY_ENDPOINT: {[key: string]: string} = {
   "ethereum": `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
   "arbitrum": `https://arb-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY_ARBITRUM}`,
-  "optimism": `https://opt-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY_OPTIMISM}`
+  "optimism": `https://opt-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY_OPTIMISM}`,
+  "base": `https://base-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY_BASE}`
 }
 
 // ETHEREUM
@@ -117,6 +128,12 @@ export const SILO_FACTORY_ADDRESS_OPTIMISM = '0x6B14c4450a29Dd9562c20259eBFF67a5
 export const SILO_REPOSITORY_ADDRESS_OPTIMISM = "0xD2767dAdED5910bbc205811FdbD2eEFd460AcBe9";
 export const SILO_LENS_ADDRESS_OPTIMISM = '0xd3De080436b9d38DC315944c16d89C050C414Fed';
 
+// BASE
+
+export const SILO_FACTORY_ADDRESS_BASE = '0x408822E4E8682413666809b0655161093cd36f2b';
+export const SILO_REPOSITORY_ADDRESS_BASE = '0xa42001D6d2237d2c74108FE360403C4b796B7170';
+export const SILO_LENS_ADDRESS_BASE = '0x196D312fd81412B6443620Ca81B41103b4E123FD';
+
 export const SILO_CONVEX_FACTORY_ADDRESS = '0x6d4A256695586F61b77B09bc3D28333A91114d5a';
 
 export const SILO_BLACKLIST = ["0x6543ee07Cf5Dd7Ad17AeECF22ba75860ef3bBAAa"];
@@ -125,30 +142,35 @@ export const MAX_TOTAL_BLOCK_RANGE : {[key: string]: number} = {
   "ethereum": 1500000,
   "arbitrum": 3500000,
   "optimism": 3500000,
+  "base": 3500000,
 }
 
 export const MAX_TOTAL_BLOCK_RANGE_SUBGRAPH : {[key: string]: number} = {
   "ethereum": 15000000,
   "arbitrum": 35000000,
   "optimism": 35000000,
+  "base": 35000000,
 }
 
 export const NETWORKS = [
   "ethereum",
   "arbitrum",
-  "optimism"
+  "optimism",
+  "base",
 ];
 
 export const NETWORK_TO_MAX_BLOCK_BATCH_SIZE : {[key: string]: number} = {
   "ethereum": 150000,
   "arbitrum": 300000,
   "optimism": 300000,
+  "base": 300000,
 }
 
 export const NETWORK_ID_TO_COINGECKO_ID : {[key: string]: string} = {
   "ethereum": "ethereum",
   "arbitrum": "arbitrum-one",
   "optimism": "optimistic-ethereum",
+  "base": "base",
 }
 
 export const DEPLOYMENT_CONFIGS : IDeployment[] = [
@@ -299,6 +321,27 @@ export const DEPLOYMENT_CONFIGS : IDeployment[] = [
       address: SILO_REPOSITORY_ADDRESS_OPTIMISM,
       abi: SiloRepositoryABI,
       meta: 'optimism-repository'
+    },
+  },
+  {
+    id: 'base-original',
+    idHumanReadable: "Base Original",
+    network: "base",
+    siloLens: SILO_LENS_ADDRESS_BASE,
+    siloLensABI: SiloLensABI,
+    siloBlacklist: SILO_BLACKLIST,
+    subgraphEndpoint: SUBGRAPH_ENDPOINT_BASE,
+    subgraphEndpointFallback: SUBGRAPH_ENDPOINT_BASE_FALLBACK,
+    subgraphEndpointTurtle: SUBGRAPH_ENDPOINT_BASE_TURTLE,
+    siloFactories: [{
+      address: SILO_FACTORY_ADDRESS_BASE,
+      abi: SiloFactoryABI,
+      meta: "base-original",
+    }],
+    siloRepository: {
+      address: SILO_REPOSITORY_ADDRESS_BASE,
+      abi: SiloRepositoryABI,
+      meta: 'base-repository'
     },
   }
 ]

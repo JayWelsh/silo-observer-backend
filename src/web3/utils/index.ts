@@ -8,9 +8,11 @@ import {
   EthersProvider,
   EthersProviderArbitrum,
   EthersProviderOptimism,
+  EthersProviderBase,
   MulticallProvider,
   MulticallProviderArbitrum,
   MulticallProviderOptimism,
+  MulticallProviderBase,
 } from "../../app";
 
 import {
@@ -123,6 +125,8 @@ export const multicallProviderRetryOnFailure = async (
       useProvider = MulticallProviderArbitrum;
     } else if(network === "optimism") {
       useProvider = MulticallProviderOptimism;
+    } else if (network === "base") {
+      useProvider = MulticallProviderBase;
     }
     const [...results] = await useProvider.all(calls);
     return results;
@@ -153,6 +157,8 @@ export const getBlockWithRetries = async (blockNumber: number, network: string, 
       provider = EthersProviderArbitrum;
     } else if(network === "optimism") {
       provider = EthersProviderOptimism;
+    } else if(network === "base") {
+      provider = EthersProviderBase;
     }
 
     let block = await provider.getBlock(blockNumber).catch(e => {throw new Error(e)});

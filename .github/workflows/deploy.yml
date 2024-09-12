@@ -37,6 +37,7 @@ jobs:
             echo ALCHEMY_API_KEY=\"'${{secrets.ALCHEMY_API_KEY}}'\" >> .env
             echo ALCHEMY_API_KEY_ARBITRUM=\"'${{secrets.ALCHEMY_API_KEY_ARBITRUM}}'\" >> .env
             echo ALCHEMY_API_KEY_OPTIMISM=\"'${{secrets.ALCHEMY_API_KEY_OPTIMISM}}'\" >> .env
+            echo ALCHEMY_API_KEY_BASE=\"'${{secrets.ALCHEMY_API_KEY_BASE}}'\" >> .env
             echo COINGECKO_API_KEY=\"'${{secrets.COINGECKO_API_KEY}}'\" >> .env
             echo THE_GRAPH_API_KEY=\"'${{secrets.THE_GRAPH_API_KEY}}'\" >> .env
             echo TURTLE_THE_GRAPH_API_KEY=\"'${{secrets.TURTLE_THE_GRAPH_API_KEY}}'\" >> .env

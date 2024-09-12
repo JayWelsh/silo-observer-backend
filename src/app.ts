@@ -73,6 +73,11 @@ export const EthersProviderOptimism = new providers.JsonRpcProvider(NETWORK_TO_A
 export const MulticallProviderOptimism = new Provider(EthersProviderOptimism, 10);
 MulticallProviderOptimism.init();
 
+// BASE MAINNET
+export const EthersProviderBase = new providers.JsonRpcProvider(NETWORK_TO_ALCHEMY_ENDPOINT["base"]);
+export const MulticallProviderBase = new Provider(EthersProviderBase, 10);
+MulticallProviderBase.init();
+
 const runSync = new CronJob(
 	`20 */${cronIndexerPeriodMinutes} * * * *`, // runs at 20 seconds past the minute at which it runs
 	async () => {

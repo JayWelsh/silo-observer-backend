@@ -8,6 +8,7 @@ import {
   EthersProvider,
   EthersProviderArbitrum,
   EthersProviderOptimism,
+  EthersProviderBase,
 } from "../../app";
 
 import {
@@ -70,6 +71,10 @@ export const getAllSiloAssetBalances = async (deploymentConfig: IDeployment) => 
   } else if (deploymentConfig.network === 'optimism') {
     let RepositoryContract = new Contract(deploymentConfig.siloRepository.address, deploymentConfig.siloRepository.abi);
     let repositoryContract = await RepositoryContract.connect(EthersProviderOptimism);
+    siloRepositories.push({contract: repositoryContract, meta: deploymentConfig.siloRepository.meta});
+  } else if (deploymentConfig.network === 'base') {
+    let RepositoryContract = new Contract(deploymentConfig.siloRepository.address, deploymentConfig.siloRepository.abi);
+    let repositoryContract = await RepositoryContract.connect(EthersProviderBase);
     siloRepositories.push({contract: repositoryContract, meta: deploymentConfig.siloRepository.meta});
   }
   

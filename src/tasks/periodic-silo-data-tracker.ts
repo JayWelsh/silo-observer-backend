@@ -216,7 +216,7 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
         assetAddresses,
       } = await getAllSiloAssetBalances(deploymentConfig);
 
-      if(success) {
+      if(success && (siloAddresses?.length > 0)) {
 
         let siloAssetRates = await getAllSiloAssetRates(siloAddresses, allSiloAssetsWithState, deploymentConfig);
 
