@@ -141,7 +141,11 @@ class TurtleController extends Controller {
       const results = await Promise.all(fetchPromises);
 
       let finalResult = results.reduce((acc, { network, result }) => {
-        acc[network] = result;
+        if(!acc[network]) {
+          acc[network] = result;
+        } else {
+          acc[network] = {...acc[network], ...result};
+        }
         return acc;
       }, {} as { [key: string]: any });
 
