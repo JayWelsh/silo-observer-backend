@@ -36,9 +36,9 @@ export const SUBGRAPH_ENDPOINT_TURTLE = `https://gateway-arbitrum.network.thegra
 export const SUBGRAPH_ENDPOINT_FALLBACK = `https://api.thegraph.com/subgraphs/id/QmeDLbKHYypURMRigRxSspUm8w5zrDfXc3Skw2PiDxqCFu`;
 export const SUBGRAPH_VERSION = "3.5.1";
 
-export const SUBGRAPH_ENDPOINT_MAIN = `https://gateway-arbitrum.network.thegraph.com/api/${THE_GRAPH_API_KEY}/deployments/id/QmcYjagkzh7KiFKoLzeXs5SGynz7iMPVRnSdVPYiCUrLGq`;
-export const SUBGRAPH_ENDPOINT_MAIN_TURTLE = `https://gateway-arbitrum.network.thegraph.com/api/${TURTLE_THE_GRAPH_API_KEY}/deployments/id/QmcYjagkzh7KiFKoLzeXs5SGynz7iMPVRnSdVPYiCUrLGq`;
-export const SUBGRAPH_ENDPOINT_MAIN_FALLBACK = `https://api.thegraph.com/subgraphs/id/QmcYjagkzh7KiFKoLzeXs5SGynz7iMPVRnSdVPYiCUrLGq`;
+export const SUBGRAPH_ENDPOINT_MAIN = `https://gateway-arbitrum.network.thegraph.com/api/${THE_GRAPH_API_KEY}/deployments/id/Qmf8AxdAUQcc8hUZvzWMozWLq1urb2Smqc9Hg3d6XH8AAi`;
+export const SUBGRAPH_ENDPOINT_MAIN_TURTLE = `https://gateway-arbitrum.network.thegraph.com/api/${TURTLE_THE_GRAPH_API_KEY}/deployments/id/Qmf8AxdAUQcc8hUZvzWMozWLq1urb2Smqc9Hg3d6XH8AAi`;
+export const SUBGRAPH_ENDPOINT_MAIN_FALLBACK = `https://api.thegraph.com/subgraphs/id/Qmf8AxdAUQcc8hUZvzWMozWLq1urb2Smqc9Hg3d6XH8AAi`;
 export const SUBGRAPH_VERSION_MAIN = "3.5.1";
 
 // export const SUBGRAPH_ENDPOINT_ARBITRUM = `https://api.thegraph.com/subgraphs/id/QmQqLJVgZLcRduoszARzRi12qGheUTWAHFf3ixMeGm2xML`;
@@ -48,9 +48,9 @@ export const SUBGRAPH_ENDPOINT_ARBITRUM_TURTLE = `https://gateway-arbitrum.netwo
 export const SUBGRAPH_ENDPOINT_ARBITRUM_FALLBACK = `https://api.thegraph.com/subgraphs/id/QmWjFnj4q2bF7K4BDz9MoPvgfXsixvUDFZUfpHMrJCimc1`;
 export const SUBGRAPH_VERSION_ARBITRUM = "3.7.0.1";
 
-export const SUBGRAPH_ENDPOINT_OPTIMISM = `https://gateway-arbitrum.network.thegraph.com/api/${THE_GRAPH_API_KEY}/deployments/id/QmQapCKp7Ux411BdULtXBrL8VRjdEqq8inwJd3Fqi6BwEV`;
-export const SUBGRAPH_ENDPOINT_OPTIMISM_TURTLE = `https://gateway-arbitrum.network.thegraph.com/api/${TURTLE_THE_GRAPH_API_KEY}/deployments/id/QmQapCKp7Ux411BdULtXBrL8VRjdEqq8inwJd3Fqi6BwEV`;
-export const SUBGRAPH_ENDPOINT_OPTIMISM_FALLBACK = `https://api.thegraph.com/subgraphs/id/QmQapCKp7Ux411BdULtXBrL8VRjdEqq8inwJd3Fqi6BwEV`;
+export const SUBGRAPH_ENDPOINT_OPTIMISM = `https://gateway-arbitrum.network.thegraph.com/api/${THE_GRAPH_API_KEY}/deployments/id/Qmb4EVvFzGefGp3br5ozffT9yJ1vKptbawypqMPd7MctBh`;
+export const SUBGRAPH_ENDPOINT_OPTIMISM_TURTLE = `https://gateway-arbitrum.network.thegraph.com/api/${TURTLE_THE_GRAPH_API_KEY}/deployments/id/Qmb4EVvFzGefGp3br5ozffT9yJ1vKptbawypqMPd7MctBh`;
+export const SUBGRAPH_ENDPOINT_OPTIMISM_FALLBACK = `https://api.thegraph.com/subgraphs/id/Qmb4EVvFzGefGp3br5ozffT9yJ1vKptbawypqMPd7MctBh`;
 export const SUBGRAPH_VERSION_OPTIMISM = "3.5.1";
 
 // export const SUBGRAPH_ENDPOINT_LLAMA = `https://gateway-arbitrum.network.thegraph.com/api/${THE_GRAPH_API_KEY}/deployments/id/QmYzeik2P18AFNKPtCrEFwuCHws66tjvZpX57KPfKbtnWw`;
@@ -61,9 +61,9 @@ export const SUBGRAPH_ENDPOINT_LLAMA_FALLBACK = `https://api.thegraph.com/subgra
 export const SUBGRAPH_VERSION_LLAMA = "3.5.1";
 
 // BASE
-export const SUBGRAPH_ENDPOINT_BASE = `https://gateway-arbitrum.network.thegraph.com/api/${THE_GRAPH_API_KEY}/deployments/id/QmZrZec3HXgnHtpxGdpqntfLnHHEtTSsXiM15JkXo7PVow`;
-export const SUBGRAPH_ENDPOINT_BASE_TURTLE = `https://gateway-arbitrum.network.thegraph.com/api/${TURTLE_THE_GRAPH_API_KEY}/deployments/id/QmZrZec3HXgnHtpxGdpqntfLnHHEtTSsXiM15JkXo7PVow`;
-export const SUBGRAPH_ENDPOINT_BASE_FALLBACK = `https://api.thegraph.com/subgraphs/id/QmZrZec3HXgnHtpxGdpqntfLnHHEtTSsXiM15JkXo7PVow`;
+export const SUBGRAPH_ENDPOINT_BASE = `https://gateway-arbitrum.network.thegraph.com/api/${THE_GRAPH_API_KEY}/deployments/id/QmTqzhfBYLdVNA3P5BCuYyanKvGAEUjWVZUieAe6dcRCDv`;
+export const SUBGRAPH_ENDPOINT_BASE_TURTLE = `https://gateway-arbitrum.network.thegraph.com/api/${TURTLE_THE_GRAPH_API_KEY}/deployments/id/QmTqzhfBYLdVNA3P5BCuYyanKvGAEUjWVZUieAe6dcRCDv`;
+export const SUBGRAPH_ENDPOINT_BASE_FALLBACK = `https://api.thegraph.com/subgraphs/id/QmTqzhfBYLdVNA3P5BCuYyanKvGAEUjWVZUieAe6dcRCDv`;
 export const SUBGRAPH_VERSION_BASE = "3.5.1";
 
 export const NETWORK_TO_SUBGRAPH : {[key: string]: string} = {
