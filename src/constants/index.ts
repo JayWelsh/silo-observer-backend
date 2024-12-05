@@ -11,7 +11,9 @@ import SiloLlamaFactoryABI from '../web3/abis/SiloLlamaFactoryABI.json';
 import SiloLensABI from '../web3/abis/SiloLensABI.json';
 import SiloLensMainABI from '../web3/abis/SiloLensMainABI.json';
 import SiloLensLlamaABI from '../web3/abis/SiloLensLlamaABI.json';
+import SiloLensBaseBtcfiABI from '../web3/abis/SiloLensBaseBtcfiABI.json'
 import SiloRepositoryABI from '../web3/abis/SiloRepositoryABI.json';
+import SiloRepositoryBaseBtcfiABI from '../web3/abis/SiloRepositoryBaseBtcfiABI.json';
 import SiloRepositoryMainABI from '../web3/abis/SiloRepositoryMainABI.json';
 
 dotenv.config();
@@ -43,10 +45,10 @@ export const SUBGRAPH_VERSION_MAIN = "3.5.1";
 
 // export const SUBGRAPH_ENDPOINT_ARBITRUM = `https://api.thegraph.com/subgraphs/id/QmQqLJVgZLcRduoszARzRi12qGheUTWAHFf3ixMeGm2xML`;
 // export const SUBGRAPH_ENDPOINT_ARBITRUM = `https://gateway-arbitrum.network.thegraph.com/api/${THE_GRAPH_API_KEY}/deployments/id/QmQqLJVgZLcRduoszARzRi12qGheUTWAHFf3ixMeGm2xML`;
-export const SUBGRAPH_ENDPOINT_ARBITRUM = `https://gateway-arbitrum.network.thegraph.com/api/${THE_GRAPH_API_KEY}/deployments/id/QmWjFnj4q2bF7K4BDz9MoPvgfXsixvUDFZUfpHMrJCimc1`;
-export const SUBGRAPH_ENDPOINT_ARBITRUM_TURTLE = `https://gateway-arbitrum.network.thegraph.com/api/${TURTLE_THE_GRAPH_API_KEY}/deployments/id/QmWjFnj4q2bF7K4BDz9MoPvgfXsixvUDFZUfpHMrJCimc1`;
-export const SUBGRAPH_ENDPOINT_ARBITRUM_FALLBACK = `https://api.thegraph.com/subgraphs/id/QmWjFnj4q2bF7K4BDz9MoPvgfXsixvUDFZUfpHMrJCimc1`;
-export const SUBGRAPH_VERSION_ARBITRUM = "3.7.0.1";
+export const SUBGRAPH_ENDPOINT_ARBITRUM = `https://gateway-arbitrum.network.thegraph.com/api/${THE_GRAPH_API_KEY}/deployments/id/QmYtYfMeMcS2YBugkQ5fh6CcidQrKL3PHUEc7HnyYCW6Gc`;
+export const SUBGRAPH_ENDPOINT_ARBITRUM_TURTLE = `https://gateway-arbitrum.network.thegraph.com/api/${TURTLE_THE_GRAPH_API_KEY}/deployments/id/QmYtYfMeMcS2YBugkQ5fh6CcidQrKL3PHUEc7HnyYCW6Gc`;
+export const SUBGRAPH_ENDPOINT_ARBITRUM_FALLBACK = `https://api.thegraph.com/subgraphs/id/QmYtYfMeMcS2YBugkQ5fh6CcidQrKL3PHUEc7HnyYCW6Gc`;
+export const SUBGRAPH_VERSION_ARBITRUM = "3.8.1.1";
 
 export const SUBGRAPH_ENDPOINT_OPTIMISM = `https://gateway-arbitrum.network.thegraph.com/api/${THE_GRAPH_API_KEY}/deployments/id/Qmb4EVvFzGefGp3br5ozffT9yJ1vKptbawypqMPd7MctBh`;
 export const SUBGRAPH_ENDPOINT_OPTIMISM_TURTLE = `https://gateway-arbitrum.network.thegraph.com/api/${TURTLE_THE_GRAPH_API_KEY}/deployments/id/Qmb4EVvFzGefGp3br5ozffT9yJ1vKptbawypqMPd7MctBh`;
@@ -65,6 +67,11 @@ export const SUBGRAPH_ENDPOINT_BASE = `https://gateway-arbitrum.network.thegraph
 export const SUBGRAPH_ENDPOINT_BASE_TURTLE = `https://gateway-arbitrum.network.thegraph.com/api/${TURTLE_THE_GRAPH_API_KEY}/deployments/id/QmTqzhfBYLdVNA3P5BCuYyanKvGAEUjWVZUieAe6dcRCDv`;
 export const SUBGRAPH_ENDPOINT_BASE_FALLBACK = `https://api.thegraph.com/subgraphs/id/QmTqzhfBYLdVNA3P5BCuYyanKvGAEUjWVZUieAe6dcRCDv`;
 export const SUBGRAPH_VERSION_BASE = "3.5.1";
+
+export const SUBGRAPH_ENDPOINT_BASE_BTCFI = `https://gateway-arbitrum.network.thegraph.com/api/${THE_GRAPH_API_KEY}/deployments/id/QmYHjei6Z71YcuSnk5KuXXv1tr5aqfUiL2gQMukeA9B1eF`;
+export const SUBGRAPH_ENDPOINT_BASE_TURTLE_BTCFI = `https://gateway-arbitrum.network.thegraph.com/api/${TURTLE_THE_GRAPH_API_KEY}/deployments/id/QmYHjei6Z71YcuSnk5KuXXv1tr5aqfUiL2gQMukeA9B1eF`;
+export const SUBGRAPH_ENDPOINT_BASE_FALLBACK_BTCFI = `https://api.thegraph.com/subgraphs/id/QmYHjei6Z71YcuSnk5KuXXv1tr5aqfUiL2gQMukeA9B1eF`;
+export const SUBGRAPH_VERSION_BASE_BTCFI = "3.8.1";
 
 export const NETWORK_TO_SUBGRAPH : {[key: string]: string} = {
   "ethereum": SUBGRAPH_ENDPOINT,
@@ -133,6 +140,10 @@ export const SILO_LENS_ADDRESS_OPTIMISM = '0xd3De080436b9d38DC315944c16d89C050C4
 export const SILO_FACTORY_ADDRESS_BASE = '0x408822E4E8682413666809b0655161093cd36f2b';
 export const SILO_REPOSITORY_ADDRESS_BASE = '0xa42001D6d2237d2c74108FE360403C4b796B7170';
 export const SILO_LENS_ADDRESS_BASE = '0x196D312fd81412B6443620Ca81B41103b4E123FD';
+
+export const SILO_FACTORY_ADDRESS_BASE_BTCFI = '0x2899b0C131225CbcE912Ba14Bbb7e1C88f2462B5';
+export const SILO_REPOSITORY_ADDRESS_BASE_BTCFI = '0x1E915d8950f0C6bf9d01C603D33c50b6110beDA3';
+export const SILO_LENS_ADDRESS_BASE_BTCFI = '0xE89D07da1438177eaa0AE7277D7D9A4dDdc16C0F';
 
 export const SILO_CONVEX_FACTORY_ADDRESS = '0x6d4A256695586F61b77B09bc3D28333A91114d5a';
 
@@ -342,6 +353,27 @@ export const DEPLOYMENT_CONFIGS : IDeployment[] = [
       address: SILO_REPOSITORY_ADDRESS_BASE,
       abi: SiloRepositoryABI,
       meta: 'base-repository'
+    },
+  },
+  {
+    id: 'base-btcfi',
+    idHumanReadable: "Base BTCfi",
+    network: "base",
+    siloLens: SILO_LENS_ADDRESS_BASE_BTCFI,
+    siloLensABI: SiloLensBaseBtcfiABI,
+    siloBlacklist: SILO_BLACKLIST,
+    subgraphEndpoint: SUBGRAPH_ENDPOINT_BASE_BTCFI,
+    subgraphEndpointFallback: SUBGRAPH_ENDPOINT_BASE_FALLBACK_BTCFI,
+    subgraphEndpointTurtle: SUBGRAPH_ENDPOINT_BASE_TURTLE_BTCFI,
+    siloFactories: [{
+      address: SILO_FACTORY_ADDRESS_BASE_BTCFI,
+      abi: SiloFactoryABI,
+      meta: "base-btcfi",
+    }],
+    siloRepository: {
+      address: SILO_REPOSITORY_ADDRESS_BASE_BTCFI,
+      abi: SiloRepositoryBaseBtcfiABI,
+      meta: 'base-btcfi-repository'
     },
   }
 ]
