@@ -79,7 +79,7 @@ export const periodicContractEventTracker = async (useTimestampUnix: number, sta
       } else {
         if(existingSyncRecord.in_progress) {
           console.log(`Periodic contract event tracker SKIPPED due to IN PROGRESS status (${network} - ${deploymentConfig.id}, last started: ${existingSyncRecord.last_started_timestamp_unix}, last ended: ${existingSyncRecord.last_ended_timestamp_unix}), exec time: ${new Date().getTime() - startTime}ms`)
-          return;
+          continue;
         } else {
           await DeploymentIdToSyncMetadataRepository.update({in_progress: true, last_started_timestamp_unix: Math.floor(new Date().getTime() / 1000)}, existingSyncRecord.id);
         }
