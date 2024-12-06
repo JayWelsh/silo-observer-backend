@@ -26,7 +26,7 @@ exports.up = (knex) => knex.schema.raw(`
           user_address as user_address,
           tx_hash,
           usd_value_at_event_time as usd_value_at_event_time,
-          CONCAT('borrow_', id) as id
+          CONCAT('borrow_', network, '_', id) as id
       FROM ${BORROW_EVENT_TABLE}
       
       UNION ALL
@@ -44,7 +44,7 @@ exports.up = (knex) => knex.schema.raw(`
           user_address as user_address,
           tx_hash,
           usd_value_at_event_time as usd_value_at_event_time,
-          CONCAT('deposit_', id) as id
+          CONCAT('deposit_', network, '_', id) as id
       FROM ${DEPOSIT_EVENT_TABLE}
       
       UNION ALL
@@ -62,7 +62,7 @@ exports.up = (knex) => knex.schema.raw(`
           user_address as user_address,
           tx_hash,
           usd_value_at_event_time as usd_value_at_event_time,
-          CONCAT('repay_', id) as id
+          CONCAT('repay_', network, '_', id) as id
       FROM ${REPAY_EVENT_TABLE}
       
       UNION ALL
@@ -80,7 +80,7 @@ exports.up = (knex) => knex.schema.raw(`
           user_address as user_address,
           tx_hash,
           usd_value_at_event_time as usd_value_at_event_time,
-          CONCAT('withdraw_', id) as id
+          CONCAT('withdraw_', network, '_', id) as id
       FROM ${WITHDRAW_EVENT_TABLE}
 
       UNION ALL
@@ -98,10 +98,10 @@ exports.up = (knex) => knex.schema.raw(`
           liquidator as user_address,
           tx_hash,
           amount_usd as usd_value_at_event_time,
-          CONCAT('liquidation_', id) as id
+          CONCAT('liquidation_', network, '_', id) as id
       FROM ${SUBGRAPH_LIQUIDATION_RECORD_TABLE}
   )
-  SELECT 
+  SELECT DISTINCT
       e.id,
       e.event_name,
       e.event_fingerprint,
@@ -130,6 +130,8 @@ exports.up = (knex) => knex.schema.raw(`
   ORDER BY bm.block_timestamp;
 
   CREATE UNIQUE INDEX unified_events_materialized_id_idx ON ${UNIFIED_EVENTS_MATERIALIZED_VIEW} (id);
+  CREATE INDEX unified_events_materialized_block_timestamp_idx ON ${UNIFIED_EVENTS_MATERIALIZED_VIEW} (block_timestamp);
+  CREATE INDEX unified_events_materialized_network_idx ON ${UNIFIED_EVENTS_MATERIALIZED_VIEW} (network);
 `)
 
 exports.down = (knex) => knex.schema.raw(`DROP MATERIALIZED VIEW IF EXISTS ${UNIFIED_EVENTS_MATERIALIZED_VIEW} CASCADE`);
