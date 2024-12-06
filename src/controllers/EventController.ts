@@ -89,10 +89,10 @@ class EventController extends Controller {
       events = await WithdrawEventRepository.getWithdrawEvents(pagination, parsedNetworks, SiloUserEventOutputTransformer);
     } else if(eventType === 'liquidation') {
       events = await SubgraphLiquidationRecordRepository.getLiquidationRecords(pagination, parsedNetworks, SubgraphLiquidationRecordTransformer);
-    } else if(eventType === 'new-method') {
-      events = await UnifiedEventRepository.getUnifiedEvents(pagination, parsedNetworks, SiloUserEventMaterializedViewTransformer);
-    } else {
+    } else if(eventType === 'legacy') {
       events = await BorrowEventRepository.getUnifiedEvents(pagination, parsedNetworks, SiloUserEventOutputTransformer);
+    } else {
+      events = await UnifiedEventRepository.getUnifiedEvents(pagination, parsedNetworks, SiloUserEventMaterializedViewTransformer);
     }
 
     this.sendResponse(res, events);
