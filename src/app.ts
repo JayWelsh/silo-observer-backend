@@ -30,7 +30,6 @@ import { UnifiedEventRepository } from './database/repositories';
 // using 6 for Alchemy costs
 let cronIndexerPeriodMinutes = 20;
 let cronMerklIndexerPeriodHours = 2;
-let cronUnifiedEventMaterializedViewRefreshMinutes = 10;
 
 let corsOptions = {
   origin: ['http://localhost:3000', 'https://silo.observer', 'https://www.silo.observer'],
@@ -96,6 +95,7 @@ const runSync = new CronJob(
     let startTimeSubgraphLiquidationTracker = new Date().getTime();
     console.log("Running SubgraphLiquidationTracker", new Date(useTimestampUnixSubgraphLiquidationTracker  * 1000));
     await periodicSubgraphLiquidationTracker(useTimestampUnixSubgraphLiquidationTracker, startTimeSubgraphLiquidationTracker);
+    await UnifiedEventRepository.refreshMaterializedView().catch(error => console.error('Failed to refresh materialized view:', error));
 	},
 	null,
 	true,
@@ -124,15 +124,3 @@ runMerklSync.start();
 	resycAllEventsUpToLastSyncedBlocks(useTimestampUnixResyncEvents, startTimeResyncEvents);
   // backfillEventUsdValues();
 })();
-
-const runUnifedEventsMaterializedViewRefresh = new CronJob(
-  `10 */${cronUnifiedEventMaterializedViewRefreshMinutes} * * * *`, // runs at 10 seconds past the minute at which it runs
-  async () => {
-    await UnifiedEventRepository.refreshMaterializedView().catch(error => console.error('Failed to refresh materialized view:', error));
-  },
-  null,
-  true,
-  'Etc/UTC'
-);
-
-runUnifedEventsMaterializedViewRefresh.start();
