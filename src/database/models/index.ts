@@ -1,3 +1,4 @@
+import BaseModel from './BaseModel';
 import AssetModel from './AssetModel';
 import SiloModel from './SiloModel';
 
@@ -40,7 +41,11 @@ import MerklRewardEntryModel from './MerklRewardEntryModel';
 // SYNC METADATA
 import DeploymentIdToSyncMetadataModel from './DeploymentIdToSyncMetadataModel';
 
+// UNIFIED EVENT MATERIALIZED VIEW
+import UnifiedEventModel from './UnifiedEventModel';
+
 export {
+  BaseModel,
   AssetModel,
   SiloModel,
   RateLatestModel,
@@ -64,4 +69,5 @@ export {
   SubgraphLiquidationRecordModel,
   MerklRewardEntryModel,
   DeploymentIdToSyncMetadataModel,
+  UnifiedEventModel,
 }

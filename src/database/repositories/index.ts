@@ -36,6 +36,9 @@ import MerklRewardEntryRepository from './MerklRewardEntryRepository';
 // Sync Metadata
 import DeploymentIdToSyncMetadataRepository from './DeploymentIdToSyncMetadataRepository';
 
+// UnifiedEventRepository Materialized View
+import UnifiedEventRepository from './UnifiedEventRepository';
+
 export {
   AssetRepository,
   SiloRepository,
@@ -60,4 +63,5 @@ export {
   SubgraphLiquidationRecordRepository,
   MerklRewardEntryRepository,
   DeploymentIdToSyncMetadataRepository,
+  UnifiedEventRepository,
 };

@@ -121,6 +121,31 @@ export interface ISiloUserEvent {
   event_fingerprint?: string
 }
 
+export interface ISiloUserEventMaterializedView {
+  silo_address: string
+  asset_address: string
+  user_address: string
+  receiver_address?: string
+  amount: number,
+  collateral_only?: boolean
+  tx_hash: string
+  block_number: number
+  silo?: ISilo
+  asset?: IAsset
+  block_metadata?: IBlockMetadata
+  event_name: string
+  usd_value_at_event_time: string
+  deployment_id: string
+  gas_used?: string
+  effective_gas_price?: string
+  event_fingerprint?: string
+  block_hash: string;
+  block_timestamp_unix: number,
+  block_timestamp: string,
+  block_day_timestamp: string,
+  network: string,
+}
+
 export interface ISubgraphLiquidationRecord {
   id: number;
   record_fingerprint: string;
