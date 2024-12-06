@@ -31,6 +31,8 @@ const MERKL_REWARD_ENTRY_TABLE = 'merkl_reward_entry';
 
 const DEPLOYMENT_ID_TO_SYNC_METADATA = 'deployment_id_to_sync_metadata';
 
+const UNIFIED_EVENTS_MATERIALIZED_VIEW = 'unified_events_materialized';
+
 export {
   SILO_TABLE,
   ASSET_TABLE,
@@ -55,4 +57,5 @@ export {
   SUBGRAPH_LIQUIDATION_RECORD_TABLE,
   MERKL_REWARD_ENTRY_TABLE,
   DEPLOYMENT_ID_TO_SYNC_METADATA,
+  UNIFIED_EVENTS_MATERIALIZED_VIEW,
 }
