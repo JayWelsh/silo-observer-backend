@@ -215,11 +215,13 @@ export interface IDeployment {
 export interface IVolumeTimeseriesQueryResult {
   results: IVolumeTimeseriesEntry[],
   total: number,
+  network?: string, // Add this for network grouping
 }
 
 export interface IVolumeTimeseriesEntry {
   usd: string;
   block_day_timestamp: string
+  network?: string,
 }
 
 export type MerklAssetReward = {
