@@ -7,6 +7,7 @@ class VolumeTimeseriesTransformer extends BaseTransformer {
     return {
       usd: volumeTimeseriesEntry.usd,
       day_timestamp_unix: Math.floor(new Date(volumeTimeseriesEntry.block_day_timestamp).getTime() / 1000),
+      ...(volumeTimeseriesEntry.network && { network: volumeTimeseriesEntry.network })
     }
   }
 }

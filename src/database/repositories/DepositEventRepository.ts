@@ -199,6 +199,83 @@ class DepositEventRepository extends BaseRepository {
 
   }
 
+  async getDailyDepositTotalsGroupedByNetwork(
+    pagination: IPaginationRequest,
+    order: string,
+    period: string | undefined,
+    networks: string[] | undefined,
+    transformer: ITransformer,
+  ) {
+    const { 
+      perPage,
+      page
+    } = pagination;
+  
+    const results = await DepositEventModel.query()
+      .leftJoinRelated('block_metadata')
+      .where(function (this: QueryBuilder<DepositEventModel>) {
+        this.where('usd_value_at_event_time', '>', 0);
+        if(period === "today") {
+          let now = new Date();
+          now.setHours(0,0,0,0);
+          let todayTimestamp = now.toISOString();
+          this.where('block_metadata.block_day_timestamp', '=', todayTimestamp);
+        }
+      })
+      .where(function (this: QueryBuilder<DepositEventModel>) {
+        if(networks) {
+          for(let [index, network] of networks.entries()) {
+            if(index === 0) {
+              this.where('block_metadata.network', '=', network);
+            } else {
+              this.orWhere('block_metadata.network', '=', network);
+            }
+          }
+        }
+      })
+      .select(raw('SUM(usd_value_at_event_time) AS usd'))
+      .select(raw('block_metadata.block_day_timestamp as block_day_timestamp'))
+      .select('block_metadata.network')
+      .orderBy('block_metadata.block_day_timestamp', order === "DESC" ? "DESC" : "ASC")
+      .page(page - 1, perPage)
+      .groupBy(`block_metadata.block_day_timestamp`, 'block_metadata.network')
+      .castTo<IVolumeTimeseriesQueryResult>();
+  
+    if((results?.results) && (period === "today")) {
+      let now = new Date();
+      now.setHours(0,0,0,0);
+      let todayTimestamp = now.toISOString();
+  
+      // If networks are specified, create shim records for each network
+      if(networks && networks.length > 0) {
+        const shimRecords = networks.map(network => ({
+          block_day_timestamp: todayTimestamp,
+          usd: "0",
+          network: network
+        }));
+  
+        if(order === "DESC") {
+          // Get unique networks from the first day's results
+          const existingNetworks = new Set(
+            results.results
+              .filter(r => r.block_day_timestamp === todayTimestamp)
+              .map(r => r.network)
+          );
+  
+          // Only add shim records for networks that don't have data
+          const missingShimRecords = shimRecords.filter(sr => !existingNetworks.has(sr.network));
+          
+          if(missingShimRecords.length > 0) {
+            results.results = [...missingShimRecords, ...results.results];
+            results.total = results.total + missingShimRecords.length;
+          }
+        }
+      }
+    }
+  
+    return this.parserResult(new Pagination(results, perPage, page), transformer);
+  }
+
   async getDepositEventsSinceDate(
     unixTimestampStartDate: string | number,
   ) {
