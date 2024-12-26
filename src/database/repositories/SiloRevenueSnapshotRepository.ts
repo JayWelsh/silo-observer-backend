@@ -145,17 +145,22 @@ class SiloRevenueSnapshotRepository extends BaseRepository {
   }
 
   async getLatestSnapshots(
-    networks: string[] | undefined,
+    networks: string | string[] | undefined,
     pagination: IPaginationRequest,
     transformer: ITransformer,
   ) {
     let tableName = this.model.tableName;
   
+    // Convert networks to array as it's a comma-separated string
+    const networksArray = typeof networks === 'string' 
+      ? networks.split(',')
+      : networks;
+
     const { perPage, page } = pagination;
   
     // Get latest snapshots in one query using a window function
     const results = await this.model.query()
-      .with('latest_snapshots', (qb: any) => {
+      .with('latest_snapshots', (qb: QueryBuilder<SiloRevenueSnapshotModel>) => {
         qb.from(tableName)
           .select(
             'silo_address',
@@ -169,15 +174,16 @@ class SiloRevenueSnapshotRepository extends BaseRepository {
             'asset_price_at_sync_time',
             'timestamp'
           )
-          .where(function (this: QueryBuilder<SiloRevenueSnapshotModel>) {
-            if(networks) {
-              this.whereIn('network', networks);
-            }
-          })
           .whereIn(['asset_address', 'network', 'timestamp'], 
             this.model.query()
               .select('asset_address', 'network')
               .max('timestamp as timestamp')
+              .from(tableName)
+              .modify((queryBuilder: QueryBuilder<SiloRevenueSnapshotModel>) => {
+                if (networksArray) {
+                  queryBuilder.whereIn('network', networksArray);
+                }
+              })
               .groupBy('asset_address', 'network')
           );
       })
