@@ -10,6 +10,7 @@ const EventRoutes = require('./event.routes');
 const VolumeRoutes = require('./volume.routes');
 const RewardRoutes = require('./reward.routes');
 const TurtleRoutes = require('./turtle.routes');
+const SiloRevenueSnapshotRoutes = require('./silo_revenue_snapshot.routes');
 
 export default function routes(app: Express) {
     app.use("", SiloRoutes);
@@ -20,4 +21,5 @@ export default function routes(app: Express) {
     app.use("", VolumeRoutes);
     app.use("", RewardRoutes);
     app.use("", TurtleRoutes);
+    app.use("", SiloRevenueSnapshotRoutes);
 }

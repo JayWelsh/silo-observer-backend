@@ -1,7 +1,6 @@
 const {
   SILO_TABLE,
   ASSET_TABLE,
-  RATE_TABLE,
 } = require("../tables");
 
 exports.up = (knex) => knex.schema.alterTable(SILO_TABLE, table => {

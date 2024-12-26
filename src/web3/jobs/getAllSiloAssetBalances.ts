@@ -40,6 +40,14 @@ interface IAllSiloAssetBalances {
   balance: string
   decimals: number
   tokenAddress: string
+  protocolFees?: string
+  harvestedProtocolFees?: string
+  pendingProtocolFees?: string
+  harvestedProtocolFeesRaw?: string
+  pendingProtocolFeesRaw?: string
+  protocolFeesUSD?: string
+  harvestedProtocolFeesUSD?: string
+  pendingProtocolFeesUSD?: string
 }
 
 export const getAllSiloAssetBalances = async (deploymentConfig: IDeployment) => {
@@ -172,6 +180,45 @@ export const getAllSiloAssetBalances = async (deploymentConfig: IDeployment) => 
           results[queryIndexToSiloAddress[resultsIndex]].push(singleResult);
         }
         resultsIndex++;
+      }
+
+      const siloContractsForInterestData = [];
+      const indexedInterestDataAssets : IAllSiloAssetBalances[] = [];
+      const indexedInterestDataSiloAddresses = [];
+      for(let [siloAddress, siloAssets] of Object.entries(results)) {
+        for(let siloAssetData of siloAssets) {
+          indexedInterestDataAssets.push(siloAssetData);
+          indexedInterestDataSiloAddresses.push(siloAddress);
+          let contract = new MulticallContract(siloAddress, SiloABI);
+          siloContractsForInterestData.push(contract)
+        }
+      }
+
+      const [...allSiloAssetInterestData] = await multicallProviderRetryOnFailure(siloContractsForInterestData.map((contract, index) => contract.interestData(indexedInterestDataAssets[index].tokenAddress)), 'all silo asset interest data (protocol fees)', deploymentConfig.network);
+
+      let interestDataIndex = 0;
+      for(let interestData of allSiloAssetInterestData) {
+        let assetData = indexedInterestDataAssets[interestDataIndex];
+        let siloAddress = indexedInterestDataSiloAddresses[interestDataIndex];
+        let resultsDataSiloAssets = results[siloAddress];
+        let matchedIndex = resultsDataSiloAssets.findIndex(item => 
+            item.balance === assetData.balance &&
+            item.decimals === assetData.decimals &&
+            item.tokenAddress === assetData.tokenAddress
+        );
+        if(matchedIndex > -1 && results[siloAddress][matchedIndex]) {
+          let protocolFees = new BigNumber(utils.formatUnits(interestData.protocolFees, assetData.decimals)).toString();
+          let harvestedProtocolFees = new BigNumber(utils.formatUnits(interestData.harvestedProtocolFees, assetData.decimals)).toString();
+          let pendingProtocolFees = new BigNumber(utils.formatUnits(interestData.protocolFees, assetData.decimals)).minus(new BigNumber(utils.formatUnits(interestData.harvestedProtocolFees, assetData.decimals))).toString();
+          let harvestedProtocolFeesRaw = new BigNumber(interestData.harvestedProtocolFees.toString()).toString();
+          let pendingProtocolFeesRaw = new BigNumber(interestData.protocolFees.toString()).minus(new BigNumber(interestData.harvestedProtocolFees.toString())).toString();
+          results[siloAddress][matchedIndex].protocolFees = protocolFees;
+          results[siloAddress][matchedIndex].harvestedProtocolFees = harvestedProtocolFees;
+          results[siloAddress][matchedIndex].pendingProtocolFees = pendingProtocolFees;
+          results[siloAddress][matchedIndex].harvestedProtocolFeesRaw = harvestedProtocolFeesRaw;
+          results[siloAddress][matchedIndex].pendingProtocolFeesRaw = pendingProtocolFeesRaw;
+        }
+        interestDataIndex++;
       }
 
       if(allSiloAssetsWithState.length === 0 || siloAddresses.length === 0 || assetAddresses.length === 0) {

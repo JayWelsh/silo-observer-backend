@@ -39,6 +39,9 @@ import DeploymentIdToSyncMetadataRepository from './DeploymentIdToSyncMetadataRe
 // UnifiedEventRepository Materialized View
 import UnifiedEventRepository from './UnifiedEventRepository';
 
+// Revenue Snapshots
+import SiloRevenueSnapshotRepository from './SiloRevenueSnapshotRepository';
+
 export {
   AssetRepository,
   SiloRepository,
@@ -64,4 +67,5 @@ export {
   MerklRewardEntryRepository,
   DeploymentIdToSyncMetadataRepository,
   UnifiedEventRepository,
+  SiloRevenueSnapshotRepository,
 };

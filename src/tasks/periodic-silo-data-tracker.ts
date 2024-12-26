@@ -48,6 +48,7 @@ import {
   BorrowedMinutelyRepository,
   BorrowedHourlyRepository,
   BorrowedLatestRepository,
+  SiloRevenueSnapshotRepository,
 } from '../database/repositories';
 
 import {
@@ -223,6 +224,29 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
         let coingeckoAddressesQuery = assetAddresses.join(',');
 
         let tokenAddressToCoingeckoPrice = await fetchCoingeckoPrices(coingeckoAddressesQuery, deploymentConfig.network);
+
+        for(let [siloAddress, siloAssets] of Object.entries(siloAssetBalances)) {
+          let siloChecksumAddress = utils.getAddress(siloAddress);
+          for(let siloAssetData of siloAssets) {
+            let assetChecksumAddress = utils.getAddress(siloAssetData.tokenAddress);
+            if(isHourlyMoment) {
+              await SiloRevenueSnapshotRepository.create({
+                silo_address: siloChecksumAddress,
+                asset_address: assetChecksumAddress,
+                amount_pending: siloAssetData.pendingProtocolFees ? siloAssetData.pendingProtocolFees : 0,
+                amount_pending_raw: siloAssetData.pendingProtocolFeesRaw ? siloAssetData.pendingProtocolFeesRaw : 0,
+                amount_pending_usd: new BigNumber(siloAssetData.pendingProtocolFees ? siloAssetData.pendingProtocolFees : 0).multipliedBy(tokenAddressToCoingeckoPrice[assetChecksumAddress] ? tokenAddressToCoingeckoPrice[assetChecksumAddress] : 0).toString(),
+                amount_harvested: siloAssetData.harvestedProtocolFees ? siloAssetData.harvestedProtocolFees : 0,
+                amount_harvested_raw: siloAssetData.harvestedProtocolFeesRaw ? siloAssetData.harvestedProtocolFeesRaw : 0,
+                amount_harvested_usd: new BigNumber(siloAssetData.harvestedProtocolFees ? siloAssetData.harvestedProtocolFees : 0).multipliedBy(tokenAddressToCoingeckoPrice[assetChecksumAddress] ? tokenAddressToCoingeckoPrice[assetChecksumAddress] : 0).toString(),
+                asset_price_at_sync_time: tokenAddressToCoingeckoPrice[assetChecksumAddress] ? tokenAddressToCoingeckoPrice[assetChecksumAddress] : 0,
+                timestamp: useTimestampPostgres,
+                network: deploymentConfig.network,
+                deployment_id: deploymentConfig.id,
+              });
+            }
+          }
+        }
 
         let latestBlockNumber = await getLatestBlockNumber(deploymentConfig.network);
 
