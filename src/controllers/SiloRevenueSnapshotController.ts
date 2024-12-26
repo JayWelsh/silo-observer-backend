@@ -50,6 +50,19 @@ class SiloRevenueSnapshotController extends Controller {
 
     this.sendResponse(res, snapshots);
   }
+
+  async getLatestSnapshots(req: Request, res: Response) {
+    const networks = req.query.networks as string[] | undefined;
+    const pagination = this.extractPagination(req);
+  
+    const snapshots = await SiloRevenueSnapshotRepository.getLatestSnapshots(
+      networks,
+      pagination,
+      SiloRevenueOutputTransformer
+    );
+  
+    this.sendResponse(res, snapshots);
+  }
 }
 
 export default SiloRevenueSnapshotController;

@@ -43,6 +43,8 @@ interface IAllSiloAssetBalances {
   protocolFees?: string
   harvestedProtocolFees?: string
   pendingProtocolFees?: string
+  harvestedProtocolFeesRaw?: string
+  pendingProtocolFeesRaw?: string
   protocolFeesUSD?: string
   harvestedProtocolFeesUSD?: string
   pendingProtocolFeesUSD?: string
@@ -208,9 +210,13 @@ export const getAllSiloAssetBalances = async (deploymentConfig: IDeployment) => 
           let protocolFees = new BigNumber(utils.formatUnits(interestData.protocolFees, assetData.decimals)).toString();
           let harvestedProtocolFees = new BigNumber(utils.formatUnits(interestData.harvestedProtocolFees, assetData.decimals)).toString();
           let pendingProtocolFees = new BigNumber(utils.formatUnits(interestData.protocolFees, assetData.decimals)).minus(new BigNumber(utils.formatUnits(interestData.harvestedProtocolFees, assetData.decimals))).toString();
+          let harvestedProtocolFeesRaw = new BigNumber(interestData.harvestedProtocolFees.toString()).toString();
+          let pendingProtocolFeesRaw = new BigNumber(interestData.protocolFees.toString()).minus(new BigNumber(interestData.harvestedProtocolFees.toString())).toString();
           results[siloAddress][matchedIndex].protocolFees = protocolFees;
           results[siloAddress][matchedIndex].harvestedProtocolFees = harvestedProtocolFees;
           results[siloAddress][matchedIndex].pendingProtocolFees = pendingProtocolFees;
+          results[siloAddress][matchedIndex].harvestedProtocolFeesRaw = harvestedProtocolFeesRaw;
+          results[siloAddress][matchedIndex].pendingProtocolFeesRaw = pendingProtocolFeesRaw;
         }
         interestDataIndex++;
       }

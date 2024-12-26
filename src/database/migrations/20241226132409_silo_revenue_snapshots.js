@@ -17,8 +17,10 @@ exports.up = (knex) => knex.schema.createTable(SILO_REVENUE_SNAPSHOT_TABLE, tabl
     // Regular columns
     table.decimal("amount_pending", 21, 13).notNullable();
     table.decimal("amount_pending_usd", 21, 13).notNullable();
+    table.decimal("amount_pending_raw", 78, 0).notNullable();
     table.decimal("amount_harvested", 21, 13).notNullable();
     table.decimal("amount_harvested_usd", 21, 13).notNullable();
+    table.decimal("amount_harvested_raw", 78, 0).notNullable();
     table.decimal("asset_price_at_sync_time", 21, 13).notNullable();
     table.timestamp('timestamp').notNullable();
     

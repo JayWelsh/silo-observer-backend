@@ -7,6 +7,7 @@ import EventController from './EventController';
 import VolumeController from './VolumeController';
 import RewardController from './RewardController';
 import TurtleController from './TurtleController';
+import SiloRevenueSnapshotController from './SiloRevenueSnapshotController';
 
 // Authed routes
 
@@ -19,4 +20,5 @@ export default {
   VolumeController,
   RewardController,
   TurtleController,
+  SiloRevenueSnapshotController,
 };
