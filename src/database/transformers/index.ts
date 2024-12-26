@@ -7,6 +7,7 @@ import SiloUserEventMaterializedViewTransformer from './event/silo-unified-event
 import SiloUserEventDistinctDailyUsersOutputTransformer from './event/silo-user-event-distinct-daily-users-output';
 import VolumeTimeseriesTransformer from './volume/timeseries';
 import SubgraphLiquidationRecordTransformer from './liquidation/subgraph-indexed-liquidation-output';
+import SiloRevenueOutputTransformer from './revenue-snapshot/output';
 
 export {
   SiloOutputTransformer,
@@ -18,4 +19,5 @@ export {
   VolumeTimeseriesTransformer,
   SubgraphLiquidationRecordTransformer,
   SiloUserEventMaterializedViewTransformer,
+  SiloRevenueOutputTransformer,
 }

@@ -74,6 +74,22 @@ export interface IRate {
   deployment_id: string
 }
 
+export interface IRevenueSnapshot {
+  id: number
+  amount_pending: string;
+  amount_pending_usd: string;
+  amount_harvested: string;
+  amount_harvested_usd: string;
+  asset_price_at_sync_time: string
+  timestamp: string
+  silo_address: string
+  asset_address: string
+  silo?: ISilo
+  asset?: IAsset
+  network: string
+  deployment_id: string
+}
+
 export interface IBorrowedTotal {
   id: number
   borrowed: number

@@ -44,6 +44,9 @@ import DeploymentIdToSyncMetadataModel from './DeploymentIdToSyncMetadataModel';
 // UNIFIED EVENT MATERIALIZED VIEW
 import UnifiedEventModel from './UnifiedEventModel';
 
+// REVENUE SNAPSHOTS
+import SiloRevenueSnapshotModel from './SiloRevenueSnapshotModel';
+
 export {
   BaseModel,
   AssetModel,
@@ -70,4 +73,5 @@ export {
   MerklRewardEntryModel,
   DeploymentIdToSyncMetadataModel,
   UnifiedEventModel,
+  SiloRevenueSnapshotModel,
 }
