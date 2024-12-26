@@ -160,6 +160,7 @@ class SiloRevenueSnapshotRepository extends BaseRepository {
           .select(
             'silo_address',
             'asset_address',
+            'deployment_id',
             'network',
             'amount_pending',
             'amount_pending_usd',
@@ -192,6 +193,7 @@ class SiloRevenueSnapshotRepository extends BaseRepository {
         'latest_snapshots.amount_harvested_usd',
         'latest_snapshots.asset_price_at_sync_time',
         'latest_snapshots.timestamp',
+        'latest_snapshots.deployment_id',
         'asset.symbol as asset_symbol',
         'silo.name as silo_name',
         'silo.address as silo_address',
