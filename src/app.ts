@@ -23,7 +23,10 @@ import { resycAllEventsUpToLastSyncedBlocks } from './tasks/data-patches/resync-
 import { periodicSubgraphLiquidationTracker } from "./tasks/periodic-subgraph-liquidation-tracker";
 import { merklRewardSync } from './tasks/periodic-merkl-reward-sync';
 
-import { UnifiedEventRepository } from './database/repositories';
+import { 
+  UnifiedEventRepository,
+  SiloRevenueSnapshotRepository,
+} from './database/repositories';
 
 // minutely cycle to run indexer, 10 = 10 minutes (i.e. 10, 20, 30, 40, 50, 60 past the hour).
 // recommend to use 10 if doing a full sync, once up to speed, 3 minutes should be safe.
@@ -87,6 +90,7 @@ const runSync = new CronJob(
     let startTimeSiloDataTracker = new Date().getTime();
 		console.log("Running SiloDataTracker", new Date(useTimestampUnixSiloDataTracker * 1000));
     await periodicSiloDataTracker(useTimestampUnixSiloDataTracker, startTimeSiloDataTracker);
+    await SiloRevenueSnapshotRepository.refreshLatestRevenueSnapshotMaterializedView().catch(error => console.error('Failed to refresh materialized view:', error));
     let useTimestampUnixContractEventTracker = Math.floor(new Date().setSeconds(0) / 1000);
     let startTimeContractEventTracker = new Date().getTime();
 		console.log("Running ContractEventIndexer", new Date(useTimestampUnixContractEventTracker * 1000));
