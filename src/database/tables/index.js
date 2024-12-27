@@ -32,6 +32,7 @@ const MERKL_REWARD_ENTRY_TABLE = 'merkl_reward_entry';
 const DEPLOYMENT_ID_TO_SYNC_METADATA = 'deployment_id_to_sync_metadata';
 
 const UNIFIED_EVENTS_MATERIALIZED_VIEW = 'unified_events_materialized';
+const LATEST_SILO_REVENUE_SNAPSHOT_MATERIALIZED_VIEW = 'latest_silo_revenue_snapshot_materialized';
 
 const SILO_REVENUE_SNAPSHOT_TABLE = 'silo_revenue_snapshot';
 
@@ -61,4 +62,5 @@ module.exports = {
   DEPLOYMENT_ID_TO_SYNC_METADATA,
   UNIFIED_EVENTS_MATERIALIZED_VIEW,
   SILO_REVENUE_SNAPSHOT_TABLE,
+  LATEST_SILO_REVENUE_SNAPSHOT_MATERIALIZED_VIEW,
 }

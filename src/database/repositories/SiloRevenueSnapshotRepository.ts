@@ -4,6 +4,9 @@ import { SiloRevenueSnapshotModel } from "../models";
 import BaseRepository from "./BaseRepository";
 import Pagination, { IPaginationRequest } from "../../utils/Pagination";
 import { ITransformer } from "../../interfaces";
+import {
+  LATEST_SILO_REVENUE_SNAPSHOT_MATERIALIZED_VIEW,
+} from '../../database/tables';
 
 class SiloRevenueSnapshotRepository extends BaseRepository {
   getModel() {
@@ -148,66 +151,50 @@ class SiloRevenueSnapshotRepository extends BaseRepository {
     networks: string | string[] | undefined,
     pagination: IPaginationRequest,
     transformer: ITransformer,
-  ) {
-    let tableName = this.model.tableName;
-  
+) {
+    const { perPage, page } = pagination;
+    
     // Convert networks to array as it's a comma-separated string
     const networksArray = typeof networks === 'string' 
       ? networks.split(',')
       : networks;
 
-    const { perPage, page } = pagination;
-  
-    // Get latest snapshots in one query using a window function
     const results = await this.model.query()
-      .with('latest_snapshots', (qb: QueryBuilder<SiloRevenueSnapshotModel>) => {
-        qb.from(tableName)
-          .select(
-            'silo_address',
-            'asset_address',
-            'deployment_id',
-            'network',
-            'amount_pending',
-            'amount_pending_usd',
-            'amount_harvested',
-            'amount_harvested_usd',
-            'asset_price_at_sync_time',
-            'timestamp'
-          )
-          .whereIn(['asset_address', 'network', 'timestamp'], 
-            this.model.query()
-              .select('asset_address', 'network')
-              .max('timestamp as timestamp')
-              .from(tableName)
-              .modify((queryBuilder: QueryBuilder<SiloRevenueSnapshotModel>) => {
-                if (networksArray) {
-                  queryBuilder.whereIn('network', networksArray);
-                }
-              })
-              .groupBy('asset_address', 'network')
-          );
+      .from(LATEST_SILO_REVENUE_SNAPSHOT_MATERIALIZED_VIEW)
+      .modify((queryBuilder: QueryBuilder<SiloRevenueSnapshotModel>) => {
+          if (networksArray) {
+              queryBuilder.whereIn('network', networksArray);
+          }
       })
-      .from('latest_snapshots')
-      .leftJoin('asset', 'asset.address', 'latest_snapshots.asset_address')
-      .leftJoin('silo', 'silo.address', 'latest_snapshots.silo_address')
       .select(
-        'latest_snapshots.asset_address',
-        'latest_snapshots.network',
-        'latest_snapshots.amount_pending',
-        'latest_snapshots.amount_pending_usd',
-        'latest_snapshots.amount_harvested',
-        'latest_snapshots.amount_harvested_usd',
-        'latest_snapshots.asset_price_at_sync_time',
-        'latest_snapshots.timestamp',
-        'latest_snapshots.deployment_id',
-        'asset.symbol as asset_symbol',
-        'silo.name as silo_name',
-        'silo.address as silo_address',
+          'asset_address',
+          'network',
+          'amount_pending',
+          'amount_pending_usd',
+          'amount_harvested',
+          'amount_harvested_usd',
+          'asset_price_at_sync_time',
+          'timestamp',
+          'deployment_id',
+          'asset_symbol',
+          'silo_name',
+          'silo_address'
       )
       .orderBy('amount_pending_usd', 'DESC')
       .page(page - 1, perPage);
-  
+
     return this.parserResult(new Pagination(results, perPage, page), transformer);
+  }
+
+  async refreshLatestRevenueSnapshotMaterializedView(): Promise<void> {
+    try {
+      console.time(`refresh_${LATEST_SILO_REVENUE_SNAPSHOT_MATERIALIZED_VIEW}`);
+      await this.model.knex().raw(`REFRESH MATERIALIZED VIEW CONCURRENTLY ${LATEST_SILO_REVENUE_SNAPSHOT_MATERIALIZED_VIEW}`);
+      console.timeEnd(`refresh_${LATEST_SILO_REVENUE_SNAPSHOT_MATERIALIZED_VIEW}`);
+    } catch (error) {
+      console.error('Failed to refresh materialized view:', error);
+      throw error;
+    }
   }
 
 }
