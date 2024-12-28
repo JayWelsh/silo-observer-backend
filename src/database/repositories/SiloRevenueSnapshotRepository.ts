@@ -6,6 +6,8 @@ import Pagination, { IPaginationRequest } from "../../utils/Pagination";
 import { ITransformer } from "../../interfaces";
 import {
   LATEST_SILO_REVENUE_SNAPSHOT_MATERIALIZED_VIEW,
+  HOURLY_SILO_REVENUE_SNAPSHOT_TIMESERIES_BY_NETWORK_MATERIALIZED_VIEW,
+  HOURLY_SILO_REVENUE_SNAPSHOT_TIMESERIES_BY_NETWORK_EXCL_XAI_MATERIALIZED_VIEW,
 } from '../../database/tables';
 
 class SiloRevenueSnapshotRepository extends BaseRepository {
@@ -151,7 +153,7 @@ class SiloRevenueSnapshotRepository extends BaseRepository {
     networks: string | string[] | undefined,
     pagination: IPaginationRequest,
     transformer: ITransformer,
-) {
+  ) {
     const { perPage, page } = pagination;
     
     // Convert networks to array as it's a comma-separated string
@@ -186,6 +188,74 @@ class SiloRevenueSnapshotRepository extends BaseRepository {
     return this.parserResult(new Pagination(results, perPage, page), transformer);
   }
 
+  async getTimeseriesDistinctNetworks(
+    networks: string | string[] | undefined,
+    pagination: IPaginationRequest,
+    excludeXAI: boolean,
+    transformer: ITransformer,
+  ) {
+    const { perPage, page } = pagination;
+    
+    // Convert networks to array as it's a comma-separated string
+    const networksArray = typeof networks === 'string' 
+      ? networks.split(',')
+      : networks;
+
+    let materializedViewToUse = excludeXAI ? HOURLY_SILO_REVENUE_SNAPSHOT_TIMESERIES_BY_NETWORK_EXCL_XAI_MATERIALIZED_VIEW : HOURLY_SILO_REVENUE_SNAPSHOT_TIMESERIES_BY_NETWORK_MATERIALIZED_VIEW;
+
+    const results = await this.model.query()
+      .from(materializedViewToUse)
+      .modify((queryBuilder: QueryBuilder<SiloRevenueSnapshotModel>) => {
+          if (networksArray) {
+              queryBuilder.whereIn('network', networksArray);
+          }
+      })
+      .select(
+          'network',
+          'amount_pending_usd',
+          'amount_harvested_usd',
+          'hour_timestamp as timestamp',
+      )
+      .orderBy('timestamp', 'DESC')
+      .page(page - 1, perPage);
+
+    return this.parserResult(new Pagination(results, perPage, page), transformer);
+  }
+
+  async getTimeseriesDistinctTimestamps(
+    networks: string | string[] | undefined,
+    pagination: IPaginationRequest,
+    excludeXAI: boolean,
+    transformer: ITransformer,
+) {
+    const { perPage, page } = pagination;
+    
+    // Convert networks to array as it's a comma-separated string
+    const networksArray = typeof networks === 'string' 
+        ? networks.split(',')
+        : networks;
+
+    let materializedViewToUse = excludeXAI ? HOURLY_SILO_REVENUE_SNAPSHOT_TIMESERIES_BY_NETWORK_EXCL_XAI_MATERIALIZED_VIEW : HOURLY_SILO_REVENUE_SNAPSHOT_TIMESERIES_BY_NETWORK_MATERIALIZED_VIEW;
+
+    const results = await this.model.query()
+        .from(materializedViewToUse)
+        .modify((queryBuilder: QueryBuilder<SiloRevenueSnapshotModel>) => {
+            if (networksArray) {
+                queryBuilder.whereIn('network', networksArray);
+            }
+        })
+        .select(
+            'hour_timestamp as timestamp',
+            this.model.knex().raw('SUM(amount_pending_usd) as amount_pending_usd'),
+            this.model.knex().raw('SUM(amount_harvested_usd) as amount_harvested_usd')
+        )
+        .groupBy('hour_timestamp')
+        .orderBy('timestamp', 'DESC')
+        .page(page - 1, perPage);
+
+    return this.parserResult(new Pagination(results, perPage, page), transformer);
+}
+
   async refreshLatestRevenueSnapshotMaterializedView(): Promise<void> {
     try {
       console.time(`refresh_${LATEST_SILO_REVENUE_SNAPSHOT_MATERIALIZED_VIEW}`);
@@ -193,6 +263,28 @@ class SiloRevenueSnapshotRepository extends BaseRepository {
       console.timeEnd(`refresh_${LATEST_SILO_REVENUE_SNAPSHOT_MATERIALIZED_VIEW}`);
     } catch (error) {
       console.error('Failed to refresh materialized view:', error);
+      throw error;
+    }
+  }
+
+  async refreshLatestRevenueSnapshotTimeseriesByNetworkMaterializedView(): Promise<void> {
+    try {
+      console.time(`refresh_${HOURLY_SILO_REVENUE_SNAPSHOT_TIMESERIES_BY_NETWORK_MATERIALIZED_VIEW}`);
+      await this.model.knex().raw(`REFRESH MATERIALIZED VIEW CONCURRENTLY ${HOURLY_SILO_REVENUE_SNAPSHOT_TIMESERIES_BY_NETWORK_MATERIALIZED_VIEW}`);
+      console.timeEnd(`refresh_${HOURLY_SILO_REVENUE_SNAPSHOT_TIMESERIES_BY_NETWORK_MATERIALIZED_VIEW}`);
+    } catch (error) {
+      console.error(`Failed to refresh ${HOURLY_SILO_REVENUE_SNAPSHOT_TIMESERIES_BY_NETWORK_MATERIALIZED_VIEW} materialized view:`, error);
+      throw error;
+    }
+  }
+
+  async refreshLatestRevenueSnapshotTimeseriesByNetworkExcludeXAIMaterializedView(): Promise<void> {
+    try {
+      console.time(`refresh_${HOURLY_SILO_REVENUE_SNAPSHOT_TIMESERIES_BY_NETWORK_EXCL_XAI_MATERIALIZED_VIEW}`);
+      await this.model.knex().raw(`REFRESH MATERIALIZED VIEW CONCURRENTLY ${HOURLY_SILO_REVENUE_SNAPSHOT_TIMESERIES_BY_NETWORK_EXCL_XAI_MATERIALIZED_VIEW}`);
+      console.timeEnd(`refresh_${HOURLY_SILO_REVENUE_SNAPSHOT_TIMESERIES_BY_NETWORK_EXCL_XAI_MATERIALIZED_VIEW}`);
+    } catch (error) {
+      console.error(`Failed to refresh ${HOURLY_SILO_REVENUE_SNAPSHOT_TIMESERIES_BY_NETWORK_EXCL_XAI_MATERIALIZED_VIEW} materialized view:`, error);
       throw error;
     }
   }

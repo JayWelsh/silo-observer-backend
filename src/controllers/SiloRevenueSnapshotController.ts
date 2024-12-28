@@ -63,6 +63,36 @@ class SiloRevenueSnapshotController extends Controller {
   
     this.sendResponse(res, snapshots);
   }
+
+  async getTimeseriesDistinctNetworks(req: Request, res: Response) {
+    const networks = req.query.networks as string[] | undefined;
+    const excludeXAI = req.query.excludeXAI === 'true';
+    const pagination = this.extractPagination(req);
+  
+    const snapshots = await SiloRevenueSnapshotRepository.getTimeseriesDistinctNetworks(
+      networks,
+      pagination,
+      excludeXAI,
+      SiloRevenueOutputTransformer
+    );
+  
+    this.sendResponse(res, snapshots);
+  }
+
+  async getTimeseriesDistinctTimestamps(req: Request, res: Response) {
+    const networks = req.query.networks as string[] | undefined;
+    const excludeXAI = req.query.excludeXAI === 'true';
+    const pagination = this.extractPagination(req);
+  
+    const snapshots = await SiloRevenueSnapshotRepository.getTimeseriesDistinctTimestamps(
+      networks,
+      pagination,
+      excludeXAI,
+      SiloRevenueOutputTransformer
+    );
+  
+    this.sendResponse(res, snapshots);
+  }
 }
 
 export default SiloRevenueSnapshotController;
