@@ -92,6 +92,8 @@ export interface IRevenueSnapshot {
   deployment_id: string
   asset_symbol?: string
   silo_name?: string;
+  pending_usd_delta?: string;
+  harvested_usd_delta?: string;
 }
 
 export interface IBorrowedTotal {

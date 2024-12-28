@@ -18,6 +18,8 @@ class RevenueSnapshotTransformer extends BaseTransformer {
       asset_symbol: snapshotEntry.asset_symbol,
       silo_name: snapshotEntry.silo_name,
       silo_address: snapshotEntry.silo_address,
+      pending_usd_delta: snapshotEntry.pending_usd_delta,
+      harvested_usd_delta: snapshotEntry.harvested_usd_delta,
       ...(snapshotEntry.silo && {
         silo: {
           name: snapshotEntry.silo.name,
