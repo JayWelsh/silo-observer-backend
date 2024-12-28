@@ -93,6 +93,18 @@ class SiloRevenueSnapshotController extends Controller {
   
     this.sendResponse(res, snapshots);
   }
+
+  async getDailySiloUnclaimedFeeDelta(req: Request, res: Response) {
+    const networks = req.query.networks as string[] | undefined;
+    // const excludeXAI = req.query.excludeXAI === 'true';
+  
+    const dailyDeltas = await SiloRevenueSnapshotRepository.getDailySiloUnclaimedFeeDelta(
+      networks,
+      SiloRevenueOutputTransformer
+    );
+  
+    this.sendResponse(res, dailyDeltas);
+  }
 }
 
 export default SiloRevenueSnapshotController;

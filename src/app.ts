@@ -93,6 +93,7 @@ const runSync = new CronJob(
     await SiloRevenueSnapshotRepository.refreshLatestRevenueSnapshotMaterializedView().catch(error => console.error('Failed to refresh materialized view:', error));
     await SiloRevenueSnapshotRepository.refreshLatestRevenueSnapshotTimeseriesByNetworkMaterializedView().catch(error => console.error('Failed to refresh materialized view:', error));
     await SiloRevenueSnapshotRepository.refreshLatestRevenueSnapshotTimeseriesByNetworkExcludeXAIMaterializedView().catch(error => console.error('Failed to refresh materialized view:', error));
+    await SiloRevenueSnapshotRepository.refreshDailyRevenueDeltaByNetworkMaterializedView().catch(error => console.error('Failed to refresh materialized view:', error));
     let useTimestampUnixContractEventTracker = Math.floor(new Date().setSeconds(0) / 1000);
     let startTimeContractEventTracker = new Date().getTime();
 		console.log("Running ContractEventIndexer", new Date(useTimestampUnixContractEventTracker * 1000));
