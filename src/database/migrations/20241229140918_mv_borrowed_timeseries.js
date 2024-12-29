@@ -5,67 +5,24 @@ const {
 } = require("../tables");
 
 exports.up = (knex) => knex.schema.raw(`
+  DROP MATERIALIZED VIEW IF EXISTS ${BORROWED_TIMESERIES_MATERIALIZED_VIEW} CASCADE;
   CREATE MATERIALIZED VIEW ${BORROWED_TIMESERIES_MATERIALIZED_VIEW} AS
-WITH RECURSIVE 
-time_series AS (
+WITH timestamp_bounds AS (
   SELECT 
     LEAST(
-      date_trunc('hour', MIN(m.timestamp)),
-      date_trunc('hour', MIN(h.timestamp))
-    ) as hour_timestamp,
+      MIN(m.timestamp),
+      MIN(h.timestamp)
+    ) as min_timestamp,
     GREATEST(
-      date_trunc('hour', MAX(m.timestamp)),
-      date_trunc('hour', MAX(h.timestamp))
+      MAX(m.timestamp),
+      MAX(h.timestamp)
     ) as max_timestamp
-  FROM ${BORROWED_MINUTELY_TABLE} m
-  CROSS JOIN ${BORROWED_HOURLY_TABLE} h
+  FROM ${BORROWED_MINUTELY_TABLE} m, ${BORROWED_HOURLY_TABLE} h
   WHERE m.meta = 'all' AND h.meta = 'all'
-  UNION ALL
-  SELECT 
-    CASE 
-      WHEN hour_timestamp >= CURRENT_TIMESTAMP - interval '7 days'
-      THEN hour_timestamp + interval '1 hour'
-      WHEN hour_timestamp >= CURRENT_TIMESTAMP - interval '30 days'
-      THEN hour_timestamp + interval '4 hours'
-      WHEN hour_timestamp >= CURRENT_TIMESTAMP - interval '90 days'
-      THEN hour_timestamp + interval '12 hours'
-      WHEN hour_timestamp >= CURRENT_TIMESTAMP - interval '1 year'
-      THEN hour_timestamp + interval '1 day'
-      ELSE hour_timestamp + interval '1 day'
-    END,
-    max_timestamp
-  FROM time_series
-  WHERE hour_timestamp < max_timestamp
 ),
-deployment_info AS (
-  SELECT DISTINCT 
-    network,
-    deployment_id,
-    MIN(timestamp) as first_seen
-  FROM (
-    SELECT network, deployment_id, timestamp 
-    FROM ${BORROWED_MINUTELY_TABLE}
-    WHERE meta = 'all'
-    UNION
-    SELECT network, deployment_id, timestamp 
-    FROM ${BORROWED_HOURLY_TABLE}
-    WHERE meta = 'all'
-  ) all_data
-  WHERE deployment_id IS NOT NULL
-  GROUP BY network, deployment_id
-),
-time_deployment_series AS (
+all_data AS (
   SELECT 
-    ts.hour_timestamp,
-    di.network,
-    di.deployment_id,
-    di.first_seen
-  FROM time_series ts
-  CROSS JOIN deployment_info di
-),
-last_week_hourly AS (
-  SELECT 
-    date_trunc('hour', timestamp) as hour_timestamp,
+    timestamp,
     network,
     deployment_id,
     borrowed::numeric as borrowed,
@@ -73,127 +30,58 @@ last_week_hourly AS (
   FROM ${BORROWED_MINUTELY_TABLE}
   WHERE timestamp >= CURRENT_TIMESTAMP - interval '7 days'
     AND meta = 'all'
-),
-last_month_4h AS (
-  SELECT DISTINCT ON (date_trunc('hour', timestamp - interval '4 hours'), network, deployment_id)
-    date_trunc('hour', timestamp) as hour_timestamp,
+  UNION ALL
+  SELECT 
+    timestamp,
     network,
     deployment_id,
     borrowed::numeric as borrowed,
     meta
   FROM ${BORROWED_HOURLY_TABLE}
-  WHERE timestamp >= CURRENT_TIMESTAMP - interval '30 days'
-    AND timestamp < CURRENT_TIMESTAMP - interval '7 days'
-    AND meta = 'all'
-  ORDER BY 
-    date_trunc('hour', timestamp - interval '4 hours'), 
-    network, 
-    deployment_id, 
-    timestamp DESC
+  WHERE meta = 'all'
 ),
-last_quarter_12h AS (
-  SELECT DISTINCT ON (date_trunc('hour', timestamp - interval '12 hours'), network, deployment_id)
-    date_trunc('hour', timestamp) as hour_timestamp,
-    network,
-    deployment_id,
-    borrowed::numeric as borrowed,
-    meta
-  FROM ${BORROWED_HOURLY_TABLE}
-  WHERE timestamp >= CURRENT_TIMESTAMP - interval '90 days'
-    AND timestamp < CURRENT_TIMESTAMP - interval '30 days'
-    AND meta = 'all'
-  ORDER BY 
-    date_trunc('hour', timestamp - interval '12 hours'), 
-    network, 
-    deployment_id, 
-    timestamp DESC
-),
-last_year_daily AS (
-  SELECT DISTINCT ON (date_trunc('day', timestamp), network, deployment_id)
-    date_trunc('day', timestamp) as hour_timestamp,
-    network,
-    deployment_id,
-    borrowed::numeric as borrowed,
-    meta
-  FROM ${BORROWED_HOURLY_TABLE}
-  WHERE timestamp >= CURRENT_TIMESTAMP - interval '1 year'
-    AND timestamp < CURRENT_TIMESTAMP - interval '90 days'
-    AND meta = 'all'
-  ORDER BY 
-    date_trunc('day', timestamp), 
-    network, 
-    deployment_id, 
-    timestamp DESC
-),
-historical_daily AS (
-  SELECT DISTINCT ON (date_trunc('day', timestamp), network, deployment_id)
-    date_trunc('day', timestamp) as hour_timestamp,
-    network,
-    deployment_id,
-    borrowed::numeric as borrowed,
-    meta
-  FROM ${BORROWED_HOURLY_TABLE}
-  WHERE timestamp < CURRENT_TIMESTAMP - interval '1 year'
-    AND meta = 'all'
-  ORDER BY 
-    date_trunc('day', timestamp), 
-    network, 
-    deployment_id, 
-    timestamp DESC
-),
-combined_data AS (
-  SELECT hour_timestamp, network, deployment_id, borrowed, meta
-  FROM last_week_hourly
-  UNION ALL
-  SELECT hour_timestamp, network, deployment_id, borrowed, meta
-  FROM last_month_4h
-  UNION ALL
-  SELECT hour_timestamp, network, deployment_id, borrowed, meta
-  FROM last_quarter_12h
-  UNION ALL
-  SELECT hour_timestamp, network, deployment_id, borrowed, meta
-  FROM last_year_daily
-  UNION ALL
-  SELECT hour_timestamp, network, deployment_id, borrowed, meta
-  FROM historical_daily
+time_markers AS (
+  SELECT generate_series(
+    date_trunc('hour', min_timestamp), 
+    date_trunc('hour', max_timestamp), 
+    CASE 
+      WHEN date_trunc('hour', max_timestamp) >= CURRENT_TIMESTAMP - interval '7 days'
+      THEN interval '1 hour'
+      WHEN date_trunc('hour', max_timestamp) >= CURRENT_TIMESTAMP - interval '30 days'
+      THEN interval '4 hours'
+      WHEN date_trunc('hour', max_timestamp) >= CURRENT_TIMESTAMP - interval '90 days'
+      THEN interval '12 hours'
+      WHEN date_trunc('hour', max_timestamp) >= CURRENT_TIMESTAMP - interval '1 year'
+      THEN interval '1 day'
+      ELSE interval '1 day'
+    END
+  ) as hour_timestamp
+  FROM timestamp_bounds
 ),
 latest_records AS (
-  SELECT DISTINCT ON (tds.hour_timestamp, tds.network, tds.deployment_id)
-    tds.hour_timestamp,
-    tds.network,
-    tds.deployment_id,
-    CASE 
-      WHEN tds.hour_timestamp >= tds.first_seen THEN
-        COALESCE(
-          (
-            SELECT borrowed
-            FROM combined_data cd
-            WHERE cd.network = tds.network
-              AND cd.deployment_id = tds.deployment_id
-              AND cd.hour_timestamp <= tds.hour_timestamp
-            ORDER BY cd.hour_timestamp DESC
-            LIMIT 1
-          ),
-          NULL
-        )
-      ELSE NULL
-    END as borrowed,
-    'all' as meta
-  FROM time_deployment_series tds
+  SELECT DISTINCT ON (tm.hour_timestamp, ad.network, ad.deployment_id)
+    tm.hour_timestamp as timestamp,
+    ad.network,
+    ad.deployment_id,
+    ad.borrowed,
+    ad.meta
+  FROM time_markers tm
+  CROSS JOIN (
+    SELECT DISTINCT network, deployment_id
+    FROM all_data
+  ) unique_deployments
+  LEFT JOIN all_data ad ON ad.network = unique_deployments.network
+    AND ad.deployment_id = unique_deployments.deployment_id
+    AND ad.timestamp <= tm.hour_timestamp
+  WHERE ad.borrowed IS NOT NULL
   ORDER BY 
-    tds.hour_timestamp, 
-    tds.network, 
-    tds.deployment_id, 
-    borrowed DESC NULLS LAST
+    tm.hour_timestamp,
+    ad.network,
+    ad.deployment_id,
+    ad.timestamp DESC
 )
-SELECT 
-  hour_timestamp as timestamp,
-  network,
-  deployment_id,
-  borrowed,
-  meta
+SELECT *
 FROM latest_records
-WHERE borrowed IS NOT NULL
 ORDER BY timestamp DESC, network, deployment_id;
 
 CREATE UNIQUE INDEX borrowed_timeseries_composite_idx 
