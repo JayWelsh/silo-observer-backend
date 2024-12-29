@@ -4,7 +4,8 @@ import { utils } from "ethers";
 
 import {
   BorrowedMinutelyRepository,
-  BorrowedHourlyRepository
+  BorrowedHourlyRepository,
+  BorrowedTimeseriesMaterializedViewRepository,
 } from '../database/repositories';
 
 import {
@@ -101,6 +102,26 @@ class BorrowedTotalController extends Controller {
     if(resolution === 'hourly') {
       borrowedTotals = await BorrowedHourlyRepository.getBorrowedTotalsWholePlatform(pagination, parsedNetworks, BorrowedTotalOutputTransformer);
     }
+
+    this.sendResponse(res, borrowedTotals);
+  }
+
+  async getBorrowedTotalsWholePlatformMV(req: Request, res: Response) {
+
+    let {
+      networks,
+    } = req.query;
+
+    networks = networks as string;
+
+    let parsedNetworks : string[] = [];
+    if(networks) {
+      parsedNetworks = networks.split(',')
+    }
+
+    const pagination = this.extractPagination(req)
+
+    let borrowedTotals = await BorrowedTimeseriesMaterializedViewRepository.getBorrowedTotalsWholePlatformNew(pagination, parsedNetworks, BorrowedTotalOutputTransformer);
 
     this.sendResponse(res, borrowedTotals);
   }

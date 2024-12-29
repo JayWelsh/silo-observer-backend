@@ -13,6 +13,7 @@ import TvlTimeseriesMaterializedViewRepository from "./TvlTimeseriesMaterialized
 import BorrowedMinutelyRepository from "./BorrowedMinutelyRepository";
 import BorrowedHourlyRepository from "./BorrowedHourlyRepository";
 import BorrowedLatestRepository from "./BorrowedLatestRepository";
+import BorrowedTimeseriesMaterializedViewRepository from './BorrowedTimeseriesMaterializedViewRepository';
 
 import SiloUserRepository from "./SiloUserRepository";
 
@@ -56,6 +57,7 @@ export {
   BorrowedMinutelyRepository,
   BorrowedHourlyRepository,
   BorrowedLatestRepository,
+  BorrowedTimeseriesMaterializedViewRepository,
   SiloUserRepository,
   EventIndexerBlockTrackerRepository,
   BorrowEventRepository,
