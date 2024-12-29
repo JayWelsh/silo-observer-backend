@@ -3,6 +3,7 @@ import e, { Request, Response } from 'express';
 import { utils } from "ethers";
 
 import {
+  TvlTimeseriesMaterializedViewRepository,
   TvlMinutelyRepository,
   TvlHourlyRepository,
   TvlLatestRepository,
@@ -105,6 +106,27 @@ class TvlTotalController extends Controller {
 
     this.sendResponse(res, borrowedTotals);
   }
+
+  async getTvlTotalsWholePlatformMV(req: Request, res: Response) {
+
+    let {
+      networks,
+    } = req.query;
+
+    networks = networks as string;
+
+    let parsedNetworks : string[] = [];
+    if(networks) {
+      parsedNetworks = networks.split(',')
+    }
+
+    const pagination = this.extractPagination(req)
+
+    let tvlTotals = await TvlTimeseriesMaterializedViewRepository.getTvlTotalsWholePlatformNew(pagination, parsedNetworks, TvlTotalOutputTransformer);
+
+    this.sendResponse(res, tvlTotals);
+  }
+
   async getTvlTotalsLatestAssetsByDeploymentID(req: Request, res: Response) {
 
     const {

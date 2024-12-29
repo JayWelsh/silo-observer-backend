@@ -8,6 +8,7 @@ import RateHourlyRepository from "./RateHourlyRepository";
 import TvlMinutelyRepository from "./TvlMinutelyRepository";
 import TvlHourlyRepository from "./TvlHourlyRepository";
 import TvlLatestRepository from "./TvlLatestRepository";
+import TvlTimeseriesMaterializedViewRepository from "./TvlTimeseriesMaterializedViewRepository";
 
 import BorrowedMinutelyRepository from "./BorrowedMinutelyRepository";
 import BorrowedHourlyRepository from "./BorrowedHourlyRepository";
@@ -51,6 +52,7 @@ export {
   TvlMinutelyRepository,
   TvlHourlyRepository,
   TvlLatestRepository,
+  TvlTimeseriesMaterializedViewRepository,
   BorrowedMinutelyRepository,
   BorrowedHourlyRepository,
   BorrowedLatestRepository,

@@ -26,6 +26,7 @@ import { merklRewardSync } from './tasks/periodic-merkl-reward-sync';
 import { 
   UnifiedEventRepository,
   SiloRevenueSnapshotRepository,
+  TvlTimeseriesMaterializedViewRepository,
 } from './database/repositories';
 
 // minutely cycle to run indexer, 10 = 10 minutes (i.e. 10, 20, 30, 40, 50, 60 past the hour).
@@ -94,6 +95,7 @@ const runSync = new CronJob(
     await SiloRevenueSnapshotRepository.refreshLatestRevenueSnapshotTimeseriesByNetworkMaterializedView().catch(error => console.error('Failed to refresh materialized view:', error));
     await SiloRevenueSnapshotRepository.refreshLatestRevenueSnapshotTimeseriesByNetworkExcludeXAIMaterializedView().catch(error => console.error('Failed to refresh materialized view:', error));
     await SiloRevenueSnapshotRepository.refreshDailyRevenueDeltaByNetworkMaterializedView().catch(error => console.error('Failed to refresh materialized view:', error));
+    await TvlTimeseriesMaterializedViewRepository.refreshTvlTimeseriesMaterializedView().catch(error => console.error('Failed to refresh materialized view:', error));
     let useTimestampUnixContractEventTracker = Math.floor(new Date().setSeconds(0) / 1000);
     let startTimeContractEventTracker = new Date().getTime();
 		console.log("Running ContractEventIndexer", new Date(useTimestampUnixContractEventTracker * 1000));
