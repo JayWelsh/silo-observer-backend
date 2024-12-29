@@ -9,5 +9,6 @@ Router.get('/borrowed-totals/silo/:deploymentID/:siloAddressOrName', [], 'Borrow
 Router.get('/borrowed-totals/asset/:assetAddressOrSymbol', [], 'BorrowedTotalController@getBorrowedTotalsByAsset');
 
 Router.get('/borrowed-totals/whole-platform', [], 'BorrowedTotalController@getBorrowedTotalsWholePlatform');
+Router.get('/borrowed-totals/mv/whole-platform', [], 'BorrowedTotalController@getBorrowedTotalsWholePlatformMV');
 
 module.exports = Router.export();

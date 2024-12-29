@@ -17,6 +17,7 @@ import TvlTimeseriesMaterializedViewModel from './TvlTimeseriesMaterializedViewM
 import BorrowedMinutelyModel from './BorrowedMinutelyModel';
 import BorrowedHourlyModel from './BorrowedHourlyModel';
 import BorrowedLatestModel from './BorrowedLatestModel';
+import BorrowedTimeseriesMaterializedViewModel from './BorrowedTimeseriesMaterializedViewModel';
 
 // USER METRICS
 import SiloUserModel from './SiloUserModel';
@@ -62,6 +63,7 @@ export {
   BorrowedMinutelyModel,
   BorrowedHourlyModel,
   BorrowedLatestModel,
+  BorrowedTimeseriesMaterializedViewModel,
   SiloUserModel,
   EventIndexerBlockTrackerModel,
   BorrowEventModel,
