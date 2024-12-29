@@ -7,159 +7,278 @@ const {
 exports.up = (knex) => knex.schema.raw(`
   DROP MATERIALIZED VIEW IF EXISTS ${TVL_TIMESERIES_MATERIALIZED_VIEW} CASCADE;
   CREATE MATERIALIZED VIEW ${TVL_TIMESERIES_MATERIALIZED_VIEW} AS
-WITH base_data AS (
-  SELECT DISTINCT network, deployment_id
-  FROM ${TVL_HOURLY_TABLE}
-  WHERE meta = 'all'
+WITH latest_minutely AS (
+  SELECT DISTINCT ON (network, deployment_id)
+    timestamp,
+    network,
+    deployment_id,
+    tvl,
+    meta
+  FROM ${TVL_MINUTELY_TABLE}
+  WHERE timestamp >= date_trunc('hour', CURRENT_TIMESTAMP) - interval '20 minutes'
+    AND meta = 'all'
+  ORDER BY network, deployment_id, timestamp DESC
 ),
-twenty_min_series AS (
-  -- Generate 20-minute intervals for last 24 hours
-  SELECT 
-    gs as interval_start,
-    bd.network,
-    bd.deployment_id
-  FROM generate_series(
-    date_trunc('hour', CURRENT_TIMESTAMP - interval '24 hours'),
-    CURRENT_TIMESTAMP,
-    interval '20 minutes'
-  ) gs
-  CROSS JOIN base_data bd
-),
-latest_24h_data AS (
-  -- Get data points at 20-min intervals for last 24 hours
-  SELECT DISTINCT ON (tms.interval_start, tms.network, tms.deployment_id)
-    tms.interval_start as timestamp,
-    tms.network,
-    tms.deployment_id,
-    FIRST_VALUE(m.tvl) OVER w as tvl,
-    FIRST_VALUE(m.meta) OVER w as meta
-  FROM twenty_min_series tms
-  LEFT JOIN ${TVL_MINUTELY_TABLE} m ON
-    m.timestamp <= tms.interval_start
-    AND m.network = tms.network
-    AND m.deployment_id = tms.deployment_id
-    AND m.meta = 'all'
-  WINDOW w AS (
-    PARTITION BY tms.interval_start, tms.network, tms.deployment_id
-    ORDER BY m.timestamp DESC
-    ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
-  )
-),
-time_series AS (
-  -- 24 hours to 7 days: HOURLY resolution
-  SELECT DISTINCT
-    generate_series as ts
-  FROM (
-    SELECT
-      generate_series(
-        date_trunc('hour', CURRENT_TIMESTAMP - interval '7 days'),
-        date_trunc('hour', CURRENT_TIMESTAMP - interval '24 hours' - interval '1 hour'),
-        interval '1 hour'
-      )
-  ) hourly
-  
-  UNION
-  
-  -- 7-30 days ago: 4-HOUR resolution
-  SELECT DISTINCT
-    generate_series
-  FROM (
-    SELECT
-      generate_series(
-        date_trunc('hour', CURRENT_TIMESTAMP - interval '30 days'),
-        date_trunc('hour', CURRENT_TIMESTAMP - interval '7 days' - interval '1 hour'),
-        interval '4 hours'
-      )
-  ) four_hourly
-  
-  UNION
-  
-  -- 30-90 days ago: 12-HOUR resolution
-  SELECT DISTINCT
-    generate_series
-  FROM (
-    SELECT
-      generate_series(
-        date_trunc('hour', CURRENT_TIMESTAMP - interval '90 days'),
-        date_trunc('hour', CURRENT_TIMESTAMP - interval '30 days' - interval '1 hour'),
-        interval '12 hours'
-      )
-  ) twelve_hourly
-  
-  UNION
-  
-  -- 90 days-5 years ago: DAILY resolution at midnight
-  SELECT DISTINCT
-    generate_series
-  FROM (
-    SELECT
-      generate_series(
-        date_trunc('day', CURRENT_TIMESTAMP - interval '5 years'),
-        date_trunc('day', CURRENT_TIMESTAMP - interval '90 days' - interval '1 day'),
-        interval '1 day'
-      )
-  ) daily
-  
-  UNION
-  
-  -- Before 5 years ago: WEEKLY resolution starting midnight Monday
-  SELECT DISTINCT
-    generate_series
-  FROM (
-    SELECT
-      generate_series(
-        date_trunc('week', (
-          SELECT MIN(timestamp) 
-          FROM ${TVL_HOURLY_TABLE} 
-          WHERE meta = 'all'
-        )),
-        date_trunc('week', CURRENT_TIMESTAMP - interval '5 years' - interval '1 week'),
-        interval '1 week'
-      )
-  ) weekly
-),
-full_series AS (
-  SELECT DISTINCT 
-    ts as timestamp,
-    bd.network,
-    bd.deployment_id
-  FROM time_series
-  CROSS JOIN base_data bd
+current_period AS (
+  SELECT DISTINCT ON (network, deployment_id)
+    timestamp,
+    network,
+    deployment_id,
+    tvl,
+    meta
+  FROM ${TVL_MINUTELY_TABLE}
+  WHERE timestamp = date_trunc('minute', CURRENT_TIMESTAMP) - 
+    (((EXTRACT(MINUTE FROM CURRENT_TIMESTAMP)::integer % 20)) * interval '1 minute')
+    AND meta = 'all'
+  ORDER BY network, deployment_id, timestamp DESC
 ),
 historical_data AS (
-  SELECT DISTINCT ON (fs.timestamp, fs.network, fs.deployment_id)
-    fs.timestamp,
-    fs.network,
-    fs.deployment_id,
-    FIRST_VALUE(tvl) OVER w as tvl,
-    FIRST_VALUE(meta) OVER w as meta
-  FROM full_series fs
-  LEFT JOIN ${TVL_HOURLY_TABLE} h ON
-    h.timestamp <= fs.timestamp
-    AND h.network = fs.network
-    AND h.deployment_id = fs.deployment_id
-    AND h.meta = 'all'
-  WINDOW w AS (
-    PARTITION BY fs.network, fs.deployment_id, fs.timestamp
-    ORDER BY h.timestamp DESC
-    ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+  -- 20-minute intervals for past 24 hours (excluding current period)
+  (
+    SELECT DISTINCT ON (
+      date_trunc('minute', timestamp - (EXTRACT(MINUTE FROM timestamp)::integer % 20) * interval '1 minute'),
+      network,
+      deployment_id
+    )
+      date_trunc('minute', timestamp - (EXTRACT(MINUTE FROM timestamp)::integer % 20) * interval '1 minute') as timestamp,
+      network,
+      deployment_id,
+      tvl,
+      meta
+    FROM ${TVL_MINUTELY_TABLE}
+    WHERE timestamp >= CURRENT_TIMESTAMP - interval '24 hours'
+      AND timestamp < date_trunc('minute', CURRENT_TIMESTAMP) - 
+        (((EXTRACT(MINUTE FROM CURRENT_TIMESTAMP)::integer % 20)) * interval '1 minute')
+      AND meta = 'all'
+    ORDER BY 
+      date_trunc('minute', timestamp - (EXTRACT(MINUTE FROM timestamp)::integer % 20) * interval '1 minute'),
+      network,
+      deployment_id,
+      timestamp DESC
+  )
+  UNION ALL
+  -- Hourly data for past 7 days (excluding first 24 hours)
+  (
+    SELECT DISTINCT ON (date_trunc('hour', timestamp), network, deployment_id)
+      date_trunc('hour', timestamp) as timestamp,
+      network,
+      deployment_id,
+      tvl,
+      meta
+    FROM ${TVL_HOURLY_TABLE}
+    WHERE timestamp >= date_trunc('hour', CURRENT_TIMESTAMP - interval '7 days')
+      AND timestamp < date_trunc('hour', CURRENT_TIMESTAMP - interval '24 hours')
+      AND meta = 'all'
+    ORDER BY date_trunc('hour', timestamp), network, deployment_id, timestamp DESC
+  )
+  UNION ALL
+  -- 7-30 days at 4h intervals
+  (
+    SELECT DISTINCT ON (date_trunc('hour', timestamp - interval '4 hours'), network, deployment_id)
+      date_trunc('hour', timestamp),
+      network,
+      deployment_id,
+      tvl,
+      meta
+    FROM ${TVL_HOURLY_TABLE}
+    WHERE timestamp >= CURRENT_TIMESTAMP - interval '30 days'
+      AND timestamp < CURRENT_TIMESTAMP - interval '7 days'
+      AND meta = 'all'
+    ORDER BY date_trunc('hour', timestamp - interval '4 hours'), network, deployment_id, timestamp DESC
+  )
+  UNION ALL
+  -- 30-90 days at 12h intervals
+  (
+    SELECT DISTINCT ON (date_trunc('hour', timestamp - interval '12 hours'), network, deployment_id)
+      date_trunc('hour', timestamp),
+      network,
+      deployment_id,
+      tvl,
+      meta
+    FROM ${TVL_HOURLY_TABLE}
+    WHERE timestamp >= CURRENT_TIMESTAMP - interval '90 days'
+      AND timestamp < CURRENT_TIMESTAMP - interval '30 days'
+      AND meta = 'all'
+    ORDER BY date_trunc('hour', timestamp - interval '12 hours'), network, deployment_id, timestamp DESC
+  )
+  UNION ALL
+  -- 90 days to 5 years daily at midnight
+  (
+    SELECT DISTINCT ON (date_trunc('day', timestamp), network, deployment_id)
+      date_trunc('day', timestamp),
+      network,
+      deployment_id,
+      tvl,
+      meta
+    FROM ${TVL_HOURLY_TABLE}
+    WHERE timestamp >= CURRENT_TIMESTAMP - interval '5 years'
+      AND timestamp < CURRENT_TIMESTAMP - interval '90 days'
+      AND meta = 'all'
+    ORDER BY date_trunc('day', timestamp), network, deployment_id, timestamp DESC
+  )
+  UNION ALL
+  -- Before 5 years weekly at midnight Monday
+  (
+    SELECT DISTINCT ON (date_trunc('week', timestamp), network, deployment_id)
+      date_trunc('week', timestamp),
+      network,
+      deployment_id,
+      tvl,
+      meta
+    FROM ${TVL_HOURLY_TABLE}
+    WHERE timestamp < CURRENT_TIMESTAMP - interval '5 years'
+      AND meta = 'all'
+    ORDER BY date_trunc('week', timestamp), network, deployment_id, timestamp DESC
   )
 ),
-combined_data AS (
-  SELECT * FROM latest_24h_data
+base_data AS (
+  SELECT * FROM latest_minutely
+  UNION ALL
+  SELECT * FROM current_period
+  UNION ALL
+  SELECT * FROM historical_data
+),
+time_boundaries AS (
+  SELECT
+    MIN(timestamp) as min_time,
+    MAX(timestamp) as max_time
+  FROM base_data
+),
+active_combinations AS (
+  SELECT DISTINCT
+    network,
+    deployment_id
+  FROM base_data
+),
+time_series AS (
+  -- Last 24 hours: 20-MINUTE resolution
+  SELECT gs
+  FROM time_boundaries,
+    LATERAL generate_series(
+      GREATEST(
+        min_time,
+        date_trunc('minute', CURRENT_TIMESTAMP - interval '24 hours') - 
+          (EXTRACT(MINUTE FROM CURRENT_TIMESTAMP - interval '24 hours')::integer % 20) * interval '1 minute'
+      ),
+      date_trunc('minute', CURRENT_TIMESTAMP) - 
+        (EXTRACT(MINUTE FROM CURRENT_TIMESTAMP)::integer % 20) * interval '1 minute',
+      interval '20 minutes'
+    ) gs
+  WHERE gs >= CURRENT_TIMESTAMP - interval '24 hours'
   
   UNION ALL
   
-  SELECT * FROM historical_data
-  WHERE timestamp < (
-    SELECT COALESCE(MIN(timestamp), '-infinity'::timestamp)
-    FROM latest_24h_data
-  )
+  -- 24 hours to 7 days ago: HOURLY resolution
+  SELECT gs
+  FROM time_boundaries,
+    LATERAL generate_series(
+      GREATEST(
+        min_time,
+        date_trunc('hour', CURRENT_TIMESTAMP - interval '7 days')
+      ),
+      date_trunc('hour', CURRENT_TIMESTAMP - interval '24 hours'),
+      interval '1 hour'
+    ) gs
+  WHERE gs >= CURRENT_TIMESTAMP - interval '7 days'
+    AND gs < CURRENT_TIMESTAMP - interval '24 hours'
+  
+  UNION ALL
+  
+  -- 7-30 days ago: 4-HOUR resolution
+  SELECT gs
+  FROM time_boundaries,
+    LATERAL generate_series(
+      GREATEST(
+        min_time, 
+        date_trunc('hour', CURRENT_TIMESTAMP - interval '30 days')
+      ),
+      LEAST(
+        max_time,
+        date_trunc('hour', CURRENT_TIMESTAMP - interval '7 days')
+      ),
+      interval '4 hours'
+    ) gs
+  WHERE gs >= CURRENT_TIMESTAMP - interval '30 days'
+    AND gs < CURRENT_TIMESTAMP - interval '7 days'
+  
+  UNION ALL
+  
+  -- 30-90 days ago: 12-HOUR resolution
+  SELECT gs
+  FROM time_boundaries,
+    LATERAL generate_series(
+      GREATEST(
+        min_time, 
+        date_trunc('hour', CURRENT_TIMESTAMP - interval '90 days')
+      ),
+      LEAST(
+        max_time,
+        date_trunc('hour', CURRENT_TIMESTAMP - interval '30 days')
+      ),
+      interval '12 hours'
+    ) gs
+  WHERE gs >= CURRENT_TIMESTAMP - interval '90 days'
+    AND gs < CURRENT_TIMESTAMP - interval '30 days'
+  
+  UNION ALL
+  
+  -- 90 days-5 years ago: DAILY resolution at midnight
+  SELECT gs
+  FROM time_boundaries,
+    LATERAL generate_series(
+      GREATEST(
+        min_time, 
+        date_trunc('day', CURRENT_TIMESTAMP - interval '5 years')
+      ),
+      LEAST(
+        max_time,
+        date_trunc('day', CURRENT_TIMESTAMP - interval '90 days')
+      ),
+      interval '1 day'
+    ) gs
+  WHERE gs >= CURRENT_TIMESTAMP - interval '5 years'
+    AND gs < CURRENT_TIMESTAMP - interval '90 days'
+  
+  UNION ALL
+  
+  -- Before 5 years ago: WEEKLY resolution starting midnight Monday
+  SELECT gs
+  FROM time_boundaries,
+    LATERAL generate_series(
+      date_trunc('week', min_time),
+      LEAST(
+        max_time,
+        date_trunc('week', CURRENT_TIMESTAMP - interval '5 years')
+      ),
+      interval '1 week'
+    ) gs
+  WHERE gs < CURRENT_TIMESTAMP - interval '5 years'
+),
+time_slots AS (
+  SELECT
+    ts.gs as timestamp,
+    ac.network,
+    ac.deployment_id
+  FROM time_series ts
+  CROSS JOIN active_combinations ac
+),
+filled_data AS (
+  SELECT DISTINCT ON (ts.timestamp, ts.network, ts.deployment_id)
+    ts.timestamp,
+    ts.network,
+    ts.deployment_id,
+    COALESCE(bd.tvl, 0) as tvl,
+    COALESCE(bd.meta, 'all') as meta
+  FROM time_slots ts
+  LEFT JOIN base_data bd ON
+    bd.timestamp <= ts.timestamp AND
+    bd.network = ts.network AND
+    bd.deployment_id = ts.deployment_id
+  ORDER BY ts.timestamp, ts.network, ts.deployment_id, bd.timestamp DESC
 )
 SELECT *
-FROM combined_data
+FROM filled_data
 WHERE tvl != 0
-  AND tvl IS NOT NULL
 ORDER BY timestamp DESC, network, deployment_id;
 
 CREATE UNIQUE INDEX tvl_timeseries_composite_idx 
