@@ -11,6 +11,7 @@ import RateLatestModel from './RateLatestModel';
 import TvlMinutelyModel from './TvlMinutelyModel';
 import TvlHourlyModel from './TvlHourlyModel';
 import TvlLatestModel from './TvlLatestModel';
+import TvlTimeseriesMaterializedViewModel from './TvlTimeseriesMaterializedViewModel';
 
 // BORROWED
 import BorrowedMinutelyModel from './BorrowedMinutelyModel';
@@ -57,6 +58,7 @@ export {
   TvlMinutelyModel,
   TvlHourlyModel,
   TvlLatestModel,
+  TvlTimeseriesMaterializedViewModel,
   BorrowedMinutelyModel,
   BorrowedHourlyModel,
   BorrowedLatestModel,
