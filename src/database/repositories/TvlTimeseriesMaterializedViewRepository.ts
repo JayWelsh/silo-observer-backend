@@ -41,9 +41,10 @@ class TvlTimeseriesMaterializedViewRepository extends TvlBaseRepository {
           }
       })
       .select(
-          'tvl',
+          this.model.raw('sum(tvl::numeric) as tvl'),
           'timestamp',
       )
+      .groupBy('timestamp')
       .orderBy('timestamp', 'DESC')
       .page(page - 1, perPage);
 
@@ -61,7 +62,7 @@ class TvlTimeseriesMaterializedViewRepository extends TvlBaseRepository {
       throw error;
     }
   }
-  
+
 }
 
 export default new TvlTimeseriesMaterializedViewRepository();
