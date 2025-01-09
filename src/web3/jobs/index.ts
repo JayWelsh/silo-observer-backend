@@ -1,5 +1,6 @@
 // General utils
-import { getAllSiloAssetBalances } from './getAllSiloAssetBalances';
+import { getAllSiloAssetBalancesV1 } from './getAllSiloAssetBalancesV1';
+import { getAllSiloAssetBalancesV2 } from './getAllSiloAssetBalancesV2';
 import { getAllSiloAssetRates } from './getAllSiloAssetRates';
 import { getAllSiloAddresses } from './getAllSiloAddresses';
 import { getLatestBlockNumber } from './getLatestBlockNumber';
@@ -15,11 +16,12 @@ import { getAllRewardsClaimedEventsSinceBlock } from './getAllRewardsClaimedEven
 
 // Subgraph
 import { subgraphIndexer } from './subgraphIndexer';
-import { getAllSubgraphLiquidationsUntilBlock } from './getAllSubgraphLiquidationsUntilBlock';
+import { getAllSubgraphLiquidationsUntilBlockV1 } from './getAllSubgraphLiquidationsUntilBlock';
 
 export {
   // general utils
-  getAllSiloAssetBalances,
+  getAllSiloAssetBalancesV1,
+  getAllSiloAssetBalancesV2,
   getAllSiloAssetRates,
   getAllSiloAddresses,
   getLatestBlockNumber,
@@ -33,5 +35,5 @@ export {
   getAllRewardsClaimedEventsSinceBlock,
   // subgraph records
   subgraphIndexer,
-  getAllSubgraphLiquidationsUntilBlock,
+  getAllSubgraphLiquidationsUntilBlockV1,
 }

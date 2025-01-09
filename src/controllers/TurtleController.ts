@@ -12,6 +12,7 @@ import {
 } from '../constants';
 
 import Controller from './Controller';
+import { IDeploymentV1 } from "../interfaces";
 
 BigNumber.config({ EXPONENTIAL_AT: [-1e+9, 1e+9] });
 
@@ -85,8 +86,10 @@ class TurtleController extends Controller {
 
     const { groupBy } = req.query;
 
+    let deploymentConfigsV1: IDeploymentV1[] = DEPLOYMENT_CONFIGS.filter((entry): entry is IDeploymentV1 => entry.protocolVersion === 1);
+
     try {
-      const fetchPromises = DEPLOYMENT_CONFIGS.map(async (deploymentConfig) => {
+      const fetchPromises = deploymentConfigsV1.filter((entry) => entry.protocolVersion === 1).map(async (deploymentConfig) => {
         const { network } = deploymentConfig;
         try {
           const deploymentPositions = await queryUntilAllRecordsFound(

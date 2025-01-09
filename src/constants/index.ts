@@ -5,10 +5,12 @@ import {
 } from '../interfaces';
 
 import SiloFactoryABI from '../web3/abis/SiloFactoryABI.json';
+import SiloFactoryV2ABI from '../web3/abis/SiloFactoryV2ABI.json';
 import SiloFactoryMainABI from '../web3/abis/SiloFactoryMainABI.json';
 import SiloConvexFactoryABI from '../web3/abis/SiloConvexFactoryABI.json';
 import SiloLlamaFactoryABI from '../web3/abis/SiloLlamaFactoryABI.json';
 import SiloLensABI from '../web3/abis/SiloLensABI.json';
+import SiloLensV2ABI from '../web3/abis/SiloLensV2ABI.json';
 import SiloLensMainABI from '../web3/abis/SiloLensMainABI.json';
 import SiloLensLlamaABI from '../web3/abis/SiloLensLlamaABI.json';
 import SiloLensBaseBtcfiABI from '../web3/abis/SiloLensBaseBtcfiABI.json'
@@ -99,6 +101,7 @@ export const ALCHEMY_API_KEY = process.env['ALCHEMY_API_KEY'];
 export const ALCHEMY_API_KEY_ARBITRUM = process.env['ALCHEMY_API_KEY_ARBITRUM'];
 export const ALCHEMY_API_KEY_OPTIMISM = process.env['ALCHEMY_API_KEY_OPTIMISM'];
 export const ALCHEMY_API_KEY_BASE = process.env['ALCHEMY_API_KEY_BASE'];
+export const ALCHEMY_API_KEY_SONIC = process.env['ALCHEMY_API_KEY_SONIC'];
 export const ALCHEMY_ENDPOINT = `https://eth-mainnet.g.alchemy.com/v2/${process.env['ALCHEMY_API_KEY']}`;
 export const START_BLOCK = 15307294;
 
@@ -106,7 +109,8 @@ export const NETWORK_TO_ALCHEMY_ENDPOINT: {[key: string]: string} = {
   "ethereum": `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
   "arbitrum": `https://arb-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY_ARBITRUM}`,
   "optimism": `https://opt-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY_OPTIMISM}`,
-  "base": `https://base-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY_BASE}`
+  "base": `https://base-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY_BASE}`,
+  "sonic": `https://sonic-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY_SONIC}`,
 }
 
 // ETHEREUM
@@ -145,6 +149,10 @@ export const SILO_FACTORY_ADDRESS_BASE_BTCFI = '0x2899b0C131225CbcE912Ba14Bbb7e1
 export const SILO_REPOSITORY_ADDRESS_BASE_BTCFI = '0x1E915d8950f0C6bf9d01C603D33c50b6110beDA3';
 export const SILO_LENS_ADDRESS_BASE_BTCFI = '0xE89D07da1438177eaa0AE7277D7D9A4dDdc16C0F';
 
+// SONIC
+export const SILO_FACTORY_V2_ADDRESS_SONIC = '0xa42001D6d2237d2c74108FE360403C4b796B7170';
+export const SILO_LENS_V2_ADDRESS_SONIC = '0xB6AdBb29f2D8ae731C7C72036A7FD5A7E970B198';
+
 export const SILO_CONVEX_FACTORY_ADDRESS = '0x6d4A256695586F61b77B09bc3D28333A91114d5a';
 
 export const SILO_BLACKLIST = ["0x6543ee07Cf5Dd7Ad17AeECF22ba75860ef3bBAAa"];
@@ -154,6 +162,7 @@ export const MAX_TOTAL_BLOCK_RANGE : {[key: string]: number} = {
   "arbitrum": 3500000,
   "optimism": 3500000,
   "base": 3500000,
+  "sonic": 3500000,
 }
 
 export const MAX_TOTAL_BLOCK_RANGE_SUBGRAPH : {[key: string]: number} = {
@@ -161,6 +170,7 @@ export const MAX_TOTAL_BLOCK_RANGE_SUBGRAPH : {[key: string]: number} = {
   "arbitrum": 35000000,
   "optimism": 35000000,
   "base": 35000000,
+  "sonic": 35000000,
 }
 
 export const NETWORKS = [
@@ -168,6 +178,7 @@ export const NETWORKS = [
   "arbitrum",
   "optimism",
   "base",
+  "sonic",
 ];
 
 export const NETWORK_TO_MAX_BLOCK_BATCH_SIZE : {[key: string]: number} = {
@@ -175,6 +186,7 @@ export const NETWORK_TO_MAX_BLOCK_BATCH_SIZE : {[key: string]: number} = {
   "arbitrum": 300000,
   "optimism": 300000,
   "base": 300000,
+  "sonic": 300000,
 }
 
 export const NETWORK_ID_TO_COINGECKO_ID : {[key: string]: string} = {
@@ -182,10 +194,12 @@ export const NETWORK_ID_TO_COINGECKO_ID : {[key: string]: string} = {
   "arbitrum": "arbitrum-one",
   "optimism": "optimistic-ethereum",
   "base": "base",
+  "sonic": "sonic",
 }
 
 export const DEPLOYMENT_CONFIGS : IDeployment[] = [
   {
+    protocolVersion: 1,
     id: 'ethereum-original',
     idHumanReadable: "Ethereum Legacy",
     network: "ethereum",
@@ -221,6 +235,7 @@ export const DEPLOYMENT_CONFIGS : IDeployment[] = [
     },
   },
   {
+    protocolVersion: 1,
     id: 'ethereum-main',
     idHumanReadable: "Ethereum Main",
     network: "ethereum",
@@ -251,6 +266,7 @@ export const DEPLOYMENT_CONFIGS : IDeployment[] = [
     },
   },
   {
+    protocolVersion: 1,
     id: 'ethereum-llama',
     idHumanReadable: "Ethereum LLAMA",
     network: "ethereum",
@@ -274,6 +290,7 @@ export const DEPLOYMENT_CONFIGS : IDeployment[] = [
     },
   },
   {
+    protocolVersion: 1,
     id: 'arbitrum-original',
     idHumanReadable: "Arbitrum Original",
     network: "arbitrum",
@@ -307,6 +324,7 @@ export const DEPLOYMENT_CONFIGS : IDeployment[] = [
     },
   },
   {
+    protocolVersion: 1,
     id: 'optimism-original',
     idHumanReadable: "Optimism Original",
     network: "optimism",
@@ -335,6 +353,7 @@ export const DEPLOYMENT_CONFIGS : IDeployment[] = [
     },
   },
   {
+    protocolVersion: 1,
     id: 'base-original',
     idHumanReadable: "Base Original",
     network: "base",
@@ -356,6 +375,7 @@ export const DEPLOYMENT_CONFIGS : IDeployment[] = [
     },
   },
   {
+    protocolVersion: 1,
     id: 'base-btcfi',
     idHumanReadable: "Base BTCfi",
     network: "base",
@@ -375,7 +395,25 @@ export const DEPLOYMENT_CONFIGS : IDeployment[] = [
       abi: SiloRepositoryBaseBtcfiABI,
       meta: 'base-btcfi-repository'
     },
-  }
+  },
+  {
+    protocolVersion: 2,
+    id: 'sonic-main-v2',
+    idHumanReadable: 'Sonic Main V2',
+    network: 'sonic',
+    siloLens: SILO_LENS_V2_ADDRESS_SONIC,
+    siloLensABI: SiloLensV2ABI,
+    siloBlacklist: [],
+    // subgraphEndpoint: '',
+    // subgraphEndpointFallback: '',
+    siloFactories: [
+      {
+        address: SILO_FACTORY_V2_ADDRESS_SONIC,
+        abi: SiloFactoryV2ABI,
+        meta: 'sonic-main-v2'
+      }
+    ],
+  },
 ]
 
 // TODO: Add support for proxies between chains, will require update to fetchCoingeckoPrices

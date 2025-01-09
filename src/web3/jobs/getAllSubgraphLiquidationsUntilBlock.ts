@@ -16,7 +16,7 @@ import {
 } from '../utils'
 
 import {
-  IDeployment,
+  IDeploymentV1,
 } from '../../interfaces';
 
 import { subgraphRequestWithRetry } from '../../utils';
@@ -58,9 +58,9 @@ const buildQuery = (
   }`
 }
 
-export const getAllSubgraphLiquidationsUntilBlock = async (
+export const getAllSubgraphLiquidationsUntilBlockV1 = async (
   latestBlock: number,
-  deploymentConfig: IDeployment,
+  deploymentConfig: IDeploymentV1,
   isSanityCheck?: boolean,
 ) => {
 
