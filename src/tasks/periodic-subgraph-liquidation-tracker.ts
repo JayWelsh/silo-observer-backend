@@ -16,11 +16,17 @@ import {
   BlockMetadataRepository,
 } from '../database/repositories';
 
+import {
+  IDeploymentV1,
+} from '../interfaces';
+
 export const periodicSubgraphLiquidationTracker = async (useTimestampUnix: number, startTime: number) => {
+
+  let deploymentConfigsV1: IDeploymentV1[] = DEPLOYMENT_CONFIGS.filter((entry): entry is IDeploymentV1 => entry.protocolVersion === 1);
 
   let useTimestampPostgres = new Date(useTimestampUnix * 1000).toISOString();
 
-  for(let deploymentConfig of DEPLOYMENT_CONFIGS) {
+  for(let deploymentConfig of deploymentConfigsV1) {
 
     let { network } = deploymentConfig;
 
