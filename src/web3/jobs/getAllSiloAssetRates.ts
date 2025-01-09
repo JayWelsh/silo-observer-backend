@@ -1,4 +1,4 @@
-import { Contract as MulticallContract } from '@kargakis/ethers-multicall';
+import { Contract as MulticallContract } from '@jaywelsh/ethers-multicall';
 
 import { Contract, utils } from 'ethers';
 

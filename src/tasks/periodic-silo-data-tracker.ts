@@ -52,7 +52,8 @@ import {
 } from '../database/repositories';
 
 import {
-  getAllSiloAssetBalances,
+  getAllSiloAssetBalancesV1,
+  getAllSiloAssetBalancesV2,
   getAllSiloAssetRates,
 } from '../web3/jobs';
 import e from 'express';
@@ -209,13 +210,15 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
 
     try {
 
+      if(deploymentConfig.protocolVersion === 1) {
+      
       let {
         success,
         siloAssetBalances,
         siloAddresses,
         allSiloAssetsWithState,
         assetAddresses,
-      } = await getAllSiloAssetBalances(deploymentConfig);
+      } = await getAllSiloAssetBalancesV1(deploymentConfig);
 
       if(success && (siloAddresses?.length > 0)) {
 
@@ -343,6 +346,7 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
               input_token_address: inputTokenChecksumAddress,
               network: deploymentConfig.network,
               deployment_id: deploymentConfig.id,
+              protocol_version: deploymentConfig.protocolVersion,
             });
             console.log(`Created silo record for ${siloChecksumAddress} (${inputTokenSymbol})`);
           }
@@ -400,6 +404,7 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
               timestamp: useTimestampPostgres,
               network: deploymentConfig.network,
               deployment_id: deploymentConfig.id,
+              protocol_version: deploymentConfig.protocolVersion,
             });
             await SiloRepository.query().update({
               tvl: tvlUsdSiloSpecificBN.toNumber(),
@@ -413,6 +418,7 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
               timestamp: useTimestampPostgres,
               network: deploymentConfig.network,
               deployment_id: deploymentConfig.id,
+              protocol_version: deploymentConfig.protocolVersion,
             });
             await SiloRepository.query().update({
               borrowed: borrowedUsdSiloSpecificBN.toNumber(),
@@ -427,6 +433,7 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
                 timestamp: useTimestampPostgres,
                 network: deploymentConfig.network,
                 deployment_id: deploymentConfig.id,
+                protocol_version: deploymentConfig.protocolVersion,
               });
             }
             if(enableBorrowedSync) {
@@ -436,6 +443,7 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
                 timestamp: useTimestampPostgres,
                 network: deploymentConfig.network,
                 deployment_id: deploymentConfig.id,
+                protocol_version: deploymentConfig.protocolVersion,
               });
             }
           }
@@ -537,6 +545,7 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
             meta: 'all',
             network: deploymentConfig.network,
             deployment_id: deploymentConfig.id,
+            protocol_version: deploymentConfig.protocolVersion,
           });
 
           let latestRecord = await TvlLatestRepository.getLatestResultByNetworkAndMetaAndDeploymentID(deploymentConfig.network, "all", deploymentConfig.id);
@@ -554,6 +563,7 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
               meta: 'all',
               network: deploymentConfig.network,
               deployment_id: deploymentConfig.id,
+              protocol_version: deploymentConfig.protocolVersion,
             });
           }
 
@@ -576,6 +586,7 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
                   meta: 'individual',
                   network: deploymentConfig.network,
                   deployment_id: deploymentConfig.id,
+                  protocol_version: deploymentConfig.protocolVersion,
                 });
               }
             }
@@ -590,6 +601,7 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
             meta: 'all',
             network: deploymentConfig.network,
             deployment_id: deploymentConfig.id,
+            protocol_version: deploymentConfig.protocolVersion,
           });
 
           let latestRecord = await BorrowedLatestRepository.getLatestResultByNetworkAndMetaAndDeploymentID(deploymentConfig.network, "all", deploymentConfig.id);
@@ -607,6 +619,7 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
               meta: 'all',
               network: deploymentConfig.network,
               deployment_id: deploymentConfig.id,
+              protocol_version: deploymentConfig.protocolVersion,
             });
           }
 
@@ -620,6 +633,7 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
               meta: 'all',
               network: deploymentConfig.network,
               deployment_id: deploymentConfig.id,
+              protocol_version: deploymentConfig.protocolVersion,
             });
           }
           if(enableBorrowedSync) {
@@ -629,6 +643,7 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
               meta: 'all',
               network: deploymentConfig.network,
               deployment_id: deploymentConfig.id,
+              protocol_version: deploymentConfig.protocolVersion,
             });
           }
         }
@@ -662,8 +677,319 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
         console.log(`Sync success (${deploymentConfig.network} - ${deploymentConfig.id}) (${useTimestampPostgres}),${deletedExpiredRateRecordCount > 0 ? ` Deleted ${deletedExpiredRateRecordCount} expired rate records,` : ''} ${deletedExpiredTVLMinutelyRecordCount > 0 ? ` Deleted ${deletedExpiredTVLMinutelyRecordCount} expired TVL minutely records,` : ''} ${deletedExpiredBorrowedMinutelyRecordCount > 0 ? ` Deleted ${deletedExpiredBorrowedMinutelyRecordCount} expired Borrowed minutely records,` : ''} enableRateSync: ${enableRateSync}, enableTvlSync: ${enableTvlSync}, enableBorrowedSync: ${enableBorrowedSync}, exec time: ${new Date().getTime() - startTime}ms`);
     
       }else{
-        throw new Error(`getAllSiloAssetBalances unsuccessful`)
+        throw new Error(`getAllSiloAssetBalancesV1 unsuccessful`)
       }
+
+      } else if(deploymentConfig.protocolVersion === 2) {
+
+        let tvlUsdAllSilosBN = new BigNumber(0);
+        let borrowedUsdAllSilosBN = new BigNumber(0);
+        let hasCountedSiloTVL : {[key: string]: boolean} = {};
+        let hasCountedSiloBorrowed : {[key: string]: boolean} = {};
+
+        let {
+          success,
+          siloAssetBalances,
+          siloAssetBorrowedBalances,
+          siloAddresses,
+          allSiloAssets,
+          assetAddresses,
+          assetSymbols,
+          assetDecimals,
+        } = await getAllSiloAssetBalancesV2(deploymentConfig);
+
+        if(success && (siloAddresses?.length > 0)) {
+
+          let coingeckoAddressesQuery = assetAddresses.join(',');
+
+          let tokenAddressToCoingeckoPrice = await fetchCoingeckoPrices(coingeckoAddressesQuery, deploymentConfig.network);
+
+          let tvlUsdSiloAddressToAssetAddressBN : {[key: string]: {[key: string]: BigNumber}} = {};
+          let borrowedUsdSiloAddressToAssetAddressBN : {[key: string]: {[key: string]: BigNumber}} = {};
+
+          let siloAssetIndex = 0;
+          for(let siloAssetAddress of assetAddresses) {
+            
+            let address = siloAssetAddress;
+            let symbol = assetSymbols[siloAssetIndex];
+            let decimals = assetDecimals[siloAssetIndex]
+
+            let assetChecksumAddress = utils.getAddress(address);
+            let assetRecord = await AssetRepository.getAssetByAddress(assetChecksumAddress);
+            if(!assetRecord) {
+              await AssetRepository.create({
+                address: assetChecksumAddress,
+                symbol,
+                decimals,
+                network: deploymentConfig.network,
+              });
+              console.log(`Created asset record for ${assetChecksumAddress} (${symbol})`);
+            }
+          }
+
+          let siloIndex = 0;
+          for(let siloAddress of siloAddresses) {
+
+            let siloChecksumAddress = utils.getAddress(siloAddress);
+            let siloTokenChecksumAddress = utils.getAddress(assetAddresses[siloIndex]);
+            let inputTokenSymbol = assetSymbols[siloIndex];
+
+            let siloRecord = await SiloRepository.getSiloByAddress(siloChecksumAddress, deploymentConfig.id);
+            if(!siloRecord) {
+              // Create record for silo
+              await SiloRepository.create({
+                name: inputTokenSymbol,
+                address: siloChecksumAddress,
+                input_token_address: siloTokenChecksumAddress,
+                network: deploymentConfig.network,
+                deployment_id: deploymentConfig.id,
+                protocol_version: deploymentConfig.protocolVersion,
+              });
+              console.log(`Created silo record for ${siloChecksumAddress} (${inputTokenSymbol})`);
+            }
+
+            let tvlUsdSiloSpecificBN = new BigNumber(0);
+            if(siloAssetBalances[siloChecksumAddress]) {
+              tvlUsdSiloSpecificBN = Object.entries(siloAssetBalances[siloChecksumAddress]).reduce((acc, entry) => {
+                let tokenChecksumAddress = entry[1].tokenAddress;
+                // let subgraphTokenPrice = new BigNumber(tokenAddressToLastPrice[tokenChecksumAddress]);
+                let coingeckoPrice = new BigNumber(tokenAddressToCoingeckoPrice[tokenChecksumAddress]);
+                // let usePrice = coingeckoPrice.toNumber() > 0 ? coingeckoPrice : subgraphTokenPrice;
+                let usePrice = coingeckoPrice.toNumber() > 0 ? coingeckoPrice : new BigNumber(0);
+                let tokenBalance = new BigNumber(entry[1].balance);
+                if(usePrice.isGreaterThan(0) && tokenBalance.isGreaterThan(0)) {
+                  let usdValueOfAsset = tokenBalance.multipliedBy(usePrice);
+                  if(tvlUsdSiloAddressToAssetAddressBN[siloChecksumAddress]) {
+                    if(tvlUsdSiloAddressToAssetAddressBN[siloChecksumAddress][tokenChecksumAddress]) {
+                      tvlUsdSiloAddressToAssetAddressBN[siloChecksumAddress][tokenChecksumAddress] = tvlUsdSiloAddressToAssetAddressBN[siloChecksumAddress][tokenChecksumAddress].plus(usdValueOfAsset);
+                    } else {
+                      tvlUsdSiloAddressToAssetAddressBN[siloChecksumAddress][tokenChecksumAddress] = new BigNumber(usdValueOfAsset);
+                    }
+                  } else {
+                    tvlUsdSiloAddressToAssetAddressBN[siloChecksumAddress] = {};
+                    tvlUsdSiloAddressToAssetAddressBN[siloChecksumAddress][tokenChecksumAddress] = new BigNumber(usdValueOfAsset);
+                  }
+                  acc = acc.plus(usdValueOfAsset);
+                }
+                return acc;
+              }, new BigNumber(0));
+            } else {
+              console.log({"could not process asset balances for": siloChecksumAddress});
+            }
+
+            let borrowedUsdSiloSpecificBN = new BigNumber(0);
+            if(siloAssetBorrowedBalances[siloChecksumAddress]) {
+              borrowedUsdSiloSpecificBN = Object.entries(siloAssetBorrowedBalances[siloChecksumAddress]).reduce((acc, entry) => {
+                let tokenChecksumAddress = entry[1].tokenAddress;
+                // let subgraphTokenPrice = new BigNumber(tokenAddressToLastPrice[tokenChecksumAddress]);
+                let coingeckoPrice = new BigNumber(tokenAddressToCoingeckoPrice[tokenChecksumAddress]);
+                // let usePrice = coingeckoPrice.toNumber() > 0 ? coingeckoPrice : subgraphTokenPrice;
+                let usePrice = coingeckoPrice.toNumber() > 0 ? coingeckoPrice : new BigNumber(0);
+                let tokenBalance = new BigNumber(entry[1].balance);
+                if(usePrice.isGreaterThan(0) && tokenBalance.isGreaterThan(0)) {
+                  let usdValueOfAsset = tokenBalance.multipliedBy(usePrice);
+                  if(borrowedUsdSiloAddressToAssetAddressBN[siloChecksumAddress]) {
+                    if(borrowedUsdSiloAddressToAssetAddressBN[siloChecksumAddress][tokenChecksumAddress]) {
+                      borrowedUsdSiloAddressToAssetAddressBN[siloChecksumAddress][tokenChecksumAddress] = borrowedUsdSiloAddressToAssetAddressBN[siloChecksumAddress][tokenChecksumAddress].plus(usdValueOfAsset);
+                    } else {
+                      borrowedUsdSiloAddressToAssetAddressBN[siloChecksumAddress][tokenChecksumAddress] = new BigNumber(usdValueOfAsset);
+                    }
+                  } else {
+                    borrowedUsdSiloAddressToAssetAddressBN[siloChecksumAddress] = {};
+                    borrowedUsdSiloAddressToAssetAddressBN[siloChecksumAddress][tokenChecksumAddress] = new BigNumber(usdValueOfAsset);
+                  }
+                  acc = acc.plus(usdValueOfAsset);
+                }
+                return acc;
+              }, new BigNumber(0));
+            } else {
+              console.log({"could not process asset borrowed balances for": siloChecksumAddress});
+            }
+
+            if(!hasCountedSiloTVL?.[siloChecksumAddress]) {
+              tvlUsdAllSilosBN = tvlUsdAllSilosBN.plus(tvlUsdSiloSpecificBN);
+              hasCountedSiloTVL[siloChecksumAddress] = true;
+            }
+            if(!hasCountedSiloBorrowed?.[siloChecksumAddress]) {
+              borrowedUsdAllSilosBN = borrowedUsdAllSilosBN.plus(borrowedUsdSiloSpecificBN);
+              hasCountedSiloBorrowed[siloChecksumAddress] = true;
+            }
+
+            if (enableTvlSync) {
+              await TvlMinutelyRepository.create({
+                silo_address: siloChecksumAddress,
+                tvl: tvlUsdSiloSpecificBN.toNumber(),
+                timestamp: useTimestampPostgres,
+                network: deploymentConfig.network,
+                deployment_id: deploymentConfig.id,
+                protocol_version: deploymentConfig.protocolVersion,
+              });
+              await SiloRepository.query().update({
+                tvl: tvlUsdSiloSpecificBN.toNumber(),
+              }).where("address", siloChecksumAddress);
+            }
+  
+            if(enableBorrowedSync) {
+              await BorrowedMinutelyRepository.create({
+                silo_address: siloChecksumAddress,
+                borrowed: borrowedUsdSiloSpecificBN.toNumber(),
+                timestamp: useTimestampPostgres,
+                network: deploymentConfig.network,
+                deployment_id: deploymentConfig.id,
+                protocol_version: deploymentConfig.protocolVersion,
+              });
+              await SiloRepository.query().update({
+                borrowed: borrowedUsdSiloSpecificBN.toNumber(),
+              }).where("address", siloChecksumAddress);
+            }
+  
+            if(isHourlyMoment) {
+              if (enableTvlSync) {
+                await TvlHourlyRepository.create({
+                  silo_address: siloChecksumAddress,
+                  tvl: tvlUsdSiloSpecificBN.toNumber(),
+                  timestamp: useTimestampPostgres,
+                  network: deploymentConfig.network,
+                  deployment_id: deploymentConfig.id,
+                  protocol_version: deploymentConfig.protocolVersion,
+                });
+              }
+              if(enableBorrowedSync) {
+                await BorrowedHourlyRepository.create({
+                  silo_address: siloChecksumAddress,
+                  borrowed: borrowedUsdSiloSpecificBN.toNumber(),
+                  timestamp: useTimestampPostgres,
+                  network: deploymentConfig.network,
+                  deployment_id: deploymentConfig.id,
+                  protocol_version: deploymentConfig.protocolVersion,
+                });
+              }
+            }
+
+            siloIndex++;
+          }
+
+          // MULTI-MARKET (WHOLE PLATFORM) RECORD HANDLING BELOW
+
+          if (enableTvlSync) {
+
+            await TvlMinutelyRepository.create({
+              tvl: tvlUsdAllSilosBN.toNumber(),
+              timestamp: useTimestampPostgres,
+              meta: 'all',
+              network: deploymentConfig.network,
+              deployment_id: deploymentConfig.id,
+              protocol_version: deploymentConfig.protocolVersion,
+            });
+
+            let latestRecord = await TvlLatestRepository.getLatestResultByNetworkAndMetaAndDeploymentID(deploymentConfig.network, "all", deploymentConfig.id);
+            if(latestRecord) {
+              // update latest record
+              await TvlLatestRepository.update({
+                tvl: tvlUsdAllSilosBN.toNumber(),
+                timestamp: useTimestampPostgres,
+              }, latestRecord.id);
+            } else {
+              // create latest record
+              await TvlLatestRepository.create({
+                tvl: tvlUsdAllSilosBN.toNumber(),
+                timestamp: useTimestampPostgres,
+                meta: 'all',
+                network: deploymentConfig.network,
+                deployment_id: deploymentConfig.id,
+                protocol_version: deploymentConfig.protocolVersion,
+              });
+            }
+
+            for(let [siloAddress, entry] of Object.entries(tvlUsdSiloAddressToAssetAddressBN)) {
+              for(let [assetAddress, tvlValue] of Object.entries(entry)) {
+                let latestSiloToAssetRecord = await TvlLatestRepository.getLatestResultByNetworkAndSiloAddressAndAssetAddressAndDeploymentID(deploymentConfig.network, siloAddress, assetAddress, deploymentConfig.id);
+                if(latestSiloToAssetRecord) {
+                  // update latest record
+                  await TvlLatestRepository.update({
+                    tvl: tvlValue.toNumber(),
+                    timestamp: useTimestampPostgres,
+                  }, latestSiloToAssetRecord.id);
+                } else {
+                  // create latest record
+                  await TvlLatestRepository.create({
+                    tvl: tvlValue.toNumber(),
+                    timestamp: useTimestampPostgres,
+                    silo_address: siloAddress,
+                    asset_address: assetAddress,
+                    meta: 'individual',
+                    network: deploymentConfig.network,
+                    deployment_id: deploymentConfig.id,
+                    protocol_version: deploymentConfig.protocolVersion,
+                  });
+                }
+              }
+            }
+          }
+
+          if(enableBorrowedSync) {
+
+            await BorrowedMinutelyRepository.create({
+              borrowed: borrowedUsdAllSilosBN.toNumber(),
+              timestamp: useTimestampPostgres,
+              meta: 'all',
+              network: deploymentConfig.network,
+              deployment_id: deploymentConfig.id,
+              protocol_version: deploymentConfig.protocolVersion,
+            });
+
+            let latestRecord = await BorrowedLatestRepository.getLatestResultByNetworkAndMetaAndDeploymentID(deploymentConfig.network, "all", deploymentConfig.id);
+            if(latestRecord) {
+              // update latest record
+              await BorrowedLatestRepository.update({
+                borrowed: borrowedUsdAllSilosBN.toNumber(),
+                timestamp: useTimestampPostgres,
+              }, latestRecord.id);
+            } else {
+              // create latest record
+              await BorrowedLatestRepository.create({
+                borrowed: borrowedUsdAllSilosBN.toNumber(),
+                timestamp: useTimestampPostgres,
+                meta: 'all',
+                network: deploymentConfig.network,
+                deployment_id: deploymentConfig.id,
+                protocol_version: deploymentConfig.protocolVersion,
+              });
+            }
+
+          }
+
+          if(isHourlyMoment) {
+            if (enableTvlSync) {
+              await TvlHourlyRepository.create({
+                tvl: tvlUsdAllSilosBN.toNumber(),
+                timestamp: useTimestampPostgres,
+                meta: 'all',
+                network: deploymentConfig.network,
+                deployment_id: deploymentConfig.id,
+                protocol_version: deploymentConfig.protocolVersion,
+              });
+            }
+            if(enableBorrowedSync) {
+              await BorrowedHourlyRepository.create({
+                borrowed: borrowedUsdAllSilosBN.toNumber(),
+                timestamp: useTimestampPostgres,
+                meta: 'all',
+                network: deploymentConfig.network,
+                deployment_id: deploymentConfig.id,
+                protocol_version: deploymentConfig.protocolVersion,
+              });
+            }
+          }
+
+          // MULTI-MARKET (WHOLE PLATFORM) RECORD HANDLING ABOVE
+          
+          // --------------------------------------------------
+
+        }
+
+      }
+
     } catch (error) {
       console.error(`Unable to store latest rates for silos (${deploymentConfig.network} - ${deploymentConfig.id}) (${useTimestampPostgres})`, error);
     }

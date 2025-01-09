@@ -4,7 +4,7 @@ BigNumber.config({ EXPONENTIAL_AT: [-1e+9, 1e+9] });
 
 import {
   getLatestBlockNumber,
-  getAllSubgraphLiquidationsUntilBlock,
+  getAllSubgraphLiquidationsUntilBlockV1,
   getBlocks,
 } from '../web3/jobs';
 
@@ -28,39 +28,43 @@ export const periodicSubgraphLiquidationTracker = async (useTimestampUnix: numbe
 
       let latestBlockNumber = await getLatestBlockNumber(network);
 
-      let liquidationRecords = await getAllSubgraphLiquidationsUntilBlock(latestBlockNumber, deploymentConfig);
+      if(deploymentConfig.protocolVersion === 1) {
 
-      let allBlockNumbers : number[] = [];
-      for(let record of liquidationRecords) {
-        if(allBlockNumbers.indexOf(record.blockNumber) === -1) {
-          allBlockNumbers.push(record.blockNumber);
-        }
-      }
+        let liquidationRecords = await getAllSubgraphLiquidationsUntilBlockV1(latestBlockNumber, deploymentConfig);
 
-      // Store timestamps for any blocks that we fetched events for
-      let unfetchedBlockNumbers = [];
-      let blockNumberToUnixTimestamp : {[key: string]: number} = {};
-      for(let blockNumber of allBlockNumbers) {
-        let currentRecord = await BlockMetadataRepository.getByBlockNumberAndNetwork(blockNumber, network);
-        if(!currentRecord) {
-          unfetchedBlockNumbers.push(Number(blockNumber));
+        let allBlockNumbers : number[] = [];
+        for(let record of liquidationRecords) {
+          if(allBlockNumbers.indexOf(record.blockNumber) === -1) {
+            allBlockNumbers.push(record.blockNumber);
+          }
         }
-      }
-      
-      if(unfetchedBlockNumbers && unfetchedBlockNumbers.length > 0) {
-        let blockData = await getBlocks(unfetchedBlockNumbers, network);
-        for(let singleBlockData of blockData) {
-          let jsDate = new Date(singleBlockData.timestamp * 1000);
-          await BlockMetadataRepository.create({
-            block_number: singleBlockData.number,
-            block_timestamp_unix: singleBlockData.timestamp,
-            block_timestamp: jsDate.toISOString(),
-            block_hash: singleBlockData.hash,
-            block_day_timestamp: new Date(jsDate.getFullYear(), jsDate.getMonth(), jsDate.getDate()),
-            network,
-          })
+
+        // Store timestamps for any blocks that we fetched events for
+        let unfetchedBlockNumbers = [];
+        let blockNumberToUnixTimestamp : {[key: string]: number} = {};
+        for(let blockNumber of allBlockNumbers) {
+          let currentRecord = await BlockMetadataRepository.getByBlockNumberAndNetwork(blockNumber, network);
+          if(!currentRecord) {
+            unfetchedBlockNumbers.push(Number(blockNumber));
+          }
         }
-        console.log(`Filled in block metadata for ${blockData.length} blocks`);
+        
+        if(unfetchedBlockNumbers && unfetchedBlockNumbers.length > 0) {
+          let blockData = await getBlocks(unfetchedBlockNumbers, network);
+          for(let singleBlockData of blockData) {
+            let jsDate = new Date(singleBlockData.timestamp * 1000);
+            await BlockMetadataRepository.create({
+              block_number: singleBlockData.number,
+              block_timestamp_unix: singleBlockData.timestamp,
+              block_timestamp: jsDate.toISOString(),
+              block_hash: singleBlockData.hash,
+              block_day_timestamp: new Date(jsDate.getFullYear(), jsDate.getMonth(), jsDate.getDate()),
+              network,
+            })
+          }
+          console.log(`Filled in block metadata for ${blockData.length} blocks`);
+        }
+
       }
       
       console.log(`Periodic subgraph liquidation record tracker successful (${network} - ${deploymentConfig.id}), exec time: ${new Date().getTime() - startTime}ms`)

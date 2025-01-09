@@ -1,4 +1,4 @@
-import { Contract as MulticallContract } from '@kargakis/ethers-multicall';
+import { Contract as MulticallContract } from '@jaywelsh/ethers-multicall';
 
 import { Contract, utils } from 'ethers';
 
@@ -9,6 +9,7 @@ import {
   EthersProviderArbitrum,
   EthersProviderOptimism,
   EthersProviderBase,
+  EthersProviderSonic,
 } from "../../app";
 
 import {
@@ -27,7 +28,7 @@ import {
 } from '../utils';
 
 import {
-  IDeployment,
+  IDeploymentV1,
 } from '../../interfaces';
 
 BigNumber.config({ EXPONENTIAL_AT: [-1e+9, 1e+9] });
@@ -50,7 +51,7 @@ interface IAllSiloAssetBalances {
   pendingProtocolFeesUSD?: string
 }
 
-export const getAllSiloAssetBalances = async (deploymentConfig: IDeployment) => {
+export const getAllSiloAssetBalancesV1 = async (deploymentConfig: IDeploymentV1) => {
 
   let siloFactories = [];
 
@@ -83,6 +84,10 @@ export const getAllSiloAssetBalances = async (deploymentConfig: IDeployment) => 
   } else if (deploymentConfig.network === 'base') {
     let RepositoryContract = new Contract(deploymentConfig.siloRepository.address, deploymentConfig.siloRepository.abi);
     let repositoryContract = await RepositoryContract.connect(EthersProviderBase);
+    siloRepositories.push({contract: repositoryContract, meta: deploymentConfig.siloRepository.meta});
+  } else if (deploymentConfig.network === 'sonic') {
+    let RepositoryContract = new Contract(deploymentConfig.siloRepository.address, deploymentConfig.siloRepository.abi);
+    let repositoryContract = await RepositoryContract.connect(EthersProviderSonic);
     siloRepositories.push({contract: repositoryContract, meta: deploymentConfig.siloRepository.meta});
   }
   

@@ -7,6 +7,7 @@ import {
   EthersProviderArbitrum,
   EthersProviderOptimism,
   EthersProviderBase,
+  EthersProviderSonic,
 } from "../../app";
 
 import {
@@ -86,7 +87,10 @@ export const getAllSiloBorrowEventsSinceBlock = async (
       provider = EthersProviderOptimism;
     } else if (network === "base") {
       provider = EthersProviderBase;
+    } else if (network === "sonic") {
+      provider = EthersProviderSonic;
     }
+    
     for(let siloAddress of siloAddresses) {
       siloProgress++
       const SiloContract = new Contract(siloAddress, SiloABI);

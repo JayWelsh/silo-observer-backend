@@ -1,5 +1,5 @@
 import express from "express";
-import { Provider } from '@kargakis/ethers-multicall';
+import { Provider } from '@jaywelsh/ethers-multicall';
 import cors from "cors";
 import dotenv from "dotenv";
 import bodyParser from "body-parser";
@@ -84,6 +84,27 @@ MulticallProviderOptimism.init();
 export const EthersProviderBase = new providers.JsonRpcProvider(NETWORK_TO_ALCHEMY_ENDPOINT["base"]);
 export const MulticallProviderBase = new Provider(EthersProviderBase, 10);
 MulticallProviderBase.init();
+
+// SONIC MAINNET
+export const EthersProviderSonic = new providers.JsonRpcProvider(NETWORK_TO_ALCHEMY_ENDPOINT["sonic"]);
+export const MulticallProviderSonic = new Provider(EthersProviderSonic, 10);
+MulticallProviderSonic.init();
+
+export const NetworkToProvider : {[key: string]: any} = {
+  "ethereum": EthersProvider,
+  "arbitrum": EthersProviderArbitrum,
+  "optimism": EthersProviderOptimism,
+  "base": EthersProviderBase,
+  "sonic": EthersProviderSonic,
+};
+
+export const NetworkToMulticallProvider : {[key: string]: any} = {
+  "ethereum": MulticallProvider,
+  "arbitrum": MulticallProviderArbitrum,
+  "optimism": MulticallProviderOptimism,
+  "base": MulticallProviderBase,
+  "sonic": MulticallProviderSonic,
+};
 
 const runSync = new CronJob(
 	`20 */${cronIndexerPeriodMinutes} * * * *`, // runs at 20 seconds past the minute at which it runs

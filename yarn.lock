@@ -385,10 +385,10 @@
   resolved "https://registry.yarnpkg.com/@graphql-typed-document-node/core/-/core-3.1.1.tgz#076d78ce99822258cf813ecc1e7fa460fa74d052"
   integrity sha512-NQ17ii0rK1b34VZonlmT2QMJFI70m0TRwbknO/ihlbatXyaktDhN/98vBiUU6kNBPljqGqyIrl2T4nY2RpFANg==
 
-"@kargakis/ethers-multicall@^0.5.0":
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/@kargakis/ethers-multicall/-/ethers-multicall-0.5.0.tgz#3f945f80cb0255e13e3447b6b93987dd72fec72d"
-  integrity sha512-oyfz48cFU/P2COe38bPmY/DHm3IdGGfOfoiDS3ziWRFvzF2saqrmctAlNf8TXJ8TtadGRzsJ4m1b1vO4vFLovQ==
+"@jaywelsh/ethers-multicall@0.5.2":
+  version "0.5.2"
+  resolved "https://registry.yarnpkg.com/@jaywelsh/ethers-multicall/-/ethers-multicall-0.5.2.tgz#65f83db07fa820a1fe2caa7fd90cb21d31b32415"
+  integrity sha512-7eOq1vEUWrwXaqEXePzGRV9mDiYcP8lBfYCqqg8/Ieia28ygB7GQyBW8BF2jJjD3G+6c7eWx7Bywj2wWg3N1gw==
   dependencies:
     ethers "^5.0.0"
 

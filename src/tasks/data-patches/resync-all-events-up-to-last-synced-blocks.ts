@@ -37,7 +37,11 @@ import {
 
 import {
   getEventFingerprint,
-} from '../../web3/utils'
+} from '../../web3/utils';
+
+import {
+  IDeploymentV1,
+} from '../../interfaces';
 
 interface IUserAddressToCount {
   [key: string]: number;
@@ -61,7 +65,9 @@ export const resycAllEventsUpToLastSyncedBlocks = async (useTimestampUnix: numbe
 
   let useTimestampPostgres = new Date(useTimestampUnix * 1000).toISOString();
 
-  for(let deploymentConfig of DEPLOYMENT_CONFIGS) {
+  let deploymentConfigsV1: IDeploymentV1[] = DEPLOYMENT_CONFIGS.filter((entry): entry is IDeploymentV1 => entry.protocolVersion === 1);
+
+  for(let deploymentConfig of deploymentConfigsV1) {
 
     let { network, incentiveControllers } = deploymentConfig;
 

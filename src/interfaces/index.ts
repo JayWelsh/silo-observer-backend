@@ -219,7 +219,10 @@ export interface IIncentiveControllerConfig {
   meta: string;
 }
 
-export interface IDeployment {
+export type IDeployment = IDeploymentV1 | IDeploymentV2;
+
+export interface IDeploymentV1 {
+  protocolVersion: 1;
   id: string;
   idHumanReadable: string;
   network: string
@@ -231,6 +234,20 @@ export interface IDeployment {
   subgraphEndpointTurtle: string;
   siloFactories: IFactoryConfig[];
   siloRepository: IRepositoryConfig;
+  incentiveControllers?:  IIncentiveControllerConfig[];
+}
+
+export interface IDeploymentV2 {
+  protocolVersion: 2;
+  id: string;
+  idHumanReadable: string;
+  network: string
+  siloLens: string;
+  siloLensABI: any;
+  siloBlacklist: string[];
+  // subgraphEndpoint: string;
+  // subgraphEndpointFallback: string;
+  siloFactories: IFactoryConfig[];
   incentiveControllers?:  IIncentiveControllerConfig[];
 }
 
