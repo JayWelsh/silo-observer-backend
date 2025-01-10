@@ -649,33 +649,7 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
         }
 
         // MULTI-MARKET (WHOLE PLATFORM) RECORD HANDLING ABOVE
-        
-        // --------------------------------------------------
 
-        // RECORD EXPIRY HANDLING BELOW
-
-        // remove any minutely records older than 1441 minutes in one query
-        let deletedExpiredRateRecordCount = 0;
-        if(enableRateSync) {
-          deletedExpiredRateRecordCount = await RateRepository.query().delete().where(raw(`timestamp < now() - interval '${MAX_MINUTELY_RATE_ENTRIES} minutes'`));
-        }
-
-        let deletedExpiredTVLMinutelyRecordCount = 0;
-        if(enableTvlSync) {
-          deletedExpiredTVLMinutelyRecordCount = await TvlMinutelyRepository.query().delete().where(raw(`timestamp < now() - interval '${MAX_MINUTELY_TVL_AND_BORROWED_ENTRIES} minutes'`));
-        }
-
-        let deletedExpiredBorrowedMinutelyRecordCount = 0;
-        if(enableBorrowedSync) {
-          deletedExpiredBorrowedMinutelyRecordCount = await BorrowedMinutelyRepository.query().delete().where(raw(`timestamp < now() - interval '${MAX_MINUTELY_TVL_AND_BORROWED_ENTRIES} minutes'`));
-        }
-
-        // RECORD EXPIRY HANDLING ABOVE
-
-        // --------------------------------------------------
-
-        console.log(`Sync success (${deploymentConfig.network} - ${deploymentConfig.id}) (${useTimestampPostgres}),${deletedExpiredRateRecordCount > 0 ? ` Deleted ${deletedExpiredRateRecordCount} expired rate records,` : ''} ${deletedExpiredTVLMinutelyRecordCount > 0 ? ` Deleted ${deletedExpiredTVLMinutelyRecordCount} expired TVL minutely records,` : ''} ${deletedExpiredBorrowedMinutelyRecordCount > 0 ? ` Deleted ${deletedExpiredBorrowedMinutelyRecordCount} expired Borrowed minutely records,` : ''} enableRateSync: ${enableRateSync}, enableTvlSync: ${enableTvlSync}, enableBorrowedSync: ${enableBorrowedSync}, exec time: ${new Date().getTime() - startTime}ms`);
-    
       }else{
         throw new Error(`getAllSiloAssetBalancesV1 unsuccessful`)
       }
@@ -724,7 +698,16 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
                 network: deploymentConfig.network,
               });
               console.log(`Created asset record for ${assetChecksumAddress} (${symbol})`);
+            } else {
+              await AssetRepository.update({
+                address: assetChecksumAddress,
+                symbol,
+                decimals,
+                network: deploymentConfig.network,
+              }, assetRecord.id);
+              console.log(`Updated asset record for ${assetChecksumAddress} (${symbol})`);
             }
+            siloAssetIndex++;
           }
 
           let siloIndex = 0;
@@ -989,6 +972,32 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
         }
 
       }
+
+      // --------------------------------------------------
+
+      // RECORD EXPIRY HANDLING BELOW
+
+      // remove any minutely records older than 1441 minutes in one query
+      let deletedExpiredRateRecordCount = 0;
+      if(enableRateSync) {
+        deletedExpiredRateRecordCount = await RateRepository.query().delete().where(raw(`timestamp < now() - interval '${MAX_MINUTELY_RATE_ENTRIES} minutes'`));
+      }
+
+      let deletedExpiredTVLMinutelyRecordCount = 0;
+      if(enableTvlSync) {
+        deletedExpiredTVLMinutelyRecordCount = await TvlMinutelyRepository.query().delete().where(raw(`timestamp < now() - interval '${MAX_MINUTELY_TVL_AND_BORROWED_ENTRIES} minutes'`));
+      }
+
+      let deletedExpiredBorrowedMinutelyRecordCount = 0;
+      if(enableBorrowedSync) {
+        deletedExpiredBorrowedMinutelyRecordCount = await BorrowedMinutelyRepository.query().delete().where(raw(`timestamp < now() - interval '${MAX_MINUTELY_TVL_AND_BORROWED_ENTRIES} minutes'`));
+      }
+
+      // RECORD EXPIRY HANDLING ABOVE
+
+      // --------------------------------------------------
+
+      console.log(`Sync success (${deploymentConfig.network} - ${deploymentConfig.id}) (${useTimestampPostgres}),${deletedExpiredRateRecordCount > 0 ? ` Deleted ${deletedExpiredRateRecordCount} expired rate records,` : ''} ${deletedExpiredTVLMinutelyRecordCount > 0 ? ` Deleted ${deletedExpiredTVLMinutelyRecordCount} expired TVL minutely records,` : ''} ${deletedExpiredBorrowedMinutelyRecordCount > 0 ? ` Deleted ${deletedExpiredBorrowedMinutelyRecordCount} expired Borrowed minutely records,` : ''} enableRateSync: ${enableRateSync}, enableTvlSync: ${enableTvlSync}, enableBorrowedSync: ${enableBorrowedSync}, exec time: ${new Date().getTime() - startTime}ms`);
 
     } catch (error) {
       console.error(`Unable to store latest rates for silos (${deploymentConfig.network} - ${deploymentConfig.id}) (${useTimestampPostgres})`, error);
