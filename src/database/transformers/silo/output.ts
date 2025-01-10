@@ -16,6 +16,8 @@ class SiloOutputTransformer extends BaseTransformer {
         tvl: siloEntry.tvl,
         borrowed: siloEntry.borrowed,
         latest_rates: siloEntry.latest_rates?.map(entry => RateOutputTransformer.transform(entry)),
+        protocol_version: siloEntry.protocol_version,
+        ...(siloEntry.silo_config_v2 && {silo_config_v2: siloEntry.silo_config_v2}),
       }
     }
   }

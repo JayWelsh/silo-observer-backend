@@ -52,6 +52,8 @@ export interface ISilo {
   tvl: number
   borrowed: number
   latest_rates: IRate[]
+  protocol_version: number
+  silo_config_v2: string
 }
 
 export interface IAsset {
