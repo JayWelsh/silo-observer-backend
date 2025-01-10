@@ -670,6 +670,7 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
           assetAddresses,
           assetSymbols,
           assetDecimals,
+          siloAddressToSiloConfigAddress,
         } = await getAllSiloAssetBalancesV2(deploymentConfig);
 
         if(success && (siloAddresses?.length > 0)) {
@@ -728,7 +729,18 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
                 deployment_id: deploymentConfig.id,
                 protocol_version: deploymentConfig.protocolVersion,
               });
-              console.log(`Created silo record for ${siloChecksumAddress} (${inputTokenSymbol})`);
+              console.log(`Created silo record for ${siloChecksumAddress} (${inputTokenSymbol}), siloConfig: ${siloAddressToSiloConfigAddress[siloChecksumAddress]}`);
+            } else if (siloAddressToSiloConfigAddress[siloChecksumAddress]) {
+              await SiloRepository.update({
+                name: inputTokenSymbol,
+                address: siloChecksumAddress,
+                input_token_address: siloTokenChecksumAddress,
+                network: deploymentConfig.network,
+                deployment_id: deploymentConfig.id,
+                protocol_version: deploymentConfig.protocolVersion,
+                silo_config_v2: siloAddressToSiloConfigAddress[siloChecksumAddress]
+              }, siloRecord.id)
+              console.log(`Updated silo record for ${siloChecksumAddress} (${inputTokenSymbol}), siloConfig: ${siloAddressToSiloConfigAddress[siloChecksumAddress]}`);
             }
 
             let tvlUsdSiloSpecificBN = new BigNumber(0);

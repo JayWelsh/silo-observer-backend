@@ -66,6 +66,7 @@ export const getAllSiloAssetBalancesV2 = async (deploymentConfig: IDeployment) =
   let assetSymbols : string[] = [];
   let siloAssetBalances : IAllSiloAssetBalanceResults = {}
   let siloAddresses : string[] = [];
+  let siloAddressToSiloConfigAddress : {[key: string]: string} = {};
 
   let finalResult = {
     success: true,
@@ -76,6 +77,7 @@ export const getAllSiloAssetBalancesV2 = async (deploymentConfig: IDeployment) =
     assetSymbols,
     assetDecimals,
     siloAssetBorrowedBalances,
+    siloAddressToSiloConfigAddress,
   }
 
   for(let siloFactoryContractEntry of siloFactories) {
@@ -96,10 +98,13 @@ export const getAllSiloAssetBalancesV2 = async (deploymentConfig: IDeployment) =
             let {
               silo0,
               silo1,
+              siloConfig,
             } = siloCreationEvent.args;
 
             siloAddresses.push(silo0);
             siloAddresses.push(silo1);
+            siloAddressToSiloConfigAddress[silo0] = siloConfig;
+            siloAddressToSiloConfigAddress[silo1] = siloConfig;
           }
         }
       }
@@ -223,8 +228,6 @@ export const getAllSiloAssetBalancesV2 = async (deploymentConfig: IDeployment) =
 
     }
   }
-
-  console.log({finalResult})
 
   return finalResult;
 
