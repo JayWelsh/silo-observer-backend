@@ -154,12 +154,14 @@ export const fetchCoinGeckoAssetPriceClosestToTargetTime = async (assetAddress :
 const getCoingeckoOverrides = (assetAddressesQueryString : string, network: string) => {
   let originToProxy : {[key: string]: string} = {};
   let proxyToOrigin : {[key: string]: string} = {};
+  if(assetAddressesQueryString) {
   let assets = assetAddressesQueryString.split(",");
-  for (let asset of assets) {
-    let override = PRICE_PROXIES?.[network]?.[asset];
-    if(override?.proxyAddress) {
-      originToProxy[asset] = override.proxyAddress;
-      proxyToOrigin[override.proxyAddress] = asset;
+    for (let asset of assets) {
+      let override = PRICE_PROXIES?.[network]?.[asset];
+      if(override?.proxyAddress) {
+        originToProxy[asset] = override.proxyAddress;
+        proxyToOrigin[override.proxyAddress] = asset;
+      }
     }
   }
   for(let originAddress of Object.keys(originToProxy)) {

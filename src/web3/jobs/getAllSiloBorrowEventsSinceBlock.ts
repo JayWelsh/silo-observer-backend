@@ -13,6 +13,7 @@ import {
 import {
   EventIndexerBlockTrackerRepository,
   BorrowEventRepository,
+  SiloRepository,
 } from '../../database/repositories';
 
 import {
@@ -29,6 +30,7 @@ import {
 } from '../../interfaces';
 
 import SiloABI from '../abis/SiloABI.json';
+import SiloV2ABI from '../abis/SiloV2ABI.json';
 
 BigNumber.config({ EXPONENTIAL_AT: [-1e+9, 1e+9] });
 
@@ -90,54 +92,123 @@ export const getAllSiloBorrowEventsSinceBlock = async (
     } else if (network === "sonic") {
       provider = EthersProviderSonic;
     }
-    
+
     for(let siloAddress of siloAddresses) {
       siloProgress++
-      const SiloContract = new Contract(siloAddress, SiloABI);
-      const siloContract = await SiloContract.connect(provider);
-      const borrowEventFilter = await siloContract.filters.Borrow(null, null);
 
-      let events = await eventIndexer(siloContract, borrowEventFilter, lastestBlock, fromBlock, toBlock, blockRange, network, `${siloAddress} - isSanityCheck: ${isSanityCheck} - (Borrow) - silo ${siloProgress} of ${siloAddresses.length}`);
-      if(events) {
-        allEvents = [...allEvents, ...events];
-      }
+      if(deploymentConfig.protocolVersion === 1) {
 
-      totalRecordCount += (events && (events?.length > 0)) ? events?.length : 0;
+        const SiloContract = new Contract(siloAddress, SiloABI);
+        const siloContract = await SiloContract.connect(provider);
+        const borrowEventFilter = await siloContract.filters.Borrow(null, null);
 
-      if(events) {
-        for(let event of events) {
-          let {
-            blockNumber,
-            address,
-            args,
-            transactionHash,
-            transactionIndex,
-            logIndex,
-          } = event;
-          let {
-            asset,
-            user,
-            amount,
-          } = args;
-          // create event record
-          let eventFingerprint = getEventFingerprint(network, blockNumber, transactionIndex, logIndex);
-          let existingEventRecord = await BorrowEventRepository.findByColumn('event_fingerprint', eventFingerprint);
-          if(!existingEventRecord) {
-            await BorrowEventRepository.create({
-              silo_address: address,
-              asset_address: asset,
-              user_address: user,
-              amount: amount.toString(),
-              tx_hash: transactionHash,
-              block_number: blockNumber,
-              network,
-              deployment_id: deploymentId,
-              event_fingerprint: eventFingerprint,
-              log_index: logIndex,
-              tx_index: transactionIndex,
-            })
+        let events = await eventIndexer(siloContract, borrowEventFilter, lastestBlock, fromBlock, toBlock, blockRange, network, `${siloAddress} - isSanityCheck: ${isSanityCheck} - (Borrow V1) - silo ${siloProgress} of ${siloAddresses.length}`);
+        if(events) {
+          allEvents = [...allEvents, ...events];
+        }
+
+        totalRecordCount += (events && (events?.length > 0)) ? events?.length : 0;
+
+        if(events) {
+          for(let event of events) {
+            let {
+              blockNumber,
+              address,
+              args,
+              transactionHash,
+              transactionIndex,
+              logIndex,
+            } = event;
+            let {
+              asset,
+              user,
+              amount,
+            } = args;
+            // create event record
+            let eventFingerprint = getEventFingerprint(network, blockNumber, transactionIndex, logIndex);
+            let existingEventRecord = await BorrowEventRepository.findByColumn('event_fingerprint', eventFingerprint);
+            if(!existingEventRecord) {
+              await BorrowEventRepository.create({
+                silo_address: address,
+                asset_address: asset,
+                user_address: user,
+                amount: amount.toString(),
+                tx_hash: transactionHash,
+                block_number: blockNumber,
+                network,
+                deployment_id: deploymentId,
+                event_fingerprint: eventFingerprint,
+                log_index: logIndex,
+                tx_index: transactionIndex,
+                protocol_version: deploymentConfig.protocolVersion,
+              })
+            }
           }
         }
+
+      } else if(deploymentConfig.protocolVersion === 2) {
+
+        const SiloContract = new Contract(siloAddress, SiloV2ABI);
+        const siloContract = await SiloContract.connect(provider);
+        const borrowEventFilter = await siloContract.filters.Borrow(null, null, null);
+
+        let siloRecord = await SiloRepository.getSiloByAddress(siloAddress, deploymentConfig.id);
+
+        if(siloRecord) {
+          let events = await eventIndexer(siloContract, borrowEventFilter, lastestBlock, fromBlock, toBlock, blockRange, network, `${siloAddress} - isSanityCheck: ${isSanityCheck} - (Borrow V2) - silo ${siloProgress} of ${siloAddresses.length}`);
+          if(events) {
+            allEvents = [...allEvents, ...events];
+          }
+
+          totalRecordCount += (events && (events?.length > 0)) ? events?.length : 0;
+
+          if(events) {
+            for(let event of events) {
+              let {
+                blockNumber,
+                address,
+                args,
+                transactionHash,
+                transactionIndex,
+                logIndex,
+              } = event;
+              let {
+                sender,
+                receiver,
+                owner,
+                assets,
+                shares
+              } = args;
+              let assetAddress = siloRecord.input_token_address;
+              // create event record
+              let eventFingerprint = getEventFingerprint(network, blockNumber, transactionIndex, logIndex);
+              let existingEventRecord = await BorrowEventRepository.findByColumn('event_fingerprint', eventFingerprint);
+              if(!existingEventRecord) {
+                await BorrowEventRepository.create({
+                  silo_address: address,
+                  asset_address: assetAddress,
+                  user_address: owner,
+                  amount: assets.toString(),
+                  tx_hash: transactionHash,
+                  block_number: blockNumber,
+                  network,
+                  deployment_id: deploymentId,
+                  event_fingerprint: eventFingerprint,
+                  log_index: logIndex,
+                  tx_index: transactionIndex,
+                  protocol_version: deploymentConfig.protocolVersion,
+                  sender,
+                  receiver,
+                  owner,
+                  assets: assets.toString(),
+                  shares: shares.toString(),
+                })
+              }
+            }
+          }
+
+        }
+
       }
 
     }
