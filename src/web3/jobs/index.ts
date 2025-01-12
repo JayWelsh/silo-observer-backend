@@ -3,6 +3,7 @@ import { getAllSiloAssetBalancesV1 } from './getAllSiloAssetBalancesV1';
 import { getAllSiloAssetBalancesV2 } from './getAllSiloAssetBalancesV2';
 import { getAllSiloAssetRates } from './getAllSiloAssetRates';
 import { getAllSiloAddresses } from './getAllSiloAddresses';
+import { getAllSiloAddressesV2 } from './getAllSiloAddressesV2';
 import { getLatestBlockNumber } from './getLatestBlockNumber';
 import { getBlocks } from './getBlocks';
 
@@ -24,6 +25,7 @@ export {
   getAllSiloAssetBalancesV2,
   getAllSiloAssetRates,
   getAllSiloAddresses,
+  getAllSiloAddressesV2,
   getLatestBlockNumber,
   getBlocks,
   // events

@@ -82,14 +82,14 @@ export const getAllSiloAssetBalancesV2 = async (deploymentConfig: IDeployment) =
 
   for(let siloFactoryContractEntry of siloFactories) {
     let {
-      contract: siloRepositoryContract,
+      contract: siloFactoryContract,
       meta,
     } = siloFactoryContractEntry;
-    if(siloRepositoryContract) {
+    if(siloFactoryContract) {
 
-      const siloCreationEventFilter = await siloRepositoryContract.filters.NewSilo(null, null, null);
+      const siloCreationEventFilter = await siloFactoryContract.filters.NewSilo(null, null, null);
 
-      const siloCreationEvents = await queryFilterRetryOnFailure(siloRepositoryContract, siloCreationEventFilter);
+      const siloCreationEvents = await queryFilterRetryOnFailure(siloFactoryContract, siloCreationEventFilter);
 
       const siloAddresses : string[] = [];
       if(siloCreationEvents) {
