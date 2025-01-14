@@ -55,22 +55,28 @@ class RewardController extends Controller {
   async getCumulativeRewards(req: Request, res: Response) {
     let {
       networks,
+      versions,
       excludeOnchainRewards,
       includeMerklCampaignsByTags,
       includeUntaggedMerklCampaigns,
     } = req.query;
   
     networks = networks as string;
+    versions = versions as string;
     let useExcludeOnchainRewards = excludeOnchainRewards === 'true';
     let useIncludeUntaggedMerklCampaigns = includeUntaggedMerklCampaigns === 'true';
   
     let parsedNetworks: string[] = networks ? networks.split(',') : [];
+    let parsedVersions: string[] = versions ? versions.split(',') : [];
     let parsedTags: string[] | undefined = includeMerklCampaignsByTags ? (includeMerklCampaignsByTags as string).split(',') : undefined;
   
     let mergedRewards: Record<string, MerklUserRewards> = {};
   
     if (!useExcludeOnchainRewards) {
-      let onChainRewardEvents = await RewardEventRepository.getCumulativeRewardsPerAddress(parsedNetworks);
+      let onChainRewardEvents = await RewardEventRepository.getCumulativeRewardsPerAddress(
+        parsedNetworks,
+        parsedVersions
+      );
       mergedRewards = mergeRewards(mergedRewards, onChainRewardEvents);
     }
   
@@ -78,13 +84,14 @@ class RewardController extends Controller {
       let merklRewardEntries = await MerklRewardEntryRepository.getCumulativeRewardsPerAddress(
         parsedNetworks,
         parsedTags,
-        useIncludeUntaggedMerklCampaigns
+        useIncludeUntaggedMerklCampaigns,
       );
       mergedRewards = mergeRewards(mergedRewards, merklRewardEntries);
     }
   
     this.sendResponse(res, mergedRewards);
   }
+
   async getMerklTags(req: Request, res: Response) {
     let merklTags = await MerklRewardEntryRepository.getUniqueTags();
 

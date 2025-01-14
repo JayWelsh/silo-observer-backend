@@ -55,6 +55,7 @@ class TvlLatestRepository extends TvlBaseRepository {
 
   async getLatestResultsGroupedByAssetsWholePlatform(
     networks: string[] | undefined,
+    versions: string[] | undefined,
   ) {
 
     let tableName = TvlLatestModel.tableName;
@@ -66,13 +67,10 @@ class TvlLatestRepository extends TvlBaseRepository {
       })
       .where(function (this: QueryBuilder<TvlLatestModel>) {
         if(networks) {
-          for(let [index, network] of networks.entries()) {
-            if(index === 0) {
-              this.where('tvl_latest.network', '=', network);
-            } else {
-              this.orWhere('tvl_latest.network', '=', network);
-            }
-          }
+          this.whereIn(`${tableName}.network`, networks);
+        }
+        if(versions) {
+          this.whereIn(`${tableName}.protocol_version`, versions);
         }
       })
       .select(raw('SUM(tvl) AS tvl'))

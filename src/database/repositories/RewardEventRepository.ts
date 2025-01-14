@@ -22,9 +22,9 @@ class RewardEventRepository extends BaseRepository {
   async getRewardEvents(
     pagination: IPaginationRequest,
     networks: string[] | undefined,
+    versions: string[] | undefined,
     transformer: ITransformer,
   ) {
-
     const { 
       perPage,
       page
@@ -37,13 +37,10 @@ class RewardEventRepository extends BaseRepository {
     .withGraphJoined('block_metadata')
     .where(function (this: QueryBuilder<RewardEventModel>) {
       if(networks) {
-        for(let [index, network] of networks.entries()) {
-          if(index === 0) {
-            this.where(`${tableName}.network`, '=', network);
-          } else {
-            this.orWhere(`${tableName}.network`, '=', network);
-          }
-        }
+        this.whereIn(`${tableName}.network`, networks);
+      }
+      if(versions) {
+        this.whereIn(`${tableName}.protocol_version`, versions);
       }
     })
     .orderBy('block_metadata.block_timestamp_unix', 'DESC').page(page - 1, perPage);
@@ -54,10 +51,10 @@ class RewardEventRepository extends BaseRepository {
   async getRewardEventsDistinctUsersPerDay(
     pagination: IPaginationRequest,
     networks: string[] | undefined,
+    versions: string[] | undefined,
     transformer: ITransformer,
     skipPagination?: boolean,
   ) {
-
     const { 
       perPage,
       page
@@ -75,13 +72,10 @@ class RewardEventRepository extends BaseRepository {
       .select(raw('DISTINCT user_address, block_metadata.block_day_timestamp'))
       .where(function (this: QueryBuilder<RewardEventModel>) {
         if(networks) {
-          for(let [index, network] of networks.entries()) {
-            if(index === 0) {
-              this.where(`${tableName}.network`, '=', network);
-            } else {
-              this.orWhere(`${tableName}.network`, '=', network);
-            }
-          }
+          this.whereIn(`${tableName}.network`, networks);
+        }
+        if(versions) {
+          this.whereIn(`${tableName}.protocol_version`, versions);
         }
       })
       .leftJoin(
@@ -97,7 +91,6 @@ class RewardEventRepository extends BaseRepository {
     } else {
       return this.parserResult(results, transformer);
     }
- 
   }
 
   async getDailyRewardsClaimedTotals(
@@ -105,9 +98,9 @@ class RewardEventRepository extends BaseRepository {
     order: string,
     period: string | undefined,
     networks: string[] | undefined,
+    versions: string[] | undefined,
     transformer: ITransformer,
   ) {
-
     const { 
       perPage,
       page
@@ -126,13 +119,10 @@ class RewardEventRepository extends BaseRepository {
       })
       .where(function (this: QueryBuilder<RewardEventModel>) {
         if(networks) {
-          for(let [index, network] of networks.entries()) {
-            if(index === 0) {
-              this.where('block_metadata.network', '=', network);
-            } else {
-              this.orWhere('block_metadata.network', '=', network);
-            }
-          }
+          this.whereIn(`block_metadata.network`, networks);
+        }
+        if(versions) {
+          this.whereIn(`protocol_version`, versions);
         }
       })
       .select(raw('SUM(usd_value_at_event_time) AS usd'))
@@ -142,27 +132,26 @@ class RewardEventRepository extends BaseRepository {
       .groupBy(`block_metadata.block_day_timestamp`)
       .castTo<IVolumeTimeseriesQueryResult>();
 
-      if((results?.results) && (period === "today")) {
-        let now = new Date();
-        now.setHours(0,0,0,0);
-        let todayTimestamp = now.toISOString();
-        let shimRecord = {
-          block_day_timestamp: todayTimestamp,
-          usd: "0",
-        }
-        if(order === "DESC") {
-          // Check that the first record is for today
-          let firstRecord = results?.results[0];
-          let hasTodayRecord = new Date(firstRecord.block_day_timestamp).toISOString() === todayTimestamp;
-          if(!firstRecord || !hasTodayRecord) {
-            results.results = [shimRecord, ...results?.results];
-            results.total = results.total + 1;
-          }
+    if((results?.results) && (period === "today")) {
+      let now = new Date();
+      now.setHours(0,0,0,0);
+      let todayTimestamp = now.toISOString();
+      let shimRecord = {
+        block_day_timestamp: todayTimestamp,
+        usd: "0",
+      }
+      if(order === "DESC") {
+        // Check that the first record is for today
+        let firstRecord = results?.results[0];
+        let hasTodayRecord = new Date(firstRecord.block_day_timestamp).toISOString() === todayTimestamp;
+        if(!firstRecord || !hasTodayRecord) {
+          results.results = [shimRecord, ...results?.results];
+          results.total = results.total + 1;
         }
       }
+    }
 
-      return this.parserResult(new Pagination(results, perPage, page), transformer);
-
+    return this.parserResult(new Pagination(results, perPage, page), transformer);
   }
 
   async getRewardEventsSinceDate(
@@ -175,7 +164,7 @@ class RewardEventRepository extends BaseRepository {
       })
       .orderBy('block_metadata.block_timestamp_unix', 'ASC')
 
-      return this.parserResult(results);
+    return this.parserResult(results);
   }
 
   async getRewardEventsSinceDateWithNullUsdValue(
@@ -189,7 +178,7 @@ class RewardEventRepository extends BaseRepository {
       })
       .orderBy('block_metadata.block_timestamp_unix', 'ASC')
 
-      return this.parserResult(results);
+    return this.parserResult(results);
   }
 
   async getRewardEventsSinceDateWithZeroUsdValue(
@@ -203,7 +192,7 @@ class RewardEventRepository extends BaseRepository {
       })
       .orderBy('block_metadata.block_timestamp_unix', 'ASC')
 
-      return this.parserResult(results);
+    return this.parserResult(results);
   }
 
   async getRewardEventsSinceDateWithZeroAssetPriceValue(
@@ -217,7 +206,7 @@ class RewardEventRepository extends BaseRepository {
       })
       .orderBy('block_metadata.block_timestamp_unix', 'ASC')
 
-      return this.parserResult(results);
+    return this.parserResult(results);
   }
 
   async getRewardEventsSinceDateWithNullAssetPriceValue(
@@ -231,14 +220,14 @@ class RewardEventRepository extends BaseRepository {
       })
       .orderBy('block_metadata.block_timestamp_unix', 'ASC')
 
-      return this.parserResult(results);
+    return this.parserResult(results);
   }
 
   async getCumulativeRewardsPerAddress(
-    networks?: string[]
+    networks?: string[],
+    versions?: string[]
   ): Promise<Record<string, UserRewards>> {
     let tableName = this.model.tableName;
-
     let assetTableName = AssetModel.tableName;
   
     const results = await this.model.query()
@@ -246,6 +235,7 @@ class RewardEventRepository extends BaseRepository {
         `${tableName}.user_address`,
         `${tableName}.asset_address`,
         `${tableName}.network`,
+        `${tableName}.protocol_version`,
         this.model.raw(`SUM(${tableName}.amount) as total_amount`),
         this.model.raw(`MAX(${assetTableName}.decimals) as decimals`),
         this.model.raw(`MAX(${assetTableName}.symbol) as symbol`),
@@ -255,6 +245,9 @@ class RewardEventRepository extends BaseRepository {
       .modify((queryBuilder: QueryBuilder<RewardEventModel>) => {
         if (networks && networks.length > 0) {
           queryBuilder.whereIn(`${tableName}.network`, networks);
+        }
+        if (versions && versions.length > 0) {
+          queryBuilder.whereIn(`${tableName}.protocol_version`, versions);
         }
       });
   

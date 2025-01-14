@@ -162,6 +162,7 @@ export const getAllSubgraphLiquidationsUntilBlockV1 = async (
             usd_value_at_event_time: amountUSD.toString(),
             event_fingerprint: recordFingerprint,
             user_address: utils.getAddress(liquidatorAddress),
+            protocol_version: deploymentConfig.protocolVersion,
           })
         } else {
           SubgraphLiquidationRecordRepository.update({
@@ -182,6 +183,7 @@ export const getAllSubgraphLiquidationsUntilBlockV1 = async (
             usd_value_at_event_time: amountUSD.toString(),
             event_fingerprint: recordFingerprint,
             user_address: utils.getAddress(liquidatorAddress),
+            protocol_version: deploymentConfig.protocolVersion,
           }, existingLiquidationRecord.id);
         }
       }

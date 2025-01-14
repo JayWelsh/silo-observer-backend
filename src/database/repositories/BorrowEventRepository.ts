@@ -19,6 +19,7 @@ class BorrowEventRepository extends BaseRepository {
   async getBorrowEvents(
     pagination: IPaginationRequest,
     networks: string[] | undefined,
+    versions: string[] | undefined,
     transformer: ITransformer,
   ) {
 
@@ -33,16 +34,13 @@ class BorrowEventRepository extends BaseRepository {
     .withGraphJoined('silo')
     .withGraphJoined('asset')
     .withGraphJoined('block_metadata')
-    .where(function (this: QueryBuilder<BorrowEventModel>) {
-      if(networks) {
-        for(let [index, network] of networks.entries()) {
-          if(index === 0) {
-            this.where(`${tableName}.network`, '=', network);
-          } else {
-            this.orWhere(`${tableName}.network`, '=', network);
-          }
+    .modify((queryBuilder: QueryBuilder<BorrowEventModel>) => {
+        if (networks?.length) {
+            queryBuilder.whereIn(`${tableName}.network`, networks);
         }
-      }
+        if (versions?.length) {
+            queryBuilder.whereIn(`${tableName}.protocol_version`, versions);
+        }
     })
     .orderBy('block_metadata.block_timestamp_unix', 'DESC').page(page - 1, perPage);
 
@@ -52,6 +50,7 @@ class BorrowEventRepository extends BaseRepository {
   async getUnifiedEvents(
     pagination: IPaginationRequest,
     networks: string[] | undefined,
+    versions: string[] | undefined,
     transformer: ITransformer,
   ) {
 
@@ -81,6 +80,9 @@ class BorrowEventRepository extends BaseRepository {
         if(networks) {
           this.whereIn(`${RepayEventModel.tableName}.network`, networks);
         }
+        if(versions) {
+          this.whereIn(`${RepayEventModel.tableName}.protocol_version`, versions);
+        }
       })
     )
     .union(
@@ -92,6 +94,9 @@ class BorrowEventRepository extends BaseRepository {
       .where(function (this: QueryBuilder<DepositEventModel>) {
         if(networks) {
           this.whereIn(`${DepositEventModel.tableName}.network`, networks);
+        }
+        if(versions) {
+          this.whereIn(`${DepositEventModel.tableName}.protocol_version`, versions);
         }
       })
     )
@@ -105,6 +110,9 @@ class BorrowEventRepository extends BaseRepository {
         if(networks) {
           this.whereIn(`${WithdrawEventModel.tableName}.network`, networks);
         }
+        if(versions) {
+          this.whereIn(`${WithdrawEventModel.tableName}.protocol_version`, versions);
+        }
       })
     )
     .union(
@@ -117,11 +125,17 @@ class BorrowEventRepository extends BaseRepository {
         if(networks) {
           this.whereIn(`${SubgraphLiquidationRecordModel.tableName}.network`, networks);
         }
+        if(versions) {
+          this.whereIn(`${SubgraphLiquidationRecordModel.tableName}.protocol_version`, versions);
+        }
       })
     )
     .where(function (this: QueryBuilder<BorrowEventModel>) {
       if(networks) {
         this.whereIn(`${tableName}.network`, networks);
+      }
+      if(versions) {
+        this.whereIn(`${tableName}.protocol_version`, versions);
       }
     })
     .orderBy('block_metadata:block_timestamp_unix', 'DESC')
@@ -133,6 +147,7 @@ class BorrowEventRepository extends BaseRepository {
   async getBorrowEventsDistinctUsersPerDay(
     pagination: IPaginationRequest,
     networks: string[] | undefined,
+    versions: string[] | undefined,
     transformer: ITransformer,
     skipPagination?: boolean,
   ) {
@@ -154,13 +169,10 @@ class BorrowEventRepository extends BaseRepository {
       .select(raw('DISTINCT user_address, block_metadata.block_day_timestamp'))
       .where(function (this: QueryBuilder<BorrowEventModel>) {
         if(networks) {
-          for(let [index, network] of networks.entries()) {
-            if(index === 0) {
-              this.where(`${tableName}.network`, '=', network);
-            } else {
-              this.orWhere(`${tableName}.network`, '=', network);
-            }
-          }
+          this.whereIn(`${tableName}.network`, networks);
+        }
+        if(versions) {
+          this.whereIn(`${tableName}.protocol_version`, versions);
         }
       })
       .leftJoin(
@@ -226,6 +238,7 @@ class BorrowEventRepository extends BaseRepository {
     order: string,
     period: string | undefined,
     networks: string[] | undefined,
+    versions: string[] | undefined,
     transformer: ITransformer,
   ) {
 
@@ -254,6 +267,14 @@ class BorrowEventRepository extends BaseRepository {
               this.orWhere('block_metadata.network', '=', network);
             }
           }
+        }
+      })
+      .where(function (this: QueryBuilder<BorrowEventModel>) {
+        if(networks) {
+          this.whereIn(`block_metadata.network`, networks);
+        }
+        if(versions) {
+          this.whereIn(`protocol_version`, versions);
         }
       })
       .select(raw('SUM(usd_value_at_event_time) AS usd'))
@@ -291,6 +312,7 @@ class BorrowEventRepository extends BaseRepository {
     order: string,
     period: string | undefined,
     networks: string[] | undefined,
+    versions: string[] | undefined,
     transformer: ITransformer,
   ) {
     const { 
@@ -311,13 +333,10 @@ class BorrowEventRepository extends BaseRepository {
       })
       .where(function (this: QueryBuilder<BorrowEventModel>) {
         if(networks) {
-          for(let [index, network] of networks.entries()) {
-            if(index === 0) {
-              this.where('block_metadata.network', '=', network);
-            } else {
-              this.orWhere('block_metadata.network', '=', network);
-            }
-          }
+          this.whereIn(`block_metadata.network`, networks);
+        }
+        if(versions) {
+          this.whereIn(`protocol_version`, versions);
         }
       })
       .select(raw('SUM(usd_value_at_event_time) AS usd'))

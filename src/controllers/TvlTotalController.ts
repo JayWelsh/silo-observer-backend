@@ -85,6 +85,7 @@ class TvlTotalController extends Controller {
     let {
       resolution = 'minutely',
       networks,
+      versions,
     } = req.query;
 
     networks = networks as string;
@@ -94,14 +95,21 @@ class TvlTotalController extends Controller {
       parsedNetworks = networks.split(',')
     }
 
+    versions = versions as string;
+
+    let parsedVersions : string[] = [];
+    if(versions) {
+      parsedVersions = versions.split(',');
+    }
+
     const pagination = this.extractPagination(req)
 
     let borrowedTotals;
     if(resolution === 'minutely') {
-      borrowedTotals = await TvlMinutelyRepository.getTvlTotalsWholePlatform(pagination, parsedNetworks, TvlTotalOutputTransformer);
+      borrowedTotals = await TvlMinutelyRepository.getTvlTotalsWholePlatform(pagination, parsedNetworks, parsedVersions, TvlTotalOutputTransformer);
     }
     if(resolution === 'hourly') {
-      borrowedTotals = await TvlHourlyRepository.getTvlTotalsWholePlatform(pagination, parsedNetworks, TvlTotalOutputTransformer);
+      borrowedTotals = await TvlHourlyRepository.getTvlTotalsWholePlatform(pagination, parsedNetworks, parsedVersions, TvlTotalOutputTransformer);
     }
 
     this.sendResponse(res, borrowedTotals);
@@ -111,6 +119,7 @@ class TvlTotalController extends Controller {
 
     let {
       networks,
+      versions,
     } = req.query;
 
     networks = networks as string;
@@ -120,9 +129,16 @@ class TvlTotalController extends Controller {
       parsedNetworks = networks.split(',')
     }
 
+    versions = versions as string;
+
+    let parsedVersions : string[] = [];
+    if(versions) {
+      parsedVersions = versions.split(',');
+    }
+
     const pagination = this.extractPagination(req)
 
-    let tvlTotals = await TvlTimeseriesMaterializedViewRepository.getTvlTotalsWholePlatformNew(pagination, parsedNetworks, TvlTotalOutputTransformer);
+    let tvlTotals = await TvlTimeseriesMaterializedViewRepository.getTvlTotalsWholePlatformNew(pagination, parsedNetworks, parsedVersions, TvlTotalOutputTransformer);
 
     this.sendResponse(res, tvlTotals);
   }
@@ -142,6 +158,7 @@ class TvlTotalController extends Controller {
 
     let {
       networks,
+      versions,
     } = req.query;
 
     networks = networks as string;
@@ -151,7 +168,14 @@ class TvlTotalController extends Controller {
       parsedNetworks = networks.split(',')
     }
 
-    let allRecords = await TvlLatestRepository.getLatestResultsGroupedByAssetsWholePlatform(parsedNetworks);
+    versions = versions as string;
+
+    let parsedVersions : string[] = [];
+    if(versions) {
+      parsedVersions = versions.split(',');
+    }
+
+    let allRecords = await TvlLatestRepository.getLatestResultsGroupedByAssetsWholePlatform(parsedNetworks, parsedVersions);
 
     this.sendResponse(res, allRecords);
 

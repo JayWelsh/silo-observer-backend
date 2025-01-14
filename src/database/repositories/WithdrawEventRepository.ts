@@ -13,9 +13,9 @@ class WithdrawEventRepository extends BaseRepository {
   async getWithdrawEvents(
     pagination: IPaginationRequest,
     networks: string[] | undefined,
+    versions: string[] | undefined,
     transformer: ITransformer,
   ) {
-
     const { 
       perPage,
       page
@@ -29,13 +29,10 @@ class WithdrawEventRepository extends BaseRepository {
     .withGraphJoined('block_metadata')
     .where(function (this: QueryBuilder<WithdrawEventModel>) {
       if(networks) {
-        for(let [index, network] of networks.entries()) {
-          if(index === 0) {
-            this.where(`${tableName}.network`, '=', network);
-          } else {
-            this.orWhere(`${tableName}.network`, '=', network);
-          }
-        }
+        this.whereIn(`${tableName}.network`, networks);
+      }
+      if(versions) {
+        this.whereIn(`${tableName}.protocol_version`, versions);
       }
     })
     .orderBy('block_metadata.block_timestamp_unix', 'DESC').page(page - 1, perPage);
@@ -46,10 +43,10 @@ class WithdrawEventRepository extends BaseRepository {
   async getWithdrawEventsDistinctUsersPerDay(
     pagination: IPaginationRequest,
     networks: string[] | undefined,
+    versions: string[] | undefined,
     transformer: ITransformer,
     skipPagination?: boolean,
   ) {
-
     const { 
       perPage,
       page
@@ -67,13 +64,10 @@ class WithdrawEventRepository extends BaseRepository {
       .select(raw('DISTINCT user_address, block_metadata.block_day_timestamp'))
       .where(function (this: QueryBuilder<WithdrawEventModel>) {
         if(networks) {
-          for(let [index, network] of networks.entries()) {
-            if(index === 0) {
-              this.where(`${tableName}.network`, '=', network);
-            } else {
-              this.orWhere(`${tableName}.network`, '=', network);
-            }
-          }
+          this.whereIn(`${tableName}.network`, networks);
+        }
+        if(versions) {
+          this.whereIn(`${tableName}.protocol_version`, versions);
         }
       })
       .leftJoin(
@@ -89,7 +83,6 @@ class WithdrawEventRepository extends BaseRepository {
     } else {
       return this.parserResult(results, transformer);
     }
- 
   }
 
   async getWithdrawEventsBySiloAddress(
@@ -97,7 +90,6 @@ class WithdrawEventRepository extends BaseRepository {
     pagination: IPaginationRequest,
     transformer: ITransformer,
   ) {
-
     const { 
       perPage,
       page
@@ -118,7 +110,6 @@ class WithdrawEventRepository extends BaseRepository {
     pagination: IPaginationRequest,
     transformer: ITransformer,
   ) {
-
     const { 
       perPage,
       page
@@ -139,9 +130,9 @@ class WithdrawEventRepository extends BaseRepository {
     order: string,
     period: string | undefined,
     networks: string[] | undefined,
+    versions: string[] | undefined,
     transformer: ITransformer,
   ) {
-
     const { 
       perPage,
       page
@@ -160,13 +151,10 @@ class WithdrawEventRepository extends BaseRepository {
       })
       .where(function (this: QueryBuilder<WithdrawEventModel>) {
         if(networks) {
-          for(let [index, network] of networks.entries()) {
-            if(index === 0) {
-              this.where('block_metadata.network', '=', network);
-            } else {
-              this.orWhere('block_metadata.network', '=', network);
-            }
-          }
+          this.whereIn(`block_metadata.network`, networks);
+        }
+        if(versions) {
+          this.whereIn(`protocol_version`, versions);
         }
       })
       .select(raw('SUM(usd_value_at_event_time) AS usd'))
@@ -176,27 +164,26 @@ class WithdrawEventRepository extends BaseRepository {
       .groupBy(`block_metadata.block_day_timestamp`)
       .castTo<IVolumeTimeseriesQueryResult>();
 
-      if((results?.results) && (period === "today")) {
-        let now = new Date();
-        now.setHours(0,0,0,0);
-        let todayTimestamp = now.toISOString();
-        let shimRecord = {
-          block_day_timestamp: todayTimestamp,
-          usd: "0",
-        }
-        if(order === "DESC") {
-          // Check that the first record is for today
-          let firstRecord = results?.results[0];
-          let hasTodayRecord = new Date(firstRecord.block_day_timestamp).toISOString() === todayTimestamp;
-          if(!firstRecord || !hasTodayRecord) {
-            results.results = [shimRecord, ...results?.results];
-            results.total = results.total + 1;
-          }
+    if((results?.results) && (period === "today")) {
+      let now = new Date();
+      now.setHours(0,0,0,0);
+      let todayTimestamp = now.toISOString();
+      let shimRecord = {
+        block_day_timestamp: todayTimestamp,
+        usd: "0",
+      }
+      if(order === "DESC") {
+        // Check that the first record is for today
+        let firstRecord = results?.results[0];
+        let hasTodayRecord = new Date(firstRecord.block_day_timestamp).toISOString() === todayTimestamp;
+        if(!firstRecord || !hasTodayRecord) {
+          results.results = [shimRecord, ...results?.results];
+          results.total = results.total + 1;
         }
       }
+    }
 
-      return this.parserResult(new Pagination(results, perPage, page), transformer);
-
+    return this.parserResult(new Pagination(results, perPage, page), transformer);
   }
 
   async getDailyWithdrawTotalsGroupedByNetwork(
@@ -204,6 +191,7 @@ class WithdrawEventRepository extends BaseRepository {
     order: string,
     period: string | undefined,
     networks: string[] | undefined,
+    versions: string[] | undefined,
     transformer: ITransformer,
   ) {
     const { 
@@ -224,13 +212,10 @@ class WithdrawEventRepository extends BaseRepository {
       })
       .where(function (this: QueryBuilder<WithdrawEventModel>) {
         if(networks) {
-          for(let [index, network] of networks.entries()) {
-            if(index === 0) {
-              this.where('block_metadata.network', '=', network);
-            } else {
-              this.orWhere('block_metadata.network', '=', network);
-            }
-          }
+          this.whereIn(`block_metadata.network`, networks);
+        }
+        if(versions) {
+          this.whereIn(`protocol_version`, versions);
         }
       })
       .select(raw('SUM(usd_value_at_event_time) AS usd'))
@@ -283,7 +268,7 @@ class WithdrawEventRepository extends BaseRepository {
       })
       .orderBy('block_metadata.block_timestamp_unix', 'ASC')
 
-      return this.parserResult(results);
+    return this.parserResult(results);
   }
 
   async getWithdrawEventsSinceDateWithNullUsdValue(
@@ -297,7 +282,7 @@ class WithdrawEventRepository extends BaseRepository {
       })
       .orderBy('block_metadata.block_timestamp_unix', 'ASC')
 
-      return this.parserResult(results);
+    return this.parserResult(results);
   }
 
   async getWithdrawEventsSinceDateWithZeroUsdValue(
@@ -311,7 +296,7 @@ class WithdrawEventRepository extends BaseRepository {
       })
       .orderBy('block_metadata.block_timestamp_unix', 'ASC')
 
-      return this.parserResult(results);
+    return this.parserResult(results);
   }
 
   async getWithdrawEventsSinceDateWithZeroAssetPriceValue(
@@ -325,7 +310,7 @@ class WithdrawEventRepository extends BaseRepository {
       })
       .orderBy('block_metadata.block_timestamp_unix', 'ASC')
 
-      return this.parserResult(results);
+    return this.parserResult(results);
   }
 
   async getWithdrawEventsSinceDateWithNullAssetPriceValue(
@@ -339,7 +324,7 @@ class WithdrawEventRepository extends BaseRepository {
       })
       .orderBy('block_metadata.block_timestamp_unix', 'ASC')
 
-      return this.parserResult(results);
+    return this.parserResult(results);
   }
 }
 

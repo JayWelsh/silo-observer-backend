@@ -53,10 +53,12 @@ class SiloRevenueSnapshotController extends Controller {
 
   async getLatestSnapshots(req: Request, res: Response) {
     const networks = req.query.networks as string[] | undefined;
+    const versions = req.query.versions as string[] | undefined;
     const pagination = this.extractPagination(req);
   
     const snapshots = await SiloRevenueSnapshotRepository.getLatestSnapshots(
       networks,
+      versions,
       pagination,
       SiloRevenueOutputTransformer
     );
@@ -66,11 +68,13 @@ class SiloRevenueSnapshotController extends Controller {
 
   async getTimeseriesDistinctNetworks(req: Request, res: Response) {
     const networks = req.query.networks as string[] | undefined;
+    const versions = req.query.versions as string[] | undefined;
     const excludeXAI = req.query.excludeXAI === 'true';
     const pagination = this.extractPagination(req);
   
     const snapshots = await SiloRevenueSnapshotRepository.getTimeseriesDistinctNetworks(
       networks,
+      versions,
       pagination,
       excludeXAI,
       SiloRevenueOutputTransformer
@@ -81,11 +85,13 @@ class SiloRevenueSnapshotController extends Controller {
 
   async getTimeseriesDistinctTimestamps(req: Request, res: Response) {
     const networks = req.query.networks as string[] | undefined;
+    const versions = req.query.versions as string[] | undefined;
     const excludeXAI = req.query.excludeXAI === 'true';
     const pagination = this.extractPagination(req);
   
     const snapshots = await SiloRevenueSnapshotRepository.getTimeseriesDistinctTimestamps(
       networks,
+      versions,
       pagination,
       excludeXAI,
       SiloRevenueOutputTransformer
@@ -96,10 +102,12 @@ class SiloRevenueSnapshotController extends Controller {
 
   async getDailySiloUnclaimedFeeDelta(req: Request, res: Response) {
     const networks = req.query.networks as string[] | undefined;
+    const versions = req.query.versions as string[] | undefined;
     // const excludeXAI = req.query.excludeXAI === 'true';
   
     const dailyDeltas = await SiloRevenueSnapshotRepository.getDailySiloUnclaimedFeeDelta(
       networks,
+      versions,
       SiloRevenueOutputTransformer
     );
   

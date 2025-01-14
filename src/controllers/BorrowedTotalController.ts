@@ -84,23 +84,29 @@ class BorrowedTotalController extends Controller {
     let {
       resolution = 'minutely',
       networks,
+      versions,
     } = req.query;
 
     networks = networks as string;
-
     let parsedNetworks : string[] = [];
     if(networks) {
       parsedNetworks = networks.split(',')
+    }
+
+    versions = versions as string;
+    let parsedVersions : string[] = [];
+    if(versions) {
+      parsedVersions = versions.split(',');
     }
 
     const pagination = this.extractPagination(req)
 
     let borrowedTotals;
     if(resolution === 'minutely') {
-      borrowedTotals = await BorrowedMinutelyRepository.getBorrowedTotalsWholePlatform(pagination, parsedNetworks, BorrowedTotalOutputTransformer);
+      borrowedTotals = await BorrowedMinutelyRepository.getBorrowedTotalsWholePlatform(pagination, parsedNetworks, parsedVersions, BorrowedTotalOutputTransformer);
     }
     if(resolution === 'hourly') {
-      borrowedTotals = await BorrowedHourlyRepository.getBorrowedTotalsWholePlatform(pagination, parsedNetworks, BorrowedTotalOutputTransformer);
+      borrowedTotals = await BorrowedHourlyRepository.getBorrowedTotalsWholePlatform(pagination, parsedNetworks, parsedVersions, BorrowedTotalOutputTransformer);
     }
 
     this.sendResponse(res, borrowedTotals);
@@ -110,6 +116,7 @@ class BorrowedTotalController extends Controller {
 
     let {
       networks,
+      versions,
     } = req.query;
 
     networks = networks as string;
@@ -119,9 +126,16 @@ class BorrowedTotalController extends Controller {
       parsedNetworks = networks.split(',')
     }
 
+    versions = versions as string;
+
+    let parsedVersions : string[] = [];
+    if(versions) {
+      parsedVersions = versions.split(',');
+    }
+
     const pagination = this.extractPagination(req)
 
-    let borrowedTotals = await BorrowedTimeseriesMaterializedViewRepository.getBorrowedTotalsWholePlatformNew(pagination, parsedNetworks, BorrowedTotalOutputTransformer);
+    let borrowedTotals = await BorrowedTimeseriesMaterializedViewRepository.getBorrowedTotalsWholePlatformNew(pagination, parsedNetworks, parsedVersions, BorrowedTotalOutputTransformer);
 
     this.sendResponse(res, borrowedTotals);
   }

@@ -152,6 +152,7 @@ class SiloRevenueSnapshotRepository extends BaseRepository {
 
   async getLatestSnapshots(
     networks: string | string[] | undefined,
+    versions: string | string[] | undefined,
     pagination: IPaginationRequest,
     transformer: ITransformer,
   ) {
@@ -162,11 +163,18 @@ class SiloRevenueSnapshotRepository extends BaseRepository {
       ? networks.split(',')
       : networks;
 
+    const versionsArray = typeof versions === 'string' 
+      ? versions.split(',')
+      : versions;
+
     const results = await this.model.query()
       .from(LATEST_SILO_REVENUE_SNAPSHOT_MATERIALIZED_VIEW)
       .modify((queryBuilder: QueryBuilder<SiloRevenueSnapshotModel>) => {
           if (networksArray) {
               queryBuilder.whereIn('network', networksArray);
+          }
+          if (versionsArray) {
+            queryBuilder.whereIn('protocol_version', versionsArray);
           }
       })
       .select(
@@ -181,7 +189,8 @@ class SiloRevenueSnapshotRepository extends BaseRepository {
           'deployment_id',
           'asset_symbol',
           'silo_name',
-          'silo_address'
+          'silo_address',
+          'protocol_version',
       )
       .orderBy('amount_pending_usd', 'DESC')
       .page(page - 1, perPage);
@@ -191,6 +200,7 @@ class SiloRevenueSnapshotRepository extends BaseRepository {
 
   async getTimeseriesDistinctNetworks(
     networks: string | string[] | undefined,
+    versions: string | string[] | undefined,
     pagination: IPaginationRequest,
     excludeXAI: boolean,
     transformer: ITransformer,
@@ -202,6 +212,10 @@ class SiloRevenueSnapshotRepository extends BaseRepository {
       ? networks.split(',')
       : networks;
 
+    const versionsArray = typeof versions === 'string' 
+      ? versions.split(',')
+      : versions;
+
     let materializedViewToUse = excludeXAI ? HOURLY_SILO_REVENUE_SNAPSHOT_TIMESERIES_BY_NETWORK_EXCL_XAI_MATERIALIZED_VIEW : HOURLY_SILO_REVENUE_SNAPSHOT_TIMESERIES_BY_NETWORK_MATERIALIZED_VIEW;
 
     const results = await this.model.query()
@@ -210,9 +224,13 @@ class SiloRevenueSnapshotRepository extends BaseRepository {
           if (networksArray) {
               queryBuilder.whereIn('network', networksArray);
           }
+          if (versionsArray) {
+            queryBuilder.whereIn('protocol_version', versionsArray);
+          }
       })
       .select(
           'network',
+          'protocol_version',
           'amount_pending_usd',
           'amount_harvested_usd',
           'hour_timestamp as timestamp',
@@ -225,6 +243,7 @@ class SiloRevenueSnapshotRepository extends BaseRepository {
 
   async getTimeseriesDistinctTimestamps(
     networks: string | string[] | undefined,
+    versions: string | string[] | undefined,
     pagination: IPaginationRequest,
     excludeXAI: boolean,
     transformer: ITransformer,
@@ -236,6 +255,10 @@ class SiloRevenueSnapshotRepository extends BaseRepository {
         ? networks.split(',')
         : networks;
 
+    const versionsArray = typeof versions === 'string' 
+        ? versions.split(',')
+        : versions;
+
     let materializedViewToUse = excludeXAI ? HOURLY_SILO_REVENUE_SNAPSHOT_TIMESERIES_BY_NETWORK_EXCL_XAI_MATERIALIZED_VIEW : HOURLY_SILO_REVENUE_SNAPSHOT_TIMESERIES_BY_NETWORK_MATERIALIZED_VIEW;
 
     const results = await this.model.query()
@@ -243,6 +266,9 @@ class SiloRevenueSnapshotRepository extends BaseRepository {
         .modify((queryBuilder: QueryBuilder<SiloRevenueSnapshotModel>) => {
             if (networksArray) {
                 queryBuilder.whereIn('network', networksArray);
+            }
+            if (versionsArray) {
+              queryBuilder.whereIn('protocol_version', versionsArray);
             }
         })
         .select(
@@ -259,6 +285,7 @@ class SiloRevenueSnapshotRepository extends BaseRepository {
 
   async getDailySiloUnclaimedFeeDelta(
     networks: string | string[] | undefined,
+    versions: string | string[] | undefined,
     transformer: ITransformer,
   ) {
     
@@ -267,6 +294,10 @@ class SiloRevenueSnapshotRepository extends BaseRepository {
       ? networks.split(',')
       : networks;
 
+    const versionsArray = typeof versions === 'string' 
+      ? versions.split(',')
+      : versions;
+
     let materializedViewToUse = DAILY_SILO_REVENUE_DELTA_BY_NETWORK_MATERIALIZED_VIEW;
 
     const results = await this.model.query()
@@ -274,6 +305,9 @@ class SiloRevenueSnapshotRepository extends BaseRepository {
       .modify((queryBuilder: QueryBuilder<SiloRevenueSnapshotModel>) => {
           if (networksArray) {
               queryBuilder.whereIn('network', networksArray);
+          }
+          if (versionsArray) {
+            queryBuilder.whereIn('protocol_version', versionsArray);
           }
       })
       .select(
