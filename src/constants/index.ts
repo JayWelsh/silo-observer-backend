@@ -113,6 +113,8 @@ export const NETWORK_TO_ALCHEMY_ENDPOINT: {[key: string]: string} = {
   "sonic": `https://sonic-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY_SONIC}`,
 }
 
+export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+
 // ETHEREUM
 
 export const SILO_FACTORY_ADDRESS = '0x4D919CEcfD4793c0D47866C8d0a02a0950737589';
