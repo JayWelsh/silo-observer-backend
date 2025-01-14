@@ -18,12 +18,17 @@ class BorrowedTimeseriesMaterializedViewRepository extends BorrowedBaseRepositor
   async getBorrowedTotalsWholePlatformNew(
     pagination: IPaginationRequest,
     networks: string | string[] | undefined,
+    versions: string | string[] | undefined,
     transformer: ITransformer,
   ) {
 
     const networksArray = typeof networks === 'string' 
       ? networks.split(',')
       : networks;
+
+    const versionsArray = typeof versions === 'string' 
+      ? versions.split(',')
+      : versions;
 
     let tableName = this.model.tableName;
 
@@ -38,7 +43,10 @@ class BorrowedTimeseriesMaterializedViewRepository extends BorrowedBaseRepositor
       .from(materializedViewToUse)
       .modify((queryBuilder: QueryBuilder<BorrowedTimeseriesMaterializedViewModel>) => {
           if (networksArray) {
-              queryBuilder.whereIn('network', networksArray);
+            queryBuilder.whereIn('network', networksArray);
+          }
+          if (versionsArray) {
+            queryBuilder.whereIn('protocol_version', versionsArray);
           }
       })
       .select(

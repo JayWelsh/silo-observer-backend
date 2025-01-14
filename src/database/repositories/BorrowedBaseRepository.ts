@@ -126,6 +126,7 @@ abstract class BorrowedBaseRepository extends BaseRepository {
   async getBorrowedTotalsWholePlatform(
     pagination: IPaginationRequest,
     networks: string[] | undefined,
+    versions: string[] | undefined,
     transformer: ITransformer,
   ) {
 
@@ -144,16 +145,13 @@ abstract class BorrowedBaseRepository extends BaseRepository {
       this.where('asset_address', null);
       this.where('meta', 'all');
     })
-    .where(function (this: QueryBuilder<BorrowedMinutelyModel>) {
-      if(networks) {
-        for(let [index, network] of networks.entries()) {
-          if(index === 0) {
-            this.where(`${tableName}.network`, '=', network);
-          } else {
-            this.orWhere(`${tableName}.network`, '=', network);
-          }
+    .modify((queryBuilder: QueryBuilder<BorrowedMinutelyModel>) => {
+        if (networks?.length) {
+            queryBuilder.whereIn(`${tableName}.network`, networks);
         }
-      }
+        if (versions?.length) {
+            queryBuilder.whereIn(`${tableName}.protocol_version`, versions);
+        }
     })
     .orderBy('timestamp', 'DESC').page(page - 1, perPage);
 

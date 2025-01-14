@@ -66,6 +66,7 @@ class EventController extends Controller {
 
     let {
       networks,
+      versions,
     } = req.query;
 
     networks = networks as string;
@@ -75,24 +76,31 @@ class EventController extends Controller {
       parsedNetworks = networks.split(',')
     }
 
+    versions = versions as string;
+
+    let parsedVersions : string[] = [];
+    if(versions) {
+      parsedVersions = versions.split(',');
+    }
+
     const pagination = this.extractPagination(req)
 
     let events;
 
     if(eventType === 'borrow') {
-      events = await BorrowEventRepository.getBorrowEvents(pagination, parsedNetworks, SiloUserEventOutputTransformer);
+      events = await BorrowEventRepository.getBorrowEvents(pagination, parsedNetworks, parsedVersions, SiloUserEventOutputTransformer);
     } else if(eventType === 'deposit') {
-      events = await DepositEventRepository.getDepositEvents(pagination, parsedNetworks, SiloUserEventOutputTransformer);
+      events = await DepositEventRepository.getDepositEvents(pagination, parsedNetworks, parsedVersions, SiloUserEventOutputTransformer);
     } else if(eventType === 'repay') {
-      events = await RepayEventRepository.getRepayEvents(pagination, parsedNetworks, SiloUserEventOutputTransformer);
+      events = await RepayEventRepository.getRepayEvents(pagination, parsedNetworks, parsedVersions, SiloUserEventOutputTransformer);
     } else if(eventType === 'withdraw') {
-      events = await WithdrawEventRepository.getWithdrawEvents(pagination, parsedNetworks, SiloUserEventOutputTransformer);
+      events = await WithdrawEventRepository.getWithdrawEvents(pagination, parsedNetworks, parsedVersions, SiloUserEventOutputTransformer);
     } else if(eventType === 'liquidation') {
-      events = await SubgraphLiquidationRecordRepository.getLiquidationRecords(pagination, parsedNetworks, SubgraphLiquidationRecordTransformer);
+      events = await SubgraphLiquidationRecordRepository.getLiquidationRecords(pagination, parsedNetworks, parsedVersions, SubgraphLiquidationRecordTransformer);
     } else if(eventType === 'legacy') {
-      events = await BorrowEventRepository.getUnifiedEvents(pagination, parsedNetworks, SiloUserEventOutputTransformer);
+      events = await BorrowEventRepository.getUnifiedEvents(pagination, parsedNetworks, parsedVersions, SiloUserEventOutputTransformer);
     } else {
-      events = await UnifiedEventRepository.getUnifiedEvents(pagination, parsedNetworks, SiloUserEventMaterializedViewTransformer);
+      events = await UnifiedEventRepository.getUnifiedEvents(pagination, parsedNetworks, parsedVersions, SiloUserEventMaterializedViewTransformer);
     }
 
     this.sendResponse(res, events);
@@ -107,6 +115,7 @@ class EventController extends Controller {
       page,
       perPage,
       networks,
+      versions,
     } = req.query;
 
     networks = networks as string;
@@ -114,6 +123,13 @@ class EventController extends Controller {
     let parsedNetworks : string[] = [];
     if(networks) {
       parsedNetworks = networks.split(',')
+    }
+
+    versions = versions as string;
+
+    let parsedVersions : string[] = [];
+    if(versions) {
+      parsedVersions = versions.split(',');
     }
 
     const pagination = this.extractPagination(req);
@@ -123,13 +139,13 @@ class EventController extends Controller {
     let events;
 
     if(eventType === 'borrow') {
-      events = await BorrowEventRepository.getBorrowEventsDistinctUsersPerDay(pagination, parsedNetworks, SiloUserEventDistinctDailyUsersOutputTransformer, skipPagination);
+      events = await BorrowEventRepository.getBorrowEventsDistinctUsersPerDay(pagination, parsedNetworks, parsedVersions, SiloUserEventDistinctDailyUsersOutputTransformer, skipPagination);
     } else if(eventType === 'deposit') {
-      events = await DepositEventRepository.getDepositEventsDistinctUsersPerDay(pagination, parsedNetworks, SiloUserEventDistinctDailyUsersOutputTransformer, skipPagination);
+      events = await DepositEventRepository.getDepositEventsDistinctUsersPerDay(pagination, parsedNetworks, parsedVersions, SiloUserEventDistinctDailyUsersOutputTransformer, skipPagination);
     } else if(eventType === 'repay') {
-      events = await RepayEventRepository.getRepayEventsDistinctUsersPerDay(pagination, parsedNetworks, SiloUserEventDistinctDailyUsersOutputTransformer, skipPagination);
+      events = await RepayEventRepository.getRepayEventsDistinctUsersPerDay(pagination, parsedNetworks, parsedVersions, SiloUserEventDistinctDailyUsersOutputTransformer, skipPagination);
     } else if(eventType === 'withdraw') {
-      events = await WithdrawEventRepository.getWithdrawEventsDistinctUsersPerDay(pagination, parsedNetworks, SiloUserEventDistinctDailyUsersOutputTransformer, skipPagination);
+      events = await WithdrawEventRepository.getWithdrawEventsDistinctUsersPerDay(pagination, parsedNetworks, parsedVersions, SiloUserEventDistinctDailyUsersOutputTransformer, skipPagination);
     }
 
     this.sendResponse(res, events);
@@ -138,6 +154,7 @@ class EventController extends Controller {
 
     let {
       networks,
+      versions,
     } = req.query;
 
     networks = networks as string;
@@ -147,9 +164,16 @@ class EventController extends Controller {
       parsedNetworks = networks.split(',')
     }
 
+    versions = versions as string;
+
+    let parsedVersions : string[] = [];
+    if(versions) {
+      parsedVersions = versions.split(',');
+    }
+
     const pagination = this.extractPagination(req)
 
-    let events = await RewardEventRepository.getRewardEvents(pagination, parsedNetworks, SiloUserEventOutputTransformer);
+    let events = await RewardEventRepository.getRewardEvents(pagination, parsedNetworks, parsedVersions, SiloUserEventOutputTransformer);
 
     this.sendResponse(res, events);
   }

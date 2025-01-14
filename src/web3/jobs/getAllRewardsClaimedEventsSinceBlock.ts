@@ -142,6 +142,7 @@ export const getAllRewardsClaimedEventsSinceBlock = async (
               event_fingerprint: eventFingerprint,
               log_index: logIndex,
               tx_index: transactionIndex,
+              protocol_version: deploymentConfig.protocolVersion,
             })
           }
         }

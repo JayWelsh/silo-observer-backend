@@ -23,6 +23,7 @@ class UnifiedEventRepository extends BaseRepository {
   async getUnifiedEvents(
     pagination: IPaginationRequest,
     networks: string[] | undefined,
+    versions: string[] | undefined,
     transformer: ITransformer,
   ) {
     const { perPage, page } = pagination;
@@ -43,18 +44,16 @@ class UnifiedEventRepository extends BaseRepository {
         `${tableName}.block_timestamp_unix`,
         `${tableName}.network`,
         `${tableName}.block_day_timestamp`,
+        `${tableName}.protocol_version`,
       ])
       .whereNotNull(`${tableName}.block_timestamp`)
-      .where(function (this: QueryBuilder<UnifiedEventModel>) {
-        if(networks) {
-          for(let [index, network] of networks.entries()) {
-            if(index === 0) {
-              this.where(`${tableName}.network`, '=', network);
-            } else {
-              this.orWhere(`${tableName}.network`, '=', network);
-            }
+      .modify((queryBuilder: QueryBuilder<UnifiedEventModel>) => {
+          if (networks?.length) {
+              queryBuilder.whereIn(`${tableName}.network`, networks);
           }
-        }
+          if (versions?.length) {
+              queryBuilder.whereIn(`${tableName}.protocol_version`, versions);
+          }
       })
       .orderBy('block_timestamp_unix', 'DESC')
       .page(page - 1, perPage);

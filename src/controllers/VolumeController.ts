@@ -22,11 +22,13 @@ class VolumeController extends Controller {
       order = "ASC",
       period,
       networks,
+      versions,
       groupBy,
     } = req.query;
 
     period = period as string;
     networks = networks as string;
+    versions = versions as string;
     groupBy = groupBy as string;
 
     let parsedNetworks : string[] = [];
@@ -34,14 +36,19 @@ class VolumeController extends Controller {
       parsedNetworks = networks.split(',')
     }
 
+    let parsedVersions : string[] = [];
+    if(versions) {
+      parsedVersions = versions.split(',')
+    }
+
     const pagination = this.extractPagination(req)
 
     let volumeTimeseries;
     
     if(groupBy === 'network') {
-      volumeTimeseries = await DepositEventRepository.getDailyDepositTotalsGroupedByNetwork(pagination, order === "DESC" ? "DESC" : "ASC", period, parsedNetworks, VolumeTimeseriesTransformer);
+      volumeTimeseries = await DepositEventRepository.getDailyDepositTotalsGroupedByNetwork(pagination, order === "DESC" ? "DESC" : "ASC", period, parsedNetworks, parsedVersions, VolumeTimeseriesTransformer);
     } else {
-      volumeTimeseries = await DepositEventRepository.getDailyDepositTotals(pagination, order === "DESC" ? "DESC" : "ASC", period, parsedNetworks, VolumeTimeseriesTransformer);
+      volumeTimeseries = await DepositEventRepository.getDailyDepositTotals(pagination, order === "DESC" ? "DESC" : "ASC", period, parsedNetworks, parsedVersions, VolumeTimeseriesTransformer);
     }
 
     this.sendResponse(res, volumeTimeseries);
@@ -52,11 +59,13 @@ class VolumeController extends Controller {
       order = "ASC",
       period,
       networks,
+      versions,
       groupBy,
     } = req.query;
 
     period = period as string;
     networks = networks as string;
+    versions = versions as string;
     groupBy = groupBy as string;
 
     let parsedNetworks : string[] = [];
@@ -64,14 +73,19 @@ class VolumeController extends Controller {
       parsedNetworks = networks.split(',')
     }
 
+    let parsedVersions : string[] = [];
+    if(versions) {
+      parsedVersions = versions.split(',')
+    }
+
     const pagination = this.extractPagination(req)
 
     let volumeTimeseries;
     
     if(groupBy === 'network') {
-      volumeTimeseries = await WithdrawEventRepository.getDailyWithdrawTotalsGroupedByNetwork(pagination, order === "DESC" ? "DESC" : "ASC", period, parsedNetworks, VolumeTimeseriesTransformer);
+      volumeTimeseries = await WithdrawEventRepository.getDailyWithdrawTotalsGroupedByNetwork(pagination, order === "DESC" ? "DESC" : "ASC", period, parsedNetworks, parsedVersions, VolumeTimeseriesTransformer);
     } else {
-      volumeTimeseries = await WithdrawEventRepository.getDailyWithdrawTotals(pagination, order === "DESC" ? "DESC" : "ASC", period, parsedNetworks, VolumeTimeseriesTransformer);
+      volumeTimeseries = await WithdrawEventRepository.getDailyWithdrawTotals(pagination, order === "DESC" ? "DESC" : "ASC", period, parsedNetworks, parsedVersions, VolumeTimeseriesTransformer);
     }
 
     this.sendResponse(res, volumeTimeseries);
@@ -82,11 +96,13 @@ class VolumeController extends Controller {
       order = "ASC",
       period,
       networks,
+      versions,
       groupBy,
     } = req.query;
 
     period = period as string;
     networks = networks as string;
+    versions = versions as string;
     groupBy = groupBy as string;
 
     let parsedNetworks : string[] = [];
@@ -94,14 +110,19 @@ class VolumeController extends Controller {
       parsedNetworks = networks.split(',')
     }
 
+    let parsedVersions : string[] = [];
+    if(versions) {
+      parsedVersions = versions.split(',')
+    }
+
     const pagination = this.extractPagination(req)
 
     let volumeTimeseries;
     
     if(groupBy === 'network') {
-      volumeTimeseries = await RepayEventRepository.getDailyRepayTotalsGroupedByNetwork(pagination, order === "DESC" ? "DESC" : "ASC", period, parsedNetworks, VolumeTimeseriesTransformer);
+      volumeTimeseries = await RepayEventRepository.getDailyRepayTotalsGroupedByNetwork(pagination, order === "DESC" ? "DESC" : "ASC", period, parsedNetworks, parsedVersions, VolumeTimeseriesTransformer);
     } else {
-      volumeTimeseries = await RepayEventRepository.getDailyRepayTotals(pagination, order === "DESC" ? "DESC" : "ASC", period, parsedNetworks, VolumeTimeseriesTransformer);
+      volumeTimeseries = await RepayEventRepository.getDailyRepayTotals(pagination, order === "DESC" ? "DESC" : "ASC", period, parsedNetworks, parsedVersions, VolumeTimeseriesTransformer);
     }
 
     this.sendResponse(res, volumeTimeseries);
@@ -113,11 +134,13 @@ class VolumeController extends Controller {
       order = "ASC",
       period,
       networks,
+      versions,
       groupBy,
     } = req.query;
 
     period = period as string;
     networks = networks as string;
+    versions = versions as string;
     groupBy = groupBy as string;
 
 
@@ -126,14 +149,19 @@ class VolumeController extends Controller {
       parsedNetworks = networks.split(',')
     }
 
+    let parsedVersions : string[] = [];
+    if(versions) {
+      parsedVersions = versions.split(',')
+    }
+
     const pagination = this.extractPagination(req)
 
     let volumeTimeseries;
     
     if(groupBy === 'network') {
-      volumeTimeseries = await BorrowEventRepository.getDailyBorrowTotalsGroupedByNetwork(pagination, order === "DESC" ? "DESC" : "ASC", period, parsedNetworks, VolumeTimeseriesTransformer);
+      volumeTimeseries = await BorrowEventRepository.getDailyBorrowTotalsGroupedByNetwork(pagination, order === "DESC" ? "DESC" : "ASC", period, parsedNetworks, parsedVersions, VolumeTimeseriesTransformer);
     } else {
-      volumeTimeseries = await BorrowEventRepository.getDailyBorrowTotals(pagination, order === "DESC" ? "DESC" : "ASC", period, parsedNetworks, VolumeTimeseriesTransformer);
+      volumeTimeseries = await BorrowEventRepository.getDailyBorrowTotals(pagination, order === "DESC" ? "DESC" : "ASC", period, parsedNetworks, parsedVersions, VolumeTimeseriesTransformer);
     }
     
     this.sendResponse(res, volumeTimeseries);
@@ -144,11 +172,13 @@ class VolumeController extends Controller {
       order = "ASC",
       period,
       networks,
+      versions,
       groupBy,
     } = req.query;
 
     period = period as string;
     networks = networks as string;
+    versions = versions as string;
     groupBy = groupBy as string;
 
     let parsedNetworks : string[] = [];
@@ -156,14 +186,19 @@ class VolumeController extends Controller {
       parsedNetworks = networks.split(',')
     }
 
+    let parsedVersions : string[] = [];
+    if(versions) {
+      parsedVersions = versions.split(',')
+    }
+
     const pagination = this.extractPagination(req)
 
     let volumeTimeseries;
     
     if(groupBy === 'network') {
-      volumeTimeseries = await SubgraphLiquidationRecordRepository.getDailyLiquidationTotalsGroupedByNetwork(pagination, order === "DESC" ? "DESC" : "ASC", period, parsedNetworks, VolumeTimeseriesTransformer);
+      volumeTimeseries = await SubgraphLiquidationRecordRepository.getDailyLiquidationTotalsGroupedByNetwork(pagination, order === "DESC" ? "DESC" : "ASC", period, parsedNetworks, parsedVersions, VolumeTimeseriesTransformer);
     } else {
-      volumeTimeseries = await SubgraphLiquidationRecordRepository.getDailyLiquidationTotals(pagination, order === "DESC" ? "DESC" : "ASC", period, parsedNetworks, VolumeTimeseriesTransformer);
+      volumeTimeseries = await SubgraphLiquidationRecordRepository.getDailyLiquidationTotals(pagination, order === "DESC" ? "DESC" : "ASC", period, parsedNetworks, parsedVersions, VolumeTimeseriesTransformer);
     }
 
     this.sendResponse(res, volumeTimeseries);

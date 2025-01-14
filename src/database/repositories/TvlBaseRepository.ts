@@ -129,6 +129,7 @@ abstract class TvlBaseRepository extends BaseRepository {
   async getTvlTotalsWholePlatform(
     pagination: IPaginationRequest,
     networks: string[] | undefined,
+    versions: string[] | undefined,
     transformer: ITransformer,
   ) {
 
@@ -149,13 +150,10 @@ abstract class TvlBaseRepository extends BaseRepository {
     })
     .where(function (this: QueryBuilder<TvlHourlyModel>) {
       if(networks) {
-        for(let [index, network] of networks.entries()) {
-          if(index === 0) {
-            this.where(`${tableName}.network`, '=', network);
-          } else {
-            this.orWhere(`${tableName}.network`, '=', network);
-          }
-        }
+        this.whereIn(`${tableName}.network`, networks);
+      }
+      if(versions) {
+        this.whereIn(`${tableName}.protocol_version`, versions);
       }
     })
     .orderBy('timestamp', 'DESC').page(page - 1, perPage);
