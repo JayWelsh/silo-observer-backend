@@ -246,6 +246,7 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
                 timestamp: useTimestampPostgres,
                 network: deploymentConfig.network,
                 deployment_id: deploymentConfig.id,
+                protocol_version: deploymentConfig.protocolVersion,
               });
             }
           }
@@ -671,6 +672,7 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
           assetSymbols,
           assetDecimals,
           siloAddressToSiloConfigAddress,
+          siloAddressToFeeData,
         } = await getAllSiloAssetBalancesV2(deploymentConfig);
 
         if(success && (siloAddresses?.length > 0)) {
@@ -678,6 +680,33 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
           let coingeckoAddressesQuery = assetAddresses.join(',');
 
           let tokenAddressToCoingeckoPrice = await fetchCoingeckoPrices(coingeckoAddressesQuery, deploymentConfig.network);
+
+          for(let [siloAddress, siloFeeData] of Object.entries(siloAddressToFeeData)) {
+            let siloChecksumAddress = utils.getAddress(siloAddress);
+            let assetChecksumAddress = utils.getAddress(siloFeeData.asset);
+            if(isHourlyMoment) {
+              await SiloRevenueSnapshotRepository.create({
+                silo_address: siloChecksumAddress,
+                asset_address: assetChecksumAddress,
+                amount_pending: siloFeeData.calculatedPendingDaoFees ? siloFeeData.calculatedPendingDaoFees : 0,
+                amount_pending_raw: siloFeeData.calculatedPendingDaoFeesRaw ? siloFeeData.calculatedPendingDaoFeesRaw : 0,
+                amount_pending_usd: new BigNumber(siloFeeData.calculatedPendingDaoFees ? siloFeeData.calculatedPendingDaoFees : 0).multipliedBy(tokenAddressToCoingeckoPrice[assetChecksumAddress] ? tokenAddressToCoingeckoPrice[assetChecksumAddress] : 0).toString(),
+                // TODO add support for harvested values in V2
+                amount_harvested: 0,
+                amount_harvested_raw: 0,
+                amount_harvested_usd: 0,
+                // V2 specific values
+                amount_pending_deployer: siloFeeData.calculatedPendingDeployerFees ? siloFeeData.calculatedPendingDeployerFees : 0,
+                amount_pending_deployer_raw: siloFeeData.calculatedPendingDeployerFeesRaw ? siloFeeData.calculatedPendingDeployerFeesRaw : 0,
+                amount_pending_deployer_usd: new BigNumber(siloFeeData.calculatedPendingDeployerFees ? siloFeeData.calculatedPendingDeployerFees : 0).multipliedBy(tokenAddressToCoingeckoPrice[assetChecksumAddress] ? tokenAddressToCoingeckoPrice[assetChecksumAddress] : 0).toString(),
+                asset_price_at_sync_time: tokenAddressToCoingeckoPrice[assetChecksumAddress] ? tokenAddressToCoingeckoPrice[assetChecksumAddress] : 0,
+                timestamp: useTimestampPostgres,
+                network: deploymentConfig.network,
+                deployment_id: deploymentConfig.id,
+                protocol_version: deploymentConfig.protocolVersion,
+              });
+            }
+          }
 
           let tvlUsdSiloAddressToAssetAddressBN : {[key: string]: {[key: string]: BigNumber}} = {};
           let borrowedUsdSiloAddressToAssetAddressBN : {[key: string]: {[key: string]: BigNumber}} = {};

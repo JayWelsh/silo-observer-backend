@@ -10,10 +10,12 @@ import {
 
 import {
   SILO_BLACKLIST,
+  ZERO_ADDRESS,
 } from "../../constants";
 
 import SiloFactoryV2ABI from '../abis/SiloFactoryV2ABI.json';
 import SiloV2ABI from '../abis/SiloV2ABI.json';
+import SiloConfigV2ABI from '../abis/SiloConfigV2ABI.json';
 import ERC20ABI from '../abis/ERC20ABI.json';
 
 import {
@@ -45,6 +47,28 @@ interface IAllSiloAssetBalances {
   pendingProtocolFeesUSD?: string
 }
 
+interface ISiloFeeData {
+  daoFee: BigNumber
+  deployerFee: BigNumber
+  flashloanFee: BigNumber
+  asset: string
+  daoAndDeployerRevenue: BigNumber
+  interestRateTimestamp: BigNumber
+  protectedAssets: BigNumber
+  collateralAssets: BigNumber
+  debtAssets: BigNumber
+  calculatedPendingDaoFeesRaw: string
+  calculatedPendingDeployerFeesRaw: string
+  calculatedPendingDaoFees: string
+  calculatedPendingDeployerFees: string
+}
+
+interface IAssetData {
+  symbol: string
+  decimals: number
+  address: string
+}
+
 export const getAllSiloAssetBalancesV2 = async (deploymentConfig: IDeployment) => {
 
   let provider = NetworkToProvider[deploymentConfig.network];
@@ -56,7 +80,7 @@ export const getAllSiloAssetBalancesV2 = async (deploymentConfig: IDeployment) =
   for(let siloFactoryConfig of deploymentConfig.siloFactories) {
     let FactoryContract = new Contract(siloFactoryConfig.address, siloFactoryConfig.abi);
     let repositoryContract = await FactoryContract.connect(provider);
-    siloFactories.push({contract: repositoryContract, meta: siloFactoryConfig.meta});
+    siloFactories.push({contract: repositoryContract, meta: siloFactoryConfig.meta, address: siloFactoryConfig.address, abi: siloFactoryConfig.abi});
   }
 
   let assetAddresses : string[] = [];
@@ -67,6 +91,8 @@ export const getAllSiloAssetBalancesV2 = async (deploymentConfig: IDeployment) =
   let siloAssetBalances : IAllSiloAssetBalanceResults = {}
   let siloAddresses : string[] = [];
   let siloAddressToSiloConfigAddress : {[key: string]: string} = {};
+  let siloAddressToFeeData : {[key: string]: ISiloFeeData} = {};
+  let assetAddressToAssetInfo : {[key: string]: IAssetData} = {};
 
   let finalResult = {
     success: true,
@@ -78,6 +104,8 @@ export const getAllSiloAssetBalancesV2 = async (deploymentConfig: IDeployment) =
     assetDecimals,
     siloAssetBorrowedBalances,
     siloAddressToSiloConfigAddress,
+    assetAddressToAssetInfo,
+    siloAddressToFeeData,
   }
 
   for(let siloFactoryContractEntry of siloFactories) {
@@ -111,8 +139,6 @@ export const getAllSiloAssetBalancesV2 = async (deploymentConfig: IDeployment) =
 
       console.log({siloAddresses})
 
-      const assetAddresses : string[] = [];
-
       const indexedSiloAddresses : string[] = [];
 
       const siloContracts = siloAddresses.map(address => {
@@ -121,10 +147,20 @@ export const getAllSiloAssetBalancesV2 = async (deploymentConfig: IDeployment) =
         return contract;
       });
 
-      [...allSiloAssets] = await multicallProviderRetryOnFailure(siloContracts.map(contract => contract.asset()), 'all silos assets', deploymentConfig.network);
-      const [...allSiloAssetBorrowedAmounts] = await multicallProviderRetryOnFailure(siloContracts.map(contract => contract.getTotalAssetsStorage(2)), 'all silo asset borrowed', deploymentConfig.network);
+      const siloConfigContracts = siloAddresses.map(address => {
+        let contract = new MulticallContract(siloAddressToSiloConfigAddress[address], SiloConfigV2ABI);
+        return contract;
+      });
 
-      console.log({allSiloAssets})
+      const siloFactoryContracts = siloAddresses.map(address => {
+        let contract = new MulticallContract(siloFactoryContractEntry.address, siloFactoryContractEntry.abi);
+        return contract;
+      });
+
+      [...allSiloAssets] = await multicallProviderRetryOnFailure(siloContracts.map(contract => contract.asset()), 'all silos assets', deploymentConfig.network);
+      const [...allSiloStorage] = await multicallProviderRetryOnFailure(siloContracts.map(contract => contract.getSiloStorage()), 'all silo storage', deploymentConfig.network);
+      const [...allSiloFeesWithAsset] = await multicallProviderRetryOnFailure(siloConfigContracts.map((contract, index) => contract.getFeesWithAsset(indexedSiloAddresses[index])), 'all silo config fees', deploymentConfig.network);
+      const [...allFeeReceivers] = await multicallProviderRetryOnFailure(siloFactoryContracts.map((contract, index) => contract.getFeeReceivers(indexedSiloAddresses[index])), 'all silo fee receivers', deploymentConfig.network);
 
       let flattenedTokenAddresses = allSiloAssets.flat();
       let tokenQueryIndex = 0;
@@ -148,13 +184,18 @@ export const getAllSiloAssetBalancesV2 = async (deploymentConfig: IDeployment) =
           decimals: allSiloAssetDecimals[resultsIndex],
           tokenAddress: flattenedTokenAddresses[resultsIndex]
         };
+        assetAddressToAssetInfo[flattenedTokenAddresses[resultsIndex]] = {
+          decimals: allSiloAssetDecimals[resultsIndex],
+          symbol: allSiloAssetSymbols[resultsIndex],
+          address: flattenedTokenAddresses[resultsIndex],
+        }
         if(!results[siloAddresses[resultsIndex]]) {
           results[siloAddresses[resultsIndex]] = [];
           results[siloAddresses[resultsIndex]].push(singleResult);
         } else {
           results[siloAddresses[resultsIndex]].push(singleResult);
         }
-        let borrowedBalance = new BigNumber(utils.formatUnits(allSiloAssetBorrowedAmounts[resultsIndex], allSiloAssetDecimals[resultsIndex])).toString();
+        let borrowedBalance = new BigNumber(utils.formatUnits(allSiloStorage[resultsIndex].debtAssets, allSiloAssetDecimals[resultsIndex])).toString();
         let singleBorrowedResult = {
           balance: borrowedBalance,
           decimals: allSiloAssetDecimals[resultsIndex],
@@ -169,7 +210,59 @@ export const getAllSiloAssetBalancesV2 = async (deploymentConfig: IDeployment) =
         resultsIndex++;
       }
 
-      console.log({results})
+      for(let [index, siloFeeConfig] of allSiloFeesWithAsset.entries()) {
+        let {
+          daoFee,
+          deployerFee,
+          flashloanFee,
+          asset
+        } = siloFeeConfig;
+        let {
+          daoAndDeployerRevenue,
+          interestRateTimestamp,
+          protectedAssets,
+          collateralAssets,
+          debtAssets,
+        } = allSiloStorage[index];
+        let {
+          dao: daoFeeReceiver,
+          deployer: deployerFeeReceiver
+        } = allFeeReceivers[index];
+
+        let calculatedPendingDaoFeesRaw = new BigNumber(0);
+        let calculatedPendingDeployerFeesRaw = new BigNumber(0);
+
+        if(deployerFeeReceiver === ZERO_ADDRESS) {
+          calculatedPendingDaoFeesRaw = daoAndDeployerRevenue;
+        } else {
+          // daoRevenue = earnedFees * daoFee;
+          // unchecked {
+          //     // fees are % in decimal point so safe to uncheck
+          //     daoRevenue = daoRevenue / (daoFee + deployerFee);
+          //     // `daoRevenue` is chunk of `earnedFees`, so safe to uncheck
+          //     deployerRevenue = earnedFees - daoRevenue;
+          // }
+          calculatedPendingDaoFeesRaw = new BigNumber(daoAndDeployerRevenue.toString()).multipliedBy(daoFee.toString());
+          calculatedPendingDaoFeesRaw = calculatedPendingDaoFeesRaw.dividedBy(new BigNumber(daoFee.toString()).plus(deployerFee.toString()));
+          calculatedPendingDeployerFeesRaw = new BigNumber(daoAndDeployerRevenue.toString()).minus(calculatedPendingDaoFeesRaw);
+        }
+
+        siloAddressToFeeData[indexedSiloAddresses[index]] = {
+          daoFee,
+          deployerFee,
+          flashloanFee,
+          asset,
+          daoAndDeployerRevenue,
+          interestRateTimestamp,
+          protectedAssets,
+          collateralAssets,
+          debtAssets,
+          calculatedPendingDaoFeesRaw: calculatedPendingDaoFeesRaw.toString(),
+          calculatedPendingDeployerFeesRaw: calculatedPendingDeployerFeesRaw.toString(),
+          calculatedPendingDaoFees: new BigNumber(utils.formatUnits(calculatedPendingDaoFeesRaw.toString(), assetAddressToAssetInfo[asset].decimals)).toString(),
+          calculatedPendingDeployerFees: new BigNumber(utils.formatUnits(calculatedPendingDeployerFeesRaw.toString(), assetAddressToAssetInfo[asset].decimals)).toString(),
+        }
+      }
 
       // const siloContractsForInterestData = [];
       // const indexedInterestDataAssets : IAllSiloAssetBalances[] = [];
