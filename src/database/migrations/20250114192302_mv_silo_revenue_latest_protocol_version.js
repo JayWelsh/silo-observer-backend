@@ -6,6 +6,7 @@ const {
 } = require("../tables");
 
 exports.up = (knex) => knex.schema.raw(`
+  DROP MATERIALIZED VIEW IF EXISTS ${LATEST_SILO_REVENUE_SNAPSHOT_MATERIALIZED_VIEW} CASCADE;
   CREATE MATERIALIZED VIEW ${LATEST_SILO_REVENUE_SNAPSHOT_MATERIALIZED_VIEW} AS
   WITH latest_timestamps AS (
     SELECT 
