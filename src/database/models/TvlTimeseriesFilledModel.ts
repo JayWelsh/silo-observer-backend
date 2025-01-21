@@ -1,14 +1,13 @@
 import {
-  TVL_HOURLY_TABLE,
   ASSET_TABLE,
-  TVL_TIMESERIES_WITH_GAPS_MATERIALIZED_VIEW,
+  TVL_TIMESERIES_FILLED,
 } from "../tables";
 import BaseModel from "./BaseModel";
 import AssetModel from "./AssetModel";
 
-export default class TvlMaterializedViewModel extends BaseModel {
+export default class TvlTimeseriesFilledModel extends BaseModel {
     static get tableName() {
-        return TVL_TIMESERIES_WITH_GAPS_MATERIALIZED_VIEW
+        return TVL_TIMESERIES_FILLED
     }
 
     static get idColumn() {
@@ -21,7 +20,7 @@ export default class TvlMaterializedViewModel extends BaseModel {
           relation: BaseModel.HasOneRelation,
           modelClass: AssetModel,
           join: {
-              from: `${TVL_HOURLY_TABLE}.asset_address`,
+              from: `${TVL_TIMESERIES_FILLED}.asset_address`,
               to: `${ASSET_TABLE}.address`,
           }
         },

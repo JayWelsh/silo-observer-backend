@@ -5,7 +5,7 @@ import { utils } from "ethers";
 import {
   BorrowedMinutelyRepository,
   BorrowedHourlyRepository,
-  BorrowedTimeseriesMaterializedViewRepository,
+  BorrowedTimeseriesFilledRepository,
 } from '../database/repositories';
 
 import {
@@ -135,7 +135,7 @@ class BorrowedTotalController extends Controller {
 
     const pagination = this.extractPagination(req)
 
-    let borrowedTotals = await BorrowedTimeseriesMaterializedViewRepository.getBorrowedTotalsWholePlatformNew(pagination, parsedNetworks, parsedVersions, BorrowedTotalOutputTransformer);
+    let borrowedTotals = await BorrowedTimeseriesFilledRepository.getBorrowedTotalsWholePlatformNew(pagination, parsedNetworks, parsedVersions, BorrowedTotalOutputTransformer);
 
     this.sendResponse(res, borrowedTotals);
   }

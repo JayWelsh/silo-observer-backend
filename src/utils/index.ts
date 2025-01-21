@@ -170,6 +170,84 @@ const getCoingeckoOverrides = (assetAddressesQueryString : string, network: stri
   return {assetAddressesQueryString, proxyToOrigin, originToProxy};
 }
 
+interface ITimeseriesEntry {
+  timestamp: Date;
+  network: string;
+  deployment_id: string;
+  protocol_version: string;
+  tvl?: string; // Using string for decimal precision
+  borrowed?: string; // Using string for decimal precision
+}
+
+export const fillTimeseriesGaps = (data: ITimeseriesEntry[], type: "tvl" | "borrowed", startTime: Date, endTime: Date): ITimeseriesEntry[] => {
+  if (data.length === 0) return [];
+  
+  const filled: ITimeseriesEntry[] = [];
+  const twentyMins = 20 * 60 * 1000; // milliseconds in 20 minutes
+  const hourly = 3600000; // milliseconds in an hour
+  const daily = 24 * hourly; // milliseconds in a day
+  
+  // Sort data by timestamp
+  const sortedData = [...data].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+  
+  // Calculate time boundaries
+  const now = new Date();
+  const startOfToday = new Date(now);
+  startOfToday.setUTCHours(0, 0, 0, 0);
+  
+  const sevenDaysAgo = new Date(now);
+  sevenDaysAgo.setUTCDate(sevenDaysAgo.getUTCDate() - 7);
+  sevenDaysAgo.setUTCHours(0, 0, 0, 0);
+  
+  // Adjust startTime to 00:00 UTC of its day
+  const adjustedStartTime = new Date(startTime);
+  adjustedStartTime.setUTCHours(0, 0, 0, 0);
+  
+  let currentTime = adjustedStartTime.getTime();
+  let lastKnownValue = sortedData[0][type];
+  let dataIndex = 0;
+  
+  while (currentTime <= endTime.getTime()) {
+    // Update lastKnownValue if we have new data for this timestamp
+    while (dataIndex < sortedData.length && 
+           sortedData[dataIndex].timestamp.getTime() <= currentTime) {
+      lastKnownValue = sortedData[dataIndex][type];
+      dataIndex++;
+    }
+    
+    const currentDate = new Date(currentTime);
+    const isToday = currentTime >= startOfToday.getTime();
+    const isLastWeek = currentTime >= sevenDaysAgo.getTime();
+    
+    // Determine if we should add this point based on granularity
+    const shouldAddPoint = 
+      isToday ? currentDate.getUTCMinutes() % 20 === 0 : // Every 20 mins today
+      isLastWeek ? currentDate.getUTCMinutes() === 0 : // Every hour last week
+      currentDate.getUTCHours() === 0; // Every day for older data
+    
+    if (shouldAddPoint) {
+      filled.push({
+        timestamp: new Date(currentTime),
+        network: sortedData[0].network,
+        deployment_id: sortedData[0].deployment_id,
+        protocol_version: sortedData[0].protocol_version,
+        [type]: lastKnownValue
+      });
+    }
+    
+    // Increment based on time period
+    if (isToday) {
+      currentTime += twentyMins;
+    } else if (isLastWeek) {
+      currentTime += hourly;
+    } else {
+      currentTime += daily;
+    }
+  }
+  
+  return filled;
+}
+
 export {
   sleep,
   srcPath,
