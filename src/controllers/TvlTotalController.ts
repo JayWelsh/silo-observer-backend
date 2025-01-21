@@ -3,7 +3,7 @@ import e, { Request, Response } from 'express';
 import { utils } from "ethers";
 
 import {
-  TvlTimeseriesMaterializedViewRepository,
+  TvlTimeseriesFilledRepository,
   TvlMinutelyRepository,
   TvlHourlyRepository,
   TvlLatestRepository,
@@ -136,9 +136,9 @@ class TvlTotalController extends Controller {
       parsedVersions = versions.split(',');
     }
 
-    const pagination = this.extractPagination(req)
+    const pagination = this.extractPagination(req);
 
-    let tvlTotals = await TvlTimeseriesMaterializedViewRepository.getTvlTotalsWholePlatformNew(pagination, parsedNetworks, parsedVersions, TvlTotalOutputTransformer);
+    let tvlTotals = await TvlTimeseriesFilledRepository.getTvlTotalsWholePlatformNew(pagination, parsedNetworks, parsedVersions, TvlTotalOutputTransformer);
 
     this.sendResponse(res, tvlTotals);
   }

@@ -1,5 +1,5 @@
 import {
-  BORROWED_TIMESERIES_MATERIALIZED_VIEW,
+  BORROWED_TIMESERIES_WITH_GAPS_MATERIALIZED_VIEW,
   ASSET_TABLE,
 } from "../tables";
 import BaseModel from "./BaseModel";
@@ -7,7 +7,7 @@ import AssetModel from "./AssetModel";
 
 export default class BorrowedTimeseriesMaterializedViewModel extends BaseModel {
     static get tableName() {
-        return BORROWED_TIMESERIES_MATERIALIZED_VIEW
+        return BORROWED_TIMESERIES_WITH_GAPS_MATERIALIZED_VIEW
     }
 
     static get idColumn() {
@@ -20,7 +20,7 @@ export default class BorrowedTimeseriesMaterializedViewModel extends BaseModel {
           relation: BaseModel.HasOneRelation,
           modelClass: AssetModel,
           join: {
-              from: `${BORROWED_TIMESERIES_MATERIALIZED_VIEW}.asset_address`,
+              from: `${BORROWED_TIMESERIES_WITH_GAPS_MATERIALIZED_VIEW}.asset_address`,
               to: `${ASSET_TABLE}.address`,
           }
         },

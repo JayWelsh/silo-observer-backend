@@ -12,12 +12,14 @@ import TvlMinutelyModel from './TvlMinutelyModel';
 import TvlHourlyModel from './TvlHourlyModel';
 import TvlLatestModel from './TvlLatestModel';
 import TvlTimeseriesMaterializedViewModel from './TvlTimeseriesMaterializedViewModel';
+import TvlTimeseriesFilledModel from './TvlTimeseriesFilledModel';
 
 // BORROWED
 import BorrowedMinutelyModel from './BorrowedMinutelyModel';
 import BorrowedHourlyModel from './BorrowedHourlyModel';
 import BorrowedLatestModel from './BorrowedLatestModel';
 import BorrowedTimeseriesMaterializedViewModel from './BorrowedTimeseriesMaterializedViewModel';
+import BorrowedTimeseriesFilledModel from './BorrowedTimeseriesFilledModel';
 
 // USER METRICS
 import SiloUserModel from './SiloUserModel';
@@ -60,10 +62,12 @@ export {
   TvlHourlyModel,
   TvlLatestModel,
   TvlTimeseriesMaterializedViewModel,
+  TvlTimeseriesFilledModel,
   BorrowedMinutelyModel,
   BorrowedHourlyModel,
   BorrowedLatestModel,
   BorrowedTimeseriesMaterializedViewModel,
+  BorrowedTimeseriesFilledModel,
   SiloUserModel,
   EventIndexerBlockTrackerModel,
   BorrowEventModel,

@@ -9,11 +9,13 @@ import TvlMinutelyRepository from "./TvlMinutelyRepository";
 import TvlHourlyRepository from "./TvlHourlyRepository";
 import TvlLatestRepository from "./TvlLatestRepository";
 import TvlTimeseriesMaterializedViewRepository from "./TvlTimeseriesMaterializedViewRepository";
+import TvlTimeseriesFilledRepository from './TvlTimeseriesFilledRepository';
 
 import BorrowedMinutelyRepository from "./BorrowedMinutelyRepository";
 import BorrowedHourlyRepository from "./BorrowedHourlyRepository";
 import BorrowedLatestRepository from "./BorrowedLatestRepository";
 import BorrowedTimeseriesMaterializedViewRepository from './BorrowedTimeseriesMaterializedViewRepository';
+import BorrowedTimeseriesFilledRepository from './BorrowedTimeseriesFilledRepository';
 
 import SiloUserRepository from "./SiloUserRepository";
 
@@ -54,10 +56,12 @@ export {
   TvlHourlyRepository,
   TvlLatestRepository,
   TvlTimeseriesMaterializedViewRepository,
+  TvlTimeseriesFilledRepository,
   BorrowedMinutelyRepository,
   BorrowedHourlyRepository,
   BorrowedLatestRepository,
   BorrowedTimeseriesMaterializedViewRepository,
+  BorrowedTimeseriesFilledRepository,
   SiloUserRepository,
   EventIndexerBlockTrackerRepository,
   BorrowEventRepository,
