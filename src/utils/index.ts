@@ -40,6 +40,7 @@ let unrecognisedTokens : any[] = [];
 
 const subgraphRequestWithRetry = async (query: string, backupQuery: (arg0: string) => string, url = SUBGRAPH_ENDPOINT, fallbackUrl = SUBGRAPH_ENDPOINT_FALLBACK, retryFallback = 3, retryMax = 6, retryCount = 0) : Promise<any> => {
   try {
+    // console.log({url, query})
     let result = await axios.post(url, {
       query: query
     }, { 
@@ -49,10 +50,12 @@ const subgraphRequestWithRetry = async (query: string, backupQuery: (arg0: strin
       } 
     })
     .then((response) => response.data)
+    // console.log({result})
     if(result.errors) {
       console.error(result.errors);
       throw new Error(result.errors?.[0].message);
     }
+    // console.log({result})
     return result;
   } catch (e: any) {
     retryCount++;
@@ -183,23 +186,25 @@ export const fillTimeseriesGaps = (data: ITimeseriesEntry[], type: "tvl" | "borr
   if (data.length === 0) return [];
   
   const filled: ITimeseriesEntry[] = [];
-  const twentyMins = 20 * 60 * 1000; // milliseconds in 20 minutes
-  const hourly = 3600000; // milliseconds in an hour
-  const daily = 24 * hourly; // milliseconds in a day
+  const twentyMins = 20 * 60 * 1000;
+  const hourly = 3600000;
+  const daily = 24 * hourly;
   
   // Sort data by timestamp
   const sortedData = [...data].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
   
   // Calculate time boundaries
   const now = new Date();
-  const startOfToday = new Date(now);
-  startOfToday.setUTCHours(0, 0, 0, 0);
   
-  const sevenDaysAgo = new Date(now);
-  sevenDaysAgo.setUTCDate(sevenDaysAgo.getUTCDate() - 7);
-  sevenDaysAgo.setUTCHours(0, 0, 0, 0);
+  const weekAgo = new Date(now);
+  weekAgo.setUTCDate(weekAgo.getUTCDate() - 7);
+  weekAgo.setUTCHours(0, 0, 0, 0);
   
-  // Adjust startTime to 00:00 UTC of its day
+  const monthAgo = new Date(now);
+  monthAgo.setUTCDate(monthAgo.getUTCDate() - 30);
+  monthAgo.setUTCHours(0, 0, 0, 0);
+  
+  // Adjust startTime to 00:00 UTC
   const adjustedStartTime = new Date(startTime);
   adjustedStartTime.setUTCHours(0, 0, 0, 0);
   
@@ -216,13 +221,12 @@ export const fillTimeseriesGaps = (data: ITimeseriesEntry[], type: "tvl" | "borr
     }
     
     const currentDate = new Date(currentTime);
-    const isToday = currentTime >= startOfToday.getTime();
-    const isLastWeek = currentTime >= sevenDaysAgo.getTime();
+    const isWithinWeek = currentTime >= weekAgo.getTime();
+    const isWithinMonth = currentTime >= monthAgo.getTime();
     
-    // Determine if we should add this point based on granularity
     const shouldAddPoint = 
-      isToday ? currentDate.getUTCMinutes() % 20 === 0 : // Every 20 mins today
-      isLastWeek ? currentDate.getUTCMinutes() === 0 : // Every hour last week
+      isWithinWeek ? currentDate.getUTCMinutes() % 20 === 0 : // Every 20 mins for last week
+      isWithinMonth ? currentDate.getUTCMinutes() === 0 : // Every hour for last month
       currentDate.getUTCHours() === 0; // Every day for older data
     
     if (shouldAddPoint) {
@@ -236,9 +240,9 @@ export const fillTimeseriesGaps = (data: ITimeseriesEntry[], type: "tvl" | "borr
     }
     
     // Increment based on time period
-    if (isToday) {
+    if (isWithinWeek) {
       currentTime += twentyMins;
-    } else if (isLastWeek) {
+    } else if (isWithinMonth) {
       currentTime += hourly;
     } else {
       currentTime += daily;
