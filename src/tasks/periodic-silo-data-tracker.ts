@@ -149,42 +149,49 @@ const fetchCoingeckoPrices = async (assetAddressesQueryString : string, network:
 
   let {
     assetAddressesQueryString: assetAddressesQueryStringWithOverrides,
-    proxyToOrigin: coingeckoOverridesProxyToOrigin
+    proxyToOrigin: coingeckoOverridesProxyToOrigin,
+    networkToAssetAddressQueryString,
   } = getCoingeckoOverrides(assetAddressesQueryString, network);
 
-  let results : ICoingeckoAssetPriceEntry[] = await axios.get(
-    `https://pro-api.coingecko.com/api/v3/simple/token_price/${NETWORK_ID_TO_COINGECKO_ID[network]}?contract_addresses=${assetAddressesQueryStringWithOverrides}&vs_currencies=USD&x_cg_pro_api_key=${COINGECKO_API_KEY}`,
-    {
-      headers: { "Accept-Encoding": "gzip,deflate,compress" }
-    }
-  )
-  .then(function (response) {
-    // handle success
-    if(response?.data) {
-      for (const [proxyAddress, originAddress] of Object.entries(coingeckoOverridesProxyToOrigin)) {
-        if (proxyAddress && originAddress && response?.data[proxyAddress.toLowerCase()]) {
-          response.data[originAddress.toLowerCase()] = response?.data[proxyAddress.toLowerCase()];
+  let results : ICoingeckoAssetPriceEntryResponse = {};
+  
+  for(let overrideNetwork of Object.keys(networkToAssetAddressQueryString)) {
+    let resultBatch = await axios.get(
+      `https://pro-api.coingecko.com/api/v3/simple/token_price/${NETWORK_ID_TO_COINGECKO_ID[overrideNetwork]}?contract_addresses=${networkToAssetAddressQueryString[overrideNetwork]}&vs_currencies=USD&x_cg_pro_api_key=${COINGECKO_API_KEY}`,
+      {
+        headers: { "Accept-Encoding": "gzip,deflate,compress" }
+      }
+    )
+    .then(function (response) {
+      // handle success
+      if(response?.data) {
+        for (const [proxyAddress, originAddress] of Object.entries(coingeckoOverridesProxyToOrigin)) {
+          if (proxyAddress && originAddress && response?.data[proxyAddress.toLowerCase()]) {
+            response.data[originAddress.toLowerCase()] = response?.data[proxyAddress.toLowerCase()];
+          }
         }
       }
-    }
-    return response?.data ? response?.data : {};
-  })
-  .catch(async (e) => {
-    retryCount++;
-    if(retryCount < coingeckoRetryMax) {
-      console.error(`error fetching coingecko prices at ${Math.floor(new Date().getTime() / 1000)}, retry #${retryCount}...`, e?.response?.data?.error === "coin not found" ? "" : e);
-      if(e?.response?.data?.error === "coin not found") {
-        unrecognisedTokens.push(assetAddressesQueryStringWithOverrides);
-        console.log(`skipping retries since coin is not found on ${assetAddressesQueryStringWithOverrides}`);
-        return {};
+      return response?.data ? response?.data : {};
+    })
+    .catch(async (e) => {
+      retryCount++;
+      if(retryCount < coingeckoRetryMax) {
+        console.error(`error fetching coingecko prices at ${Math.floor(new Date().getTime() / 1000)}, retry #${retryCount}...`, e?.response?.data?.error === "coin not found" ? "" : e);
+        if(e?.response?.data?.error === "coin not found") {
+          unrecognisedTokens.push(assetAddressesQueryStringWithOverrides);
+          console.log(`skipping retries since coin is not found on ${assetAddressesQueryStringWithOverrides}`);
+          return {};
+        }
+        await sleep(5000);
+        return await fetchCoingeckoPrices(assetAddressesQueryStringWithOverrides, network, retryCount);
+      } else {
+        console.error(`retries failed, error fetching coingecko prices at ${Math.floor(new Date().getTime() / 1000)}`, e);
       }
-      await sleep(5000);
-      return await fetchCoingeckoPrices(assetAddressesQueryStringWithOverrides, network, retryCount);
-    } else {
-      console.error(`retries failed, error fetching coingecko prices at ${Math.floor(new Date().getTime() / 1000)}`, e);
-    }
-    return {};
-  })
+      return {};
+    })
+    results = Object.assign(results, resultBatch);
+  }
+
   let assetAddressToCoingeckoUsdPrice : ITokenAddressToLastPrice = {}
   let iterable = Object.entries(results);
   if(iterable.length > 0) {
