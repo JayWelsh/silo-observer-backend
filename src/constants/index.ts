@@ -200,6 +200,7 @@ export const NETWORK_ID_TO_COINGECKO_ID : {[key: string]: string} = {
   "optimism": "optimistic-ethereum",
   "base": "base",
   "sonic": "sonic",
+  "binance-smart-chain": "binance-smart-chain",
 }
 
 export const DEPLOYMENT_CONFIGS : IDeployment[] = [
@@ -441,7 +442,7 @@ export const DEPLOYMENT_CONFIGS : IDeployment[] = [
 
 // TODO: Add support for proxies between chains, will require update to fetchCoingeckoPrices
 
-export const PRICE_PROXIES : {[key: string]: {[key: string]: {proxyAddress: string}}} = {
+export const PRICE_PROXIES : {[key: string]: {[key: string]: {proxyAddress: string, proxyNetwork?: string}}} = {
   ethereum: {
     "0xeEE8aED1957ca1545a0508AfB51b53cCA7e3c0d1": { // PT-ezETH-25APR2024
       proxyAddress: "0xbf5495Efe5DB9ce00f80364C8B423567e58d2110",
@@ -488,4 +489,20 @@ export const PRICE_PROXIES : {[key: string]: {[key: string]: {proxyAddress: stri
     //   proxyAddress: "", // needs coingecko link to arbitrum token
     // }
   },
+  sonic: {
+    "0x541FD749419CA806a8bc7da8ac23D346f2dF8B77": {
+      proxyAddress: "0x7A56E1C57C7475CCf742a1832B028F0456652F97",
+      proxyNetwork: "ethereum",
+    },
+    "0xCC0966D8418d412c599A6421b760a847eB169A8c": {
+      proxyAddress: "0x1346b618dC92810EC74163e4c27004c921D446a5",
+      proxyNetwork: "binance-smart-chain",
+    },
+    "0x9fb76f7ce5FCeAA2C42887ff441D46095E494206": {
+      proxyAddress: "0xd3DCe716f3eF535C5Ff8d041c1A41C3bd89b97aE",
+    },
+    "0xE8a41c62BB4d5863C6eadC96792cFE90A1f37C47": {
+      proxyAddress: "0x3bcE5CB273F0F148010BbEa2470e7b5df84C7812",
+    }
+  }
 }

@@ -88,8 +88,11 @@ let coingeckoRetryMax = 10;
 
 export const fetchCoingeckoPriceAtHistoricalRange = async (assetAddress : string, network: string, startTime: number, endTime: number, retryCount = 0) => {
 
+  // TODO: make proper use of networkToAssetAddressQueryString
+
   let {
     assetAddressesQueryString: assetAddressWithOverride,
+    networkToAssetAddressQueryString,
   } = getCoingeckoOverrides(assetAddress, network);
 
   let results : number[][] = await axios.get(
@@ -157,10 +160,18 @@ export const fetchCoinGeckoAssetPriceClosestToTargetTime = async (assetAddress :
 const getCoingeckoOverrides = (assetAddressesQueryString : string, network: string) => {
   let originToProxy : {[key: string]: string} = {};
   let proxyToOrigin : {[key: string]: string} = {};
+  let networkToAssetAddressQueryString : {[key: string]: string} = {};
   if(assetAddressesQueryString) {
-  let assets = assetAddressesQueryString.split(",");
+  let assets = new Set(assetAddressesQueryString.split(","));
     for (let asset of assets) {
       let override = PRICE_PROXIES?.[network]?.[asset];
+      let useNetwork = override?.proxyNetwork ? override?.proxyNetwork : network;
+      let useAssetAddress = override?.proxyAddress ? override?.proxyAddress : asset;
+      if(!networkToAssetAddressQueryString[useNetwork]) {
+        networkToAssetAddressQueryString[useNetwork] = `${useAssetAddress}`;
+      } else if (networkToAssetAddressQueryString[useNetwork]) {
+        networkToAssetAddressQueryString[useNetwork] += `,${useAssetAddress}`;
+      }
       if(override?.proxyAddress) {
         originToProxy[asset] = override.proxyAddress;
         proxyToOrigin[override.proxyAddress] = asset;
@@ -170,7 +181,7 @@ const getCoingeckoOverrides = (assetAddressesQueryString : string, network: stri
   for(let originAddress of Object.keys(originToProxy)) {
     assetAddressesQueryString = assetAddressesQueryString.replace(originAddress, originToProxy[originAddress]);
   }
-  return {assetAddressesQueryString, proxyToOrigin, originToProxy};
+  return {assetAddressesQueryString, networkToAssetAddressQueryString, proxyToOrigin, originToProxy};
 }
 
 interface ITimeseriesEntry {
