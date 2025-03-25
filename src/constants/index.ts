@@ -503,6 +503,22 @@ export const PRICE_PROXIES : {[key: string]: {[key: string]: {proxyAddress: stri
     },
     "0xE8a41c62BB4d5863C6eadC96792cFE90A1f37C47": {
       proxyAddress: "0x3bcE5CB273F0F148010BbEa2470e7b5df84C7812",
+    },
+    "0xBe27993204Ec64238F71A527B4c4D5F4949034C3": { // PT-wstkscUSD (29 May)
+      proxyAddress: "0xd3dce716f3ef535c5ff8d041c1a41c3bd89b97ae", // scUSD
+    },
+    "0x420df605D062F8611EFb3F203BF258159b8FfFdE": { // PT-stS (29 May)
+      proxyAddress: "0xe5da20f15420ad15de0fa650600afc998bbe3955", // stS
+    },
+    "0x930441Aa7Ab17654dF5663781CA0C02CC17e6643": { // PT-aUSDC (14 Aug)
+      proxyAddress: "0x98c23e9d8f34fefb1b7bd6a91b7ff122f4e16f5c", // Aave v3 USDC
+      proxyNetwork: "ethereum",
+    },
+    "0xa2161E75EDf50d70544e6588788A5732A3105c00": { // PT-wstkscETH (29 May)
+      proxyAddress: "0x3bce5cb273f0f148010bbea2470e7b5df84c7812", // scETH
+    },
+    "0x46eb02b9F47634c4fab3110CC7ADc1C6311DfAC1": { // PT-wOS (29 May)
+      proxyAddress: "0x9f0df7799f6fdad409300080cff680f5a23df4b1", // wOS
     }
   }
 }
