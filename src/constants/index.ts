@@ -519,6 +519,10 @@ export const PRICE_PROXIES : {[key: string]: {[key: string]: {proxyAddress: stri
     },
     "0x46eb02b9F47634c4fab3110CC7ADc1C6311DfAC1": { // PT-wOS (29 May)
       proxyAddress: "0x9f0df7799f6fdad409300080cff680f5a23df4b1", // wOS
-    }
+    },
+    "0xBb30e76d9Bb2CC9631F7fC5Eb8e87B5Aff32bFbd": { // scBTC
+      proxyAddress: "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599", // wBTC
+      proxyNetwork: "ethereum",
+    },
   }
 }
