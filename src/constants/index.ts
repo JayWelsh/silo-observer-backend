@@ -525,7 +525,7 @@ export const PRICE_PROXIES : {[key: string]: {[key: string]: {proxyAddress: stri
       proxyNetwork: "ethereum",
     },
     "0xfA85Fe5A8F5560e9039C04f2b0a90dE1415aBD70": { // wanS
-      proxyAddress: "0xe5da20f15420ad15de0fa650600afc998bbe3955", // stS
+      proxyAddress: "0x039e2fb66102314ce7b64ce5ce3e5183bc94ad38", // wS
     }
   }
 }
