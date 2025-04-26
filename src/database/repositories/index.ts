@@ -27,6 +27,7 @@ import DepositEventRepository from './DepositEventRepository';
 import WithdrawEventRepository from './WithdrawEventRepository';
 import RepayEventRepository from './RepayEventRepository';
 import RewardEventRepository from './RewardEventRepository';
+import NewSiloEventRepository from './NewSiloEventRepository';
 
 import BlockMetadataRepository from "./BlockMetadataRepository";
 
@@ -69,6 +70,7 @@ export {
   WithdrawEventRepository,
   RepayEventRepository,
   RewardEventRepository,
+  NewSiloEventRepository,
   BlockMetadataRepository,
   SubgraphIndexerBlockTrackerRepository,
   SubgraphLiquidationRecordRepository,

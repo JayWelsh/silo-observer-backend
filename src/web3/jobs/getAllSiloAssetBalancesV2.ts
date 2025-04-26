@@ -27,6 +27,10 @@ import {
   IDeployment,
 } from '../../interfaces';
 
+import {
+  NewSiloEventRepository,
+} from '../../database/repositories';
+
 BigNumber.config({ EXPONENTIAL_AT: [-1e+9, 1e+9] });
 
 interface IAllSiloAssetBalanceResults {
@@ -115,24 +119,23 @@ export const getAllSiloAssetBalancesV2 = async (deploymentConfig: IDeployment) =
     } = siloFactoryContractEntry;
     if(siloFactoryContract) {
 
-      const siloCreationEventFilter = await siloFactoryContract.filters.NewSilo(null, null, null);
-
-      const siloCreationEvents = await queryFilterRetryOnFailure(siloFactoryContract, siloCreationEventFilter);
+      const siloCreationEvents = await NewSiloEventRepository.getNewSiloEventsByFactoryAddress(siloFactoryContractEntry.address)
 
       const siloAddresses : string[] = [];
-      if(siloCreationEvents) {
+      if(siloCreationEvents?.length > 0) {
         for(let siloCreationEvent of siloCreationEvents) {
-          if(siloCreationEvent?.args) {
-            let {
-              silo0,
-              silo1,
-              siloConfig,
-            } = siloCreationEvent.args;
-
+          let {
+            silo0,
+            silo1,
+            silo_config
+          } = siloCreationEvent;
+          if(silo0) {
             siloAddresses.push(silo0);
+            siloAddressToSiloConfigAddress[silo0] = silo_config;
+          }
+          if(silo1) {
             siloAddresses.push(silo1);
-            siloAddressToSiloConfigAddress[silo0] = siloConfig;
-            siloAddressToSiloConfigAddress[silo1] = siloConfig;
+            siloAddressToSiloConfigAddress[silo1] = silo_config;
           }
         }
       }
