@@ -132,6 +132,7 @@ export const SILO_LENS_MAIN_ADDRESS = '0x331243a425F7EE2468f0FddCe5cD83f58733Cc1
 // ARBITRUM
 
 export const SILO_FACTORY_ADDRESS_ARBITRUM = '0x4166487056A922D784b073d4d928a516B074b719';
+export const SILO_PT_TOKEN_FACTORY_ADDRESS_ARBITRUM = '0xa82837464c1DA27935E750717A423E738B408878';
 export const SILO_REPOSITORY_ADDRESS_ARBITRUM = "0x8658047e48CC09161f4152c79155Dac1d710Ff0a";
 export const SILO_LENS_ADDRESS_ARBITRUM = '0x07b94eB6AaD663c4eaf083fBb52928ff9A15BE47';
 
@@ -164,10 +165,10 @@ export const SILO_BLACKLIST = ["0x6543ee07Cf5Dd7Ad17AeECF22ba75860ef3bBAAa"];
 
 export const MAX_TOTAL_BLOCK_RANGE : {[key: string]: number} = {
   "ethereum": 1500000,
-  "arbitrum": 3500000,
-  "optimism": 3500000,
-  "base": 3500000,
-  "sonic": 3500000,
+  "arbitrum": 50000000,
+  "optimism": 50000000,
+  "base": 50000000,
+  "sonic": 50000000,
 }
 
 export const MAX_TOTAL_BLOCK_RANGE_SUBGRAPH : {[key: string]: number} = {
@@ -191,7 +192,7 @@ export const NETWORK_TO_MAX_BLOCK_BATCH_SIZE : {[key: string]: number} = {
   "arbitrum": 300000,
   "optimism": 300000,
   "base": 300000,
-  "sonic": 300000,
+  "sonic": 9999,
 }
 
 export const NETWORK_ID_TO_COINGECKO_ID : {[key: string]: string} = {
@@ -306,11 +307,19 @@ export const DEPLOYMENT_CONFIGS : IDeployment[] = [
     subgraphEndpoint: SUBGRAPH_ENDPOINT_ARBITRUM,
     subgraphEndpointFallback: SUBGRAPH_ENDPOINT_ARBITRUM_FALLBACK,
     subgraphEndpointTurtle: SUBGRAPH_ENDPOINT_ARBITRUM_TURTLE,
-    siloFactories: [{
-      address: SILO_FACTORY_ADDRESS_ARBITRUM,
-      abi: SiloFactoryABI,
-      meta: "arbitrum-original",
-    }],
+    siloFactories: [
+      {
+        address: SILO_FACTORY_ADDRESS_ARBITRUM,
+        abi: SiloFactoryABI,
+        meta: "arbitrum-original",
+      },
+      {
+        deploymentBlock: 185062167,
+        address: SILO_PT_TOKEN_FACTORY_ADDRESS_ARBITRUM,
+        abi: SiloFactoryABI,
+        meta: "arbitrum-pt",
+      }
+    ],
     incentiveControllers: [
       {
         address: "0xd592F705bDC8C1B439Bd4D665Ed99C4FaAd5A680",
@@ -414,6 +423,7 @@ export const DEPLOYMENT_CONFIGS : IDeployment[] = [
     // subgraphEndpointFallback: '',
     siloFactories: [
       {
+        deploymentBlock: 2672166,
         address: SILO_FACTORY_V2_ADDRESS_SONIC,
         abi: SiloFactoryV2ABI,
         meta: 'sonic-main-v2'

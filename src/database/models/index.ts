@@ -31,6 +31,7 @@ import DepositEventModel from './DepositEventModel';
 import WithdrawEventModel from './WithdrawEventModel';
 import RepayEventModel from './RepayEventModel';
 import RewardEventModel from './RewardEventModel';
+import NewSiloEventModel from './NewSiloEventModel';
 
 // BLOCK METADATA
 import BlockMetadataModel from './BlockMetadataModel';
@@ -75,6 +76,7 @@ export {
   WithdrawEventModel,
   RepayEventModel,
   RewardEventModel,
+  NewSiloEventModel,
   BlockMetadataModel,
   SubgraphIndexerBlockTrackerModel,
   SubgraphLiquidationRecordModel,

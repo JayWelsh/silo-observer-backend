@@ -14,6 +14,7 @@ import { getAllSiloDepositEventsSinceBlock } from './getAllSiloDepositEventsSinc
 import { getAllSiloRepayEventsSinceBlock } from './getAllSiloRepayEventsSinceBlock';
 import { getAllSiloWithdrawEventsSinceBlock } from './getAllSiloWithdrawEventsSinceBlock';
 import { getAllRewardsClaimedEventsSinceBlock } from './getAllRewardsClaimedEventsSinceBlock';
+import { getAllNewSiloEventsSinceBlock } from './getAllNewSiloEventsSinceBlock';
 
 // Subgraph
 import { subgraphIndexer } from './subgraphIndexer';
@@ -35,6 +36,7 @@ export {
   getAllSiloRepayEventsSinceBlock,
   getAllSiloWithdrawEventsSinceBlock,
   getAllRewardsClaimedEventsSinceBlock,
+  getAllNewSiloEventsSinceBlock,
   // subgraph records
   subgraphIndexer,
   getAllSubgraphLiquidationsUntilBlockV1,
