@@ -33,7 +33,7 @@ import {
 // minutely cycle to run indexer, 10 = 10 minutes (i.e. 10, 20, 30, 40, 50, 60 past the hour).
 // recommend to use 10 if doing a full sync, once up to speed, 3 minutes should be safe.
 // using 6 for Alchemy costs
-let cronIndexerPeriodMinutes = 5;
+let cronIndexerPeriodMinutes = 20;
 let cronMerklIndexerPeriodHours = 2;
 
 let corsOptions = {
