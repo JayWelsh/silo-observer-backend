@@ -168,7 +168,7 @@ export const MAX_TOTAL_BLOCK_RANGE : {[key: string]: number} = {
   "arbitrum": 50000000,
   "optimism": 50000000,
   "base": 50000000,
-  "sonic": 50000000,
+  "sonic": 10000000,
 }
 
 export const MAX_TOTAL_BLOCK_RANGE_SUBGRAPH : {[key: string]: number} = {
@@ -314,7 +314,6 @@ export const DEPLOYMENT_CONFIGS : IDeployment[] = [
         meta: "arbitrum-original",
       },
       {
-        deploymentBlock: 185062167,
         address: SILO_PT_TOKEN_FACTORY_ADDRESS_ARBITRUM,
         abi: SiloFactoryABI,
         meta: "arbitrum-pt",
@@ -423,7 +422,6 @@ export const DEPLOYMENT_CONFIGS : IDeployment[] = [
     // subgraphEndpointFallback: '',
     siloFactories: [
       {
-        deploymentBlock: 2672166,
         address: SILO_FACTORY_V2_ADDRESS_SONIC,
         abi: SiloFactoryV2ABI,
         meta: 'sonic-main-v2'

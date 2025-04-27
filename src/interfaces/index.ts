@@ -204,7 +204,6 @@ export interface IBlockMetadata {
 // Internal Interfaces Above
 
 export interface IFactoryConfig {
-  deploymentBlock?: number;
   address: string;
   abi: any;
   meta: string;
