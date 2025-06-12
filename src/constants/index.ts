@@ -136,8 +136,8 @@ export const SILO_PT_TOKEN_FACTORY_ADDRESS_ARBITRUM = '0xa82837464c1DA27935E7507
 export const SILO_REPOSITORY_ADDRESS_ARBITRUM = "0x8658047e48CC09161f4152c79155Dac1d710Ff0a";
 export const SILO_LENS_ADDRESS_ARBITRUM = '0x07b94eB6AaD663c4eaf083fBb52928ff9A15BE47';
 
-export const SILO_FACTORY_V2_ADDRESS_ARBITRUM = '0xf7dc975C96B434D436b9bF45E7a45c95F0521442';
-export const SILO_LENS_V2_ADDRESS_ARBITRUM = '0xc27B33c022935e88BDDe22a417c509010A7d97E4';
+export const SILO_FACTORY_V2_ADDRESS_ARBITRUM = '0x384DC7759d35313F0b567D42bf2f611B285B657C';
+export const SILO_LENS_V2_ADDRESS_ARBITRUM = '0x8fBe8229a8959d0623C73B91121B12Cea79D739f';
 
 // OPTIMISM
 
@@ -428,24 +428,24 @@ export const DEPLOYMENT_CONFIGS : IDeployment[] = [
       }
     ],
   },
-  // {
-  //   protocolVersion: 2,
-  //   id: 'arbitrum-main-v2',
-  //   idHumanReadable: 'Arbitrum Main V2',
-  //   network: 'arbitrum',
-  //   siloLens: SILO_LENS_V2_ADDRESS_ARBITRUM,
-  //   siloLensABI: SiloLensV2ABI,
-  //   siloBlacklist: [],
-  //   // subgraphEndpoint: '',
-  //   // subgraphEndpointFallback: '',
-  //   siloFactories: [
-  //     {
-  //       address: SILO_FACTORY_V2_ADDRESS_ARBITRUM,
-  //       abi: SiloFactoryV2ABI,
-  //       meta: 'arbitrum-main-v2'
-  //     }
-  //   ],
-  // },
+  {
+    protocolVersion: 2,
+    id: 'arbitrum-main-v2',
+    idHumanReadable: 'Arbitrum Main V2',
+    network: 'arbitrum',
+    siloLens: SILO_LENS_V2_ADDRESS_ARBITRUM,
+    siloLensABI: SiloLensV2ABI,
+    siloBlacklist: [],
+    // subgraphEndpoint: '',
+    // subgraphEndpointFallback: '',
+    siloFactories: [
+      {
+        address: SILO_FACTORY_V2_ADDRESS_ARBITRUM,
+        abi: SiloFactoryV2ABI,
+        meta: 'arbitrum-main-v2'
+      }
+    ],
+  },
 ]
 
 // TODO: Add support for proxies between chains, will require update to fetchCoingeckoPrices

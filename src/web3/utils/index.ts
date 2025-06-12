@@ -97,7 +97,7 @@ export const queryFilterRetryOnFailure = async (
   } catch (e) {
     retryCount++;
     if(retryCount <= retryMax) {
-      console.error(`Query failed, starting retry #${retryCount} (eventFilter: ${eventFilter}, fromBlock: ${fromBlock}, toBlock: ${toBlock}, batchInfo: ${batchInfo ? batchInfo : "N/A"})`);
+      console.error(`Query failed, starting retry #${retryCount} (eventFilter: ${JSON.stringify(eventFilter)}, fromBlock: ${fromBlock}, toBlock: ${toBlock}, batchInfo: ${batchInfo ? batchInfo : "N/A"})`);
       let randomDelay = 1000 + Math.floor(Math.random() * 3000);
       await sleep(randomDelay);
       return await queryFilterRetryOnFailure(contract, eventFilter, fromBlock, toBlock, batchInfo, retryCount, retryMax);
