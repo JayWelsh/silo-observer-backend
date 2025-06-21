@@ -129,6 +129,9 @@ export const SILO_FACTORY_MAIN_ADDRESS = '0xB7d391192080674281bAAB8B3083154a5f64
 export const SILO_REPOSITORY_MAIN_ADDRESS = '0xbACBBefda6fD1FbF5a2d6A79916F4B6124eD2D49';
 export const SILO_LENS_MAIN_ADDRESS = '0x331243a425F7EE2468f0FddCe5cD83f58733Cc1C';
 
+export const SILO_FACTORY_V2_ADDRESS_ETHEREUM_MAIN = '0x22a3cF6149bFa611bAFc89Fd721918EC3Cf7b581';
+export const SILO_LENS_V2_ADDRESS_ETHEREUM_MAIN = '0xF5875422734412EBbF6D4A074b7dE0a276BcDC88';
+
 // ARBITRUM
 
 export const SILO_FACTORY_ADDRESS_ARBITRUM = '0x4166487056A922D784b073d4d928a516B074b719';
@@ -446,6 +449,24 @@ export const DEPLOYMENT_CONFIGS : IDeployment[] = [
       }
     ],
   },
+  {
+    protocolVersion: 2,
+    id: 'ethereum-main-v2',
+    idHumanReadable: 'Ethereum Main V2',
+    network: 'ethereum',
+    siloLens: SILO_LENS_V2_ADDRESS_ETHEREUM_MAIN,
+    siloLensABI: SiloLensV2ABI,
+    siloBlacklist: [],
+    // subgraphEndpoint: '',
+    // subgraphEndpointFallback: '',
+    siloFactories: [
+      {
+        address: SILO_FACTORY_V2_ADDRESS_ETHEREUM_MAIN,
+        abi: SiloFactoryV2ABI,
+        meta: 'ethereum-main-v2'
+      }
+    ],
+  }
 ]
 
 // TODO: Add support for proxies between chains, will require update to fetchCoingeckoPrices
