@@ -90,12 +90,18 @@ export const EthersProviderSonic = new providers.JsonRpcProvider(NETWORK_TO_ALCH
 export const MulticallProviderSonic = new Provider(EthersProviderSonic, 10);
 MulticallProviderSonic.init();
 
+// AVALANCHE MAINNET
+export const EthersProviderAvalanche = new providers.JsonRpcProvider(NETWORK_TO_ALCHEMY_ENDPOINT["avalanche"]);
+export const MulticallProviderAvalanche = new Provider(EthersProviderAvalanche, 10);
+MulticallProviderAvalanche.init();
+
 export const NetworkToProvider : {[key: string]: any} = {
   "ethereum": EthersProvider,
   "arbitrum": EthersProviderArbitrum,
   "optimism": EthersProviderOptimism,
   "base": EthersProviderBase,
   "sonic": EthersProviderSonic,
+  "avalanche": EthersProviderAvalanche,
 };
 
 export const NetworkToMulticallProvider : {[key: string]: any} = {
@@ -104,6 +110,7 @@ export const NetworkToMulticallProvider : {[key: string]: any} = {
   "optimism": MulticallProviderOptimism,
   "base": MulticallProviderBase,
   "sonic": MulticallProviderSonic,
+  "avalanche": MulticallProviderAvalanche,
 };
 
 const runSync = new CronJob(

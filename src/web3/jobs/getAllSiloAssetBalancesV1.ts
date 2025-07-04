@@ -10,6 +10,7 @@ import {
   EthersProviderOptimism,
   EthersProviderBase,
   EthersProviderSonic,
+  EthersProviderAvalanche,
 } from "../../app";
 
 import {
@@ -88,6 +89,10 @@ export const getAllSiloAssetBalancesV1 = async (deploymentConfig: IDeploymentV1)
   } else if (deploymentConfig.network === 'sonic') {
     let RepositoryContract = new Contract(deploymentConfig.siloRepository.address, deploymentConfig.siloRepository.abi);
     let repositoryContract = await RepositoryContract.connect(EthersProviderSonic);
+    siloRepositories.push({contract: repositoryContract, meta: deploymentConfig.siloRepository.meta});
+  } else if (deploymentConfig.network === 'avalanche') {
+    let RepositoryContract = new Contract(deploymentConfig.siloRepository.address, deploymentConfig.siloRepository.abi);
+    let repositoryContract = await RepositoryContract.connect(EthersProviderAvalanche);
     siloRepositories.push({contract: repositoryContract, meta: deploymentConfig.siloRepository.meta});
   }
   

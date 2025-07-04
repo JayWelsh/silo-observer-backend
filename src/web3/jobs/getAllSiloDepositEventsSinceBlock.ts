@@ -8,6 +8,7 @@ import {
   EthersProviderOptimism,
   EthersProviderBase,
   EthersProviderSonic,
+  EthersProviderAvalanche,
 } from "../../app";
 
 import {
@@ -91,6 +92,8 @@ export const getAllSiloDepositEventsSinceBlock = async (
       provider = EthersProviderBase;
     } else if (network === "sonic") {
       provider = EthersProviderSonic;
+    } else if (network === "avalanche") {
+      provider = EthersProviderAvalanche;
     }
 
     for(let siloAddress of siloAddresses) {
@@ -180,6 +183,7 @@ export const getAllSiloDepositEventsSinceBlock = async (
                 shares,
               } = args;
               // create event record
+              // console.log({siloRecord})
               let assetAddress = siloRecord.input_token_address;
               let eventFingerprint = getEventFingerprint(network, blockNumber, transactionIndex, logIndex);
               let existingEventRecord = await DepositEventRepository.findByColumn('event_fingerprint', eventFingerprint);
