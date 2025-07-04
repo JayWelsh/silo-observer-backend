@@ -6,6 +6,7 @@ import {
   EthersProviderOptimism,
   EthersProviderBase,
   EthersProviderSonic,
+  EthersProviderAvalanche,
 } from "../../app";
 
 import {
@@ -42,6 +43,10 @@ export const getAllSiloAddresses = async (deploymentConfig: IDeployment) => {
     } else if (deploymentConfig.network === 'sonic') {
       let FactoryContract = new Contract(siloFactoryConfig.address, siloFactoryConfig.abi);
       let factoryContract = await FactoryContract.connect(EthersProviderSonic);
+      siloFactories.push({contract: factoryContract, meta: siloFactoryConfig.meta});
+    } else if (deploymentConfig.network === 'avalanche') {
+      let FactoryContract = new Contract(siloFactoryConfig.address, siloFactoryConfig.abi);
+      let factoryContract = await FactoryContract.connect(EthersProviderAvalanche);
       siloFactories.push({contract: factoryContract, meta: siloFactoryConfig.meta});
     }
   }

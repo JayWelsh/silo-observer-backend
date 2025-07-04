@@ -102,6 +102,7 @@ export const ALCHEMY_API_KEY_ARBITRUM = process.env['ALCHEMY_API_KEY_ARBITRUM'];
 export const ALCHEMY_API_KEY_OPTIMISM = process.env['ALCHEMY_API_KEY_OPTIMISM'];
 export const ALCHEMY_API_KEY_BASE = process.env['ALCHEMY_API_KEY_BASE'];
 export const ALCHEMY_API_KEY_SONIC = process.env['ALCHEMY_API_KEY_SONIC'];
+export const ALCHEMY_API_KEY_AVALANCHE = process.env['ALCHEMY_API_KEY_AVALANCHE'];
 export const ALCHEMY_ENDPOINT = `https://eth-mainnet.g.alchemy.com/v2/${process.env['ALCHEMY_API_KEY']}`;
 export const START_BLOCK = 15307294;
 
@@ -111,6 +112,7 @@ export const NETWORK_TO_ALCHEMY_ENDPOINT: {[key: string]: string} = {
   "optimism": `https://opt-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY_OPTIMISM}`,
   "base": `https://base-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY_BASE}`,
   "sonic": `https://sonic-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY_SONIC}`,
+  "avalanche": `https://avax-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY_AVALANCHE}`,
 }
 
 export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
@@ -162,6 +164,10 @@ export const SILO_LENS_ADDRESS_BASE_BTCFI = '0xE89D07da1438177eaa0AE7277D7D9A4dD
 export const SILO_FACTORY_V2_ADDRESS_SONIC = '0xa42001D6d2237d2c74108FE360403C4b796B7170';
 export const SILO_LENS_V2_ADDRESS_SONIC = '0xB6AdBb29f2D8ae731C7C72036A7FD5A7E970B198';
 
+// AVALANCHE
+export const SILO_FACTORY_V2_ADDRESS_AVALANCHE_MAIN = '0x92cECB67Ed267FF98026F814D813fDF3054C6Ff9';
+export const SILO_LENS_V2_ADDRESS_AVALANCHE_MAIN = '0x626B6fd8Cb764F1776BF7d65049D998D5a9f6c0A';
+
 export const SILO_CONVEX_FACTORY_ADDRESS = '0x6d4A256695586F61b77B09bc3D28333A91114d5a';
 
 export const SILO_BLACKLIST = ["0x6543ee07Cf5Dd7Ad17AeECF22ba75860ef3bBAAa"];
@@ -172,6 +178,7 @@ export const MAX_TOTAL_BLOCK_RANGE : {[key: string]: number} = {
   "optimism": 50000000,
   "base": 50000000,
   "sonic": 10000000,
+  "avalanche": 10000000,
 }
 
 export const MAX_TOTAL_BLOCK_RANGE_SUBGRAPH : {[key: string]: number} = {
@@ -180,6 +187,7 @@ export const MAX_TOTAL_BLOCK_RANGE_SUBGRAPH : {[key: string]: number} = {
   "optimism": 35000000,
   "base": 35000000,
   "sonic": 35000000,
+  "avalanche": 35000000,
 }
 
 export const NETWORKS = [
@@ -188,6 +196,7 @@ export const NETWORKS = [
   "optimism",
   "base",
   "sonic",
+  "avalanche",
 ];
 
 export const NETWORK_TO_MAX_BLOCK_BATCH_SIZE : {[key: string]: number} = {
@@ -196,6 +205,7 @@ export const NETWORK_TO_MAX_BLOCK_BATCH_SIZE : {[key: string]: number} = {
   "optimism": 300000,
   "base": 300000,
   "sonic": 9999,
+  "avalanche": 9999,
 }
 
 export const NETWORK_ID_TO_COINGECKO_ID : {[key: string]: string} = {
@@ -205,6 +215,7 @@ export const NETWORK_ID_TO_COINGECKO_ID : {[key: string]: string} = {
   "base": "base",
   "sonic": "sonic",
   "binance-smart-chain": "binance-smart-chain",
+  "avalanche": "avalanche",
 }
 
 export const DEPLOYMENT_CONFIGS : IDeployment[] = [
@@ -464,6 +475,24 @@ export const DEPLOYMENT_CONFIGS : IDeployment[] = [
         address: SILO_FACTORY_V2_ADDRESS_ETHEREUM_MAIN,
         abi: SiloFactoryV2ABI,
         meta: 'ethereum-main-v2'
+      }
+    ],
+  },
+  {
+    protocolVersion: 2,
+    id: 'avalanche-main-v2',
+    idHumanReadable: 'Avalanche Main V2',
+    network: 'avalanche',
+    siloLens: SILO_LENS_V2_ADDRESS_AVALANCHE_MAIN,
+    siloLensABI: SiloLensV2ABI,
+    siloBlacklist: [],
+    // subgraphEndpoint: '',
+    // subgraphEndpointFallback: '',
+    siloFactories: [
+      {
+        address: SILO_FACTORY_V2_ADDRESS_AVALANCHE_MAIN,
+        abi: SiloFactoryV2ABI,
+        meta: 'avalanche-main-v2'
       }
     ],
   }
