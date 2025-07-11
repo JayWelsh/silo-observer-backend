@@ -6,6 +6,7 @@ import {
 
 import SiloFactoryABI from '../web3/abis/SiloFactoryABI.json';
 import SiloFactoryV2ABI from '../web3/abis/SiloFactoryV2ABI.json';
+import SiloFactoryV2May2025ABI from '../web3/abis/SiloFactoryV2May2025ABI.json';
 import SiloFactoryMainABI from '../web3/abis/SiloFactoryMainABI.json';
 import SiloConvexFactoryABI from '../web3/abis/SiloConvexFactoryABI.json';
 import SiloLlamaFactoryABI from '../web3/abis/SiloLlamaFactoryABI.json';
@@ -162,7 +163,9 @@ export const SILO_LENS_ADDRESS_BASE_BTCFI = '0xE89D07da1438177eaa0AE7277D7D9A4dD
 
 // SONIC
 export const SILO_FACTORY_V2_ADDRESS_SONIC = '0xa42001D6d2237d2c74108FE360403C4b796B7170';
+export const SILO_FACTORY_V2_ADDRESS_SONIC_MAY_2025 = '0x4e9dE3a64c911A37f7EB2fCb06D1e68c3cBe9203';
 export const SILO_LENS_V2_ADDRESS_SONIC = '0xB6AdBb29f2D8ae731C7C72036A7FD5A7E970B198';
+export const SILO_LENS_V2_ADDRESS_SONIC_MAY_2025 = '0x925D5466d4D5b01995E20e1245924aDa6415126a';
 
 // AVALANCHE
 export const SILO_FACTORY_V2_ADDRESS_AVALANCHE_MAIN = '0x92cECB67Ed267FF98026F814D813fDF3054C6Ff9';
@@ -439,7 +442,12 @@ export const DEPLOYMENT_CONFIGS : IDeployment[] = [
         address: SILO_FACTORY_V2_ADDRESS_SONIC,
         abi: SiloFactoryV2ABI,
         meta: 'sonic-main-v2'
-      }
+      },
+      {
+        address: SILO_FACTORY_V2_ADDRESS_SONIC_MAY_2025,
+        abi: SiloFactoryV2May2025ABI,
+        meta: 'sonic-main-revised-v2'
+      },
     ],
   },
   {
