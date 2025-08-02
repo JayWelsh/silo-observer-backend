@@ -165,9 +165,11 @@ const fetchCoingeckoPrices = async (assetAddressesQueryString : string, network:
     .then(function (response) {
       // handle success
       if(response?.data) {
-        for (const [proxyAddress, originAddress] of Object.entries(coingeckoOverridesProxyToOrigin)) {
-          if (proxyAddress && originAddress && response?.data[proxyAddress.toLowerCase()]) {
-            response.data[originAddress.toLowerCase()] = response?.data[proxyAddress.toLowerCase()];
+        for (const [proxyAddress, originAddresses] of Object.entries(coingeckoOverridesProxyToOrigin)) {
+          for(const originAddress of originAddresses) {
+            if (proxyAddress && originAddress && response?.data[proxyAddress.toLowerCase()]) {
+              response.data[originAddress.toLowerCase()] = response?.data[proxyAddress.toLowerCase()];
+            }
           }
         }
       }
@@ -212,6 +214,14 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
 
   let useTimestampPostgres = new Date(useTimestampUnix * 1000).toISOString();
   let isHourlyMoment = (useTimestampUnix % 3600) === 0;
+  let unrecognisedTokensCoingecko : {
+    network: string,
+    siloAddress: string,
+    tokenAddress: string,
+    symbol: string,
+    balance: string,
+    coingeckoPrice: string,
+  }[] = [];
 
   for(let deploymentConfig of DEPLOYMENT_CONFIGS) {
 
@@ -788,6 +798,16 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
                 // let usePrice = coingeckoPrice.toNumber() > 0 ? coingeckoPrice : subgraphTokenPrice;
                 let usePrice = coingeckoPrice.toNumber() > 0 ? coingeckoPrice : new BigNumber(0);
                 let tokenBalance = new BigNumber(entry[1].balance);
+                if((isNaN(Number(coingeckoPrice)) || coingeckoPrice.toString() == '0') && tokenBalance.isGreaterThan(0)) {
+                  unrecognisedTokensCoingecko.push({
+                    network: deploymentConfig.network,
+                    siloAddress: siloChecksumAddress,
+                    tokenAddress: tokenChecksumAddress,
+                    symbol: inputTokenSymbol,
+                    balance: tokenBalance.toString(),
+                    coingeckoPrice: coingeckoPrice.toString(),
+                  });
+                }
                 if(usePrice.isGreaterThan(0) && tokenBalance.isGreaterThan(0)) {
                   let usdValueOfAsset = tokenBalance.multipliedBy(usePrice);
                   if(tvlUsdSiloAddressToAssetAddressBN[siloChecksumAddress]) {
@@ -1051,6 +1071,10 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
       console.error(`Unable to store latest periodic data for silos (${deploymentConfig.network} - ${deploymentConfig.id}) (${useTimestampPostgres})`, error);
     }
 
+  }
+
+  if(unrecognisedTokensCoingecko.length > 0) {
+    console.log({unrecognisedTokensCoingecko})
   }
 }
 
