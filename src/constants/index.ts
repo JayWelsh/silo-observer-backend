@@ -537,7 +537,46 @@ export const PRICE_PROXIES : {[key: string]: {[key: string]: {proxyAddress: stri
     },
     "0xd4e75971eAF78a8d93D96df530f1FFf5f9F53288": { // PT-pufETH-26SEP2024
       proxyAddress: "0xD9A442856C234a39a81a089C06451EBAa4306a72" // pufETH
-    }
+    },
+    "0xAB365C0879024481E4ad3b47bd6FeA9c10014FbC": { // PT-sUSDf-25SEP2025
+      proxyAddress: "0xfa2b947eec368f42195f24f36d2af29f7c24cec2", // USDf
+    },
+    "0xc8CF6D7991f15525488b2A83Df53468D682Ba4B0": { // sUSDf
+      proxyAddress: "0xfa2b947eec368f42195f24f36d2af29f7c24cec2", // USDf
+    },
+    "0x742B4166878Bfd339Db65a29a17E49b81a6B6Aac": { // PT-RLP-4SEP2025
+      proxyAddress: "0x4956b52ae2ff65d74ca2d61207523288e4528f96", // RLP
+    },
+    "0x23E60d1488525bf4685f53b3aa8E676c30321066": { // PT-wstUSR-25SEP2025
+      proxyAddress: "0x66a1e37c9b0eaddca17d3662d6c05f4decf3e110", // USR
+    },
+    "0x5a5b93F762739fa94F3EcC0b34Af2e56702E7f70": { // PT-USR-4SEP2025
+      proxyAddress: "0x66a1e37c9b0eaddca17d3662d6c05f4decf3e110", // USR
+    },
+    "0x9F56094C450763769BA0EA9Fe2876070c0fD5F77": { // PT-sUSDE-25SEP2025
+      proxyAddress: "0x9d39a5de30e57443bff2a8307a4256c8797a3497", // sUSDE
+    },
+    "0x14Bdc3A3AE09f5518b923b69489CBcAfB238e617": { // PT-eUSDE-14AUG2025
+      proxyAddress: "0x4c9edd5852cd905f086c759e8383e09bff1e68b3", // Ethena USDe
+    },
+    "0x10cbdAe955725baC7bCc20335e304b4A48fD8919": { // PENDLE-LPT-WRAPPED
+      proxyAddress: "0x58b6a8a3302369daec383334672404ee733ab239", // LPT
+    },
+    "0x7bAFb26A485bf7bB4B0D0b02996c79C5Af6493bc": { // PENDLE-LPT-WRAPPED
+      proxyAddress: "0x58b6a8a3302369daec383334672404ee733ab239", // LPT
+    },
+    "0xaB025d7b57B0902A2797599F3eB07477400e62B0": { // PENDLE-LPT-WRAPPED
+      proxyAddress: "0x58b6a8a3302369daec383334672404ee733ab239", // LPT
+    },
+    "0xB10DA2F9147f9cf2B8826877Cd0c95c18A0f42dc": { // PT-cUSDO-20NOV2025
+      proxyAddress: "0xaD55aebc9b8c03FC43cd9f62260391c13c23e7c0" // cUSDO
+    },
+    "0xFfEc096c087C13Cc268497B89A613cACE4DF9A48": { // PT-USDS-14AUG2025
+      proxyAddress: "0xdC035D45d973E3EC169d2276DDab16f1e407384F" // USDS
+    },
+    "0x11214aD8159A315148d98EeecE228CCdA8B1c6D8": { // PT-tETH-8JAN2026
+      proxyAddress: "0xD11c452fc99cF405034ee446803b6F6c1F6d5ED8" // tETH
+    },
   },
   arbitrum: {
     "0x8EA5040d423410f1fdc363379Af88e1DB5eA1C34": { // PT-ezETH-27JUN2024
@@ -591,7 +630,43 @@ export const PRICE_PROXIES : {[key: string]: {[key: string]: {proxyAddress: stri
       proxyNetwork: "ethereum",
     },
     "0xfA85Fe5A8F5560e9039C04f2b0a90dE1415aBD70": { // wanS
-      proxyAddress: "0x039e2fb66102314ce7b64ce5ce3e5183bc94ad38", // wS
+      proxyAddress: "0x039e2fB66102314Ce7b64Ce5Ce3E5183bc94aD38", // wS
+    },
+    "0x789cA09b0B4bcc83062d817C43206f96bd464015": { // PT-wanS-28AUG2025
+      proxyAddress: "0x039e2fB66102314Ce7b64Ce5Ce3E5183bc94aD38", // wS
+    },
+    "0x9731842eD581816913933c01De142C7EE412A8c8": { // PT-Silo-46-scUSD-14AUG2025
+      proxyAddress: "0xd3dce716f3ef535c5ff8d041c1a41c3bd89b97ae", // scUSD
+    },
+    "0x77d8F09053c28FaF1E00Df6511b23125d438616f": { // PT-Silo-20-USDC.e-17JUL2025
+      proxyAddress: "0x29219dd400f2bf60e5a23d13be72b486d4038894", // USDC
+    },
+    "0x0Fb682C9692AddCc1769f4D4d938c54420D54fA3": { // PT-wstkscUSD-18DEC2025
+      proxyAddress: "0xd3dce716f3ef535c5ff8d041c1a41c3bd89b97ae", // scUSD
+    },
+    "0x200338559C1975d1f216aDcda8352AFF2869AfAB": { // PT-wOS-18DEC2025
+      proxyAddress: "0x9f0df7799f6fdad409300080cff680f5a23df4b1", // wOS
+    },
+    "0x7e52f587f5B870D4C2cac8559ac4c49742D31a28": { // PT-wstkscETH-18DEC2025
+      proxyAddress: "0x3bce5cb273f0f148010bbea2470e7b5df84c7812", // scETH
+    },
+    "0x6202B9f02E30E5e1c62Cc01E4305450E5d83b926": { // xUSD
+      proxyAddress: "0xe2fc85bfb48c4cf147921fbe110cf92ef9f26f94", // xUSD
+      proxyNetwork: "ethereum",
+    },
+    "0xE2BC30A4896Ff4c52ADCb180213666d2D6B21c6d": { // PT-stS-18DEC2025
+      proxyAddress: "0xe5da20f15420ad15de0fa650600afc998bbe3955", // stS
+    },
+    "0xAaAaaAAac311D0572Bffb4772fe985A750E88805": { // wmetaUSD
+      proxyAddress: "0x29219dd400f2bf60e5a23d13be72b486d4038894", // USDC
+    },
+    "0xbbbbbbBBbd0aE69510cE374A86749f8276647B19": { // wmetaS
+      proxyAddress: "0x9f0df7799f6fdad409300080cff680f5a23df4b1", // wOS
+    },
+  },
+  avalanche: {
+    "0x649342c6bff544d82DF1B2bA3C93e0C22cDeBa84": { // savBTC
+      proxyAddress: "0x0555E30da8f98308EdB960aa94C0Db47230d2B9c", // Avalanche Bridged WBTC
     }
   }
 }
