@@ -246,8 +246,8 @@ export const getAllSiloAssetBalancesV2 = async (deploymentConfig: IDeployment) =
           //     deployerRevenue = earnedFees - daoRevenue;
           // }
           calculatedPendingDaoFeesRaw = new BigNumber(daoAndDeployerRevenue.toString()).multipliedBy(daoFee.toString());
-          calculatedPendingDaoFeesRaw = calculatedPendingDaoFeesRaw.dividedBy(new BigNumber(daoFee.toString()).plus(deployerFee.toString()));
-          calculatedPendingDeployerFeesRaw = new BigNumber(daoAndDeployerRevenue.toString()).minus(calculatedPendingDaoFeesRaw);
+          calculatedPendingDaoFeesRaw = calculatedPendingDaoFeesRaw.dividedBy(new BigNumber(daoFee.toString()).plus(deployerFee.toString())).integerValue();
+          calculatedPendingDeployerFeesRaw = new BigNumber(daoAndDeployerRevenue.toString()).minus(calculatedPendingDaoFeesRaw).integerValue();
         }
 
         siloAddressToFeeData[indexedSiloAddresses[index]] = {
