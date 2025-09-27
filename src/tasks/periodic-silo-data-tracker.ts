@@ -34,6 +34,7 @@ import {
   NETWORK_TO_SUBGRAPH,
   SILO_BLACKLIST,
   COINGECKO_API_KEY,
+  BAD_DEBT_SILOS,
 } from '../constants'
 
 import {
@@ -247,6 +248,7 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
 
         for(let [siloAddress, siloAssets] of Object.entries(siloAssetBalances)) {
           let siloChecksumAddress = utils.getAddress(siloAddress);
+          let isBadDebtSilo = BAD_DEBT_SILOS.indexOf(siloChecksumAddress) > -1;
           for(let siloAssetData of siloAssets) {
             let assetChecksumAddress = utils.getAddress(siloAssetData.tokenAddress);
             if(isHourlyMoment) {
@@ -255,7 +257,7 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
                 asset_address: assetChecksumAddress,
                 amount_pending: siloAssetData.pendingProtocolFees ? siloAssetData.pendingProtocolFees : 0,
                 amount_pending_raw: siloAssetData.pendingProtocolFeesRaw ? siloAssetData.pendingProtocolFeesRaw : 0,
-                amount_pending_usd: new BigNumber(siloAssetData.pendingProtocolFees ? siloAssetData.pendingProtocolFees : 0).multipliedBy(tokenAddressToCoingeckoPrice[assetChecksumAddress] ? tokenAddressToCoingeckoPrice[assetChecksumAddress] : 0).toString(),
+                amount_pending_usd: isBadDebtSilo ? 0 : new BigNumber(siloAssetData.pendingProtocolFees ? siloAssetData.pendingProtocolFees : 0).multipliedBy(tokenAddressToCoingeckoPrice[assetChecksumAddress] ? tokenAddressToCoingeckoPrice[assetChecksumAddress] : 0).toString(),
                 amount_harvested: siloAssetData.harvestedProtocolFees ? siloAssetData.harvestedProtocolFees : 0,
                 amount_harvested_raw: siloAssetData.harvestedProtocolFeesRaw ? siloAssetData.harvestedProtocolFeesRaw : 0,
                 amount_harvested_usd: new BigNumber(siloAssetData.harvestedProtocolFees ? siloAssetData.harvestedProtocolFees : 0).multipliedBy(tokenAddressToCoingeckoPrice[assetChecksumAddress] ? tokenAddressToCoingeckoPrice[assetChecksumAddress] : 0).toString(),
@@ -701,13 +703,14 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
           for(let [siloAddress, siloFeeData] of Object.entries(siloAddressToFeeData)) {
             let siloChecksumAddress = utils.getAddress(siloAddress);
             let assetChecksumAddress = utils.getAddress(siloFeeData.asset);
+            let isBadDebtSilo = BAD_DEBT_SILOS.indexOf(siloChecksumAddress) > -1;
             if(isHourlyMoment) {
               await SiloRevenueSnapshotRepository.create({
                 silo_address: siloChecksumAddress,
                 asset_address: assetChecksumAddress,
                 amount_pending: siloFeeData.calculatedPendingDaoFees ? siloFeeData.calculatedPendingDaoFees : 0,
                 amount_pending_raw: siloFeeData.calculatedPendingDaoFeesRaw ? siloFeeData.calculatedPendingDaoFeesRaw : 0,
-                amount_pending_usd: new BigNumber(siloFeeData.calculatedPendingDaoFees ? siloFeeData.calculatedPendingDaoFees : 0).multipliedBy(tokenAddressToCoingeckoPrice[assetChecksumAddress] ? tokenAddressToCoingeckoPrice[assetChecksumAddress] : 0).toString(),
+                amount_pending_usd: isBadDebtSilo ? 0 : new BigNumber(siloFeeData.calculatedPendingDaoFees ? siloFeeData.calculatedPendingDaoFees : 0).multipliedBy(tokenAddressToCoingeckoPrice[assetChecksumAddress] ? tokenAddressToCoingeckoPrice[assetChecksumAddress] : 0).toString(),
                 // TODO add support for harvested values in V2
                 amount_harvested: 0,
                 amount_harvested_raw: 0,
@@ -715,7 +718,7 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
                 // V2 specific values
                 amount_pending_deployer: siloFeeData.calculatedPendingDeployerFees ? siloFeeData.calculatedPendingDeployerFees : 0,
                 amount_pending_deployer_raw: siloFeeData.calculatedPendingDeployerFeesRaw ? siloFeeData.calculatedPendingDeployerFeesRaw : 0,
-                amount_pending_deployer_usd: new BigNumber(siloFeeData.calculatedPendingDeployerFees ? siloFeeData.calculatedPendingDeployerFees : 0).multipliedBy(tokenAddressToCoingeckoPrice[assetChecksumAddress] ? tokenAddressToCoingeckoPrice[assetChecksumAddress] : 0).toString(),
+                amount_pending_deployer_usd: isBadDebtSilo ? 0 : new BigNumber(siloFeeData.calculatedPendingDeployerFees ? siloFeeData.calculatedPendingDeployerFees : 0).multipliedBy(tokenAddressToCoingeckoPrice[assetChecksumAddress] ? tokenAddressToCoingeckoPrice[assetChecksumAddress] : 0).toString(),
                 asset_price_at_sync_time: tokenAddressToCoingeckoPrice[assetChecksumAddress] ? tokenAddressToCoingeckoPrice[assetChecksumAddress] : 0,
                 timestamp: useTimestampPostgres,
                 network: deploymentConfig.network,
