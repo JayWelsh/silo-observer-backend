@@ -506,6 +506,13 @@ export const DEPLOYMENT_CONFIGS : IDeployment[] = [
   }
 ]
 
+export const BAD_DEBT_SILOS = [
+  "0xCCdDbBbd1E36a6EDA3a84CdCee2040A86225Ba71", // wmetaUSD
+  "0x6e8C150224D6e9B646889b96EFF6f7FD742e2C22", // wmetaUSD
+  "0x75c550776c191A8F6aE22EdC742aD2788723B66E", // wmetaUSD
+  "0x501Ee3D6cB84004c7970cA24f3daC07D61A25e4D", // wmetaUSD
+];
+
 // TODO: Add support for proxies between chains, will require update to fetchCoingeckoPrices
 
 export const PRICE_PROXIES : {[key: string]: {[key: string]: {proxyAddress: string, proxyNetwork?: string}}} = {
