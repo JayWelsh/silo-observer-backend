@@ -680,6 +680,9 @@ export const PRICE_PROXIES : {[key: string]: {[key: string]: {proxyAddress: stri
   avalanche: {
     "0x649342c6bff544d82DF1B2bA3C93e0C22cDeBa84": { // savBTC
       proxyAddress: "0x0555E30da8f98308EdB960aa94C0Db47230d2B9c", // Avalanche Bridged WBTC
+    },
+    "0x6eAf19b2FC24552925dB245F9Ff613157a7dbb4C": { // xBTC
+      proxyAddress: "0x0555E30da8f98308EdB960aa94C0Db47230d2B9c", // Avalanche Bridged WBTC
     }
   }
 }
