@@ -1,5 +1,7 @@
 import dotenv from "dotenv";
 
+import { utils } from "ethers";
+
 import {
   IDeployment,
 } from '../interfaces';
@@ -506,18 +508,43 @@ export const DEPLOYMENT_CONFIGS : IDeployment[] = [
   }
 ]
 
-export const BAD_DEBT_SILOS = [
-  "0xCCdDbBbd1E36a6EDA3a84CdCee2040A86225Ba71", // wmetaUSD
-  "0xEd9777944A2Fb32504a410D23f246463B3f40908", // USDC (wmetaUSD)
-  "0x6e8C150224D6e9B646889b96EFF6f7FD742e2C22", // wmetaUSD
-  "0x0aB02DD08c1555d1a20C76a6EA30e3E36f3e06d4", // scUSD (wmetaUSD)
-  "0x75c550776c191A8F6aE22EdC742aD2788723B66E", // wmetaUSD
-  "0xc6ee9A58D5270e53fD1361946899b6D0553142B4", // scUSD (wmetaUSD)
-  "0x501Ee3D6cB84004c7970cA24f3daC07D61A25e4D", // wmetaUSD
-  "0x1A089424F52502139888fa4c0ED2FA088e9E1d51", // USDC (wmetaUSD)
-  "0x1c1791911483E98875D162355feC47f37613f0FB", // wmetaS
-  "0x8c98b43BF61F2B07c4D26f85732217948Fca2a90", // wS (wmetaS)
-];
+export const BAD_DEBT_SILOS : {[key: string]: string[]} = {
+  sonic: [
+    "0xCCdDbBbd1E36a6EDA3a84CdCee2040A86225Ba71", // wmetaUSD - Sonic
+    "0xEd9777944A2Fb32504a410D23f246463B3f40908", // USDC (wmetaUSD) - Sonic
+    "0x6e8C150224D6e9B646889b96EFF6f7FD742e2C22", // wmetaUSD - Sonic
+    "0x0aB02DD08c1555d1a20C76a6EA30e3E36f3e06d4", // scUSD (wmetaUSD) - Sonic
+    "0x75c550776c191A8F6aE22EdC742aD2788723B66E", // wmetaUSD - Sonic
+    "0xc6ee9A58D5270e53fD1361946899b6D0553142B4", // scUSD (wmetaUSD) - Sonic
+    "0x501Ee3D6cB84004c7970cA24f3daC07D61A25e4D", // wmetaUSD - Sonic
+    "0x1A089424F52502139888fa4c0ED2FA088e9E1d51", // USDC (wmetaUSD) - Sonic
+    "0x1c1791911483E98875D162355feC47f37613f0FB", // wmetaS - Sonic
+    "0x8c98b43BF61F2B07c4D26f85732217948Fca2a90", // wS (wmetaS) - Sonic
+    "0xA1627a0E1d0ebcA9326D2219B84Df0c600bed4b1", // USDC - Sonic (Stream-impacted)
+    "0xb1412442aa998950f2f652667d5Eba35fE66E43f", // scUSD - Sonic (Stream-impacted)
+    "0x27968d36b937DcB26F33902fA489E5b228b104BE", // dUSD - Sonic (Stream-impacted)
+    "0x76DF755A9f40463F14d0a2b7Cba3Ccf05404eEdf", // dUSD - Sonic (Stream-impacted)
+    "0xAF1BDaE843d90c546DE5001f7b107B46e1a26Aa9", // dUSD - Sonic (Stream-impacted)
+    "0x5954ce6671d97D24B782920ddCdBB4b1E63aB2De", // USDC - Sonic (Stream-impacted)
+    "0x4935FaDB17df859667Cc4F7bfE6a8cB24f86F8d0", // USDC - Sonic (Stream-impacted)
+    "0x219656F33c58488D09d518BaDF50AA8CdCAcA2Aa", // ETH - Sonic (Stream-impacted)
+  ].map((entry) => utils.getAddress(entry)),
+  ethereum: [
+    "0x1dE3bA67Da79A81Bc0c3922689c98550e4bd9bc2", // USDC - ethereum (Stream-impacted)
+  ].map((entry) => utils.getAddress(entry)),
+  arbitrum: [
+    "0xACb7432a4BB15402CE2afe0A7C9D5b738604F6F9", // USDC - Arbitrum (Stream-impacted)
+    "0x2433D6AC11193b4695D9ca73530de93c538aD18a", // USDC - Arbitrum (Stream-impacted)
+  ].map((entry) => utils.getAddress(entry)),
+  avalanche: [
+    "0x672b77f0538b53Dc117C9dDfEb7377A678d321a6", // USDC - Avalanche (Stream-impacted)
+    "0xE0fc62e685E2b3183b4B88b1fE674cFEc55a63F7", // USDT - Avalanche (Stream-impacted)
+    "0x9C4D4800b489d217724155399CD64D07Eae603f3", // AUSD - Avalanche (Stream-impacted)
+    "0x7437ac81457Fa98fFB2d0C8f9943ecfE4813e2f1", // BTC.b - Avalanche (Stream-impacted)
+  ].map((entry) => utils.getAddress(entry)),
+  base: [].map((entry) => utils.getAddress(entry)),
+  optimism: [].map((entry) => utils.getAddress(entry)),
+};
 
 // TODO: Add support for proxies between chains, will require update to fetchCoingeckoPrices
 
