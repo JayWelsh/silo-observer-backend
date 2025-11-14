@@ -248,7 +248,7 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
 
         for(let [siloAddress, siloAssets] of Object.entries(siloAssetBalances)) {
           let siloChecksumAddress = utils.getAddress(siloAddress);
-          let isBadDebtSilo = BAD_DEBT_SILOS.indexOf(siloChecksumAddress) > -1;
+          let isBadDebtSilo = BAD_DEBT_SILOS?.[deploymentConfig.network]?.indexOf(siloChecksumAddress) > -1;
           for(let siloAssetData of siloAssets) {
             let assetChecksumAddress = utils.getAddress(siloAssetData.tokenAddress);
             if(isHourlyMoment) {
@@ -703,7 +703,7 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
           for(let [siloAddress, siloFeeData] of Object.entries(siloAddressToFeeData)) {
             let siloChecksumAddress = utils.getAddress(siloAddress);
             let assetChecksumAddress = utils.getAddress(siloFeeData.asset);
-            let isBadDebtSilo = BAD_DEBT_SILOS.indexOf(siloChecksumAddress) > -1;
+            let isBadDebtSilo = BAD_DEBT_SILOS?.[deploymentConfig.network]?.indexOf(siloChecksumAddress) > -1;
             if(isHourlyMoment) {
               await SiloRevenueSnapshotRepository.create({
                 silo_address: siloChecksumAddress,
@@ -764,142 +764,116 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
           for(let siloAddress of siloAddresses) {
 
             let siloChecksumAddress = utils.getAddress(siloAddress);
-            let siloTokenChecksumAddress = utils.getAddress(assetAddresses[siloIndex]);
-            let inputTokenSymbol = assetSymbols[siloIndex];
+            let isBadDebtSilo = BAD_DEBT_SILOS?.[deploymentConfig.network]?.indexOf(siloChecksumAddress) > -1;
 
-            let siloRecord = await SiloRepository.getSiloByAddress(siloChecksumAddress, deploymentConfig.id);
-            if(!siloRecord) {
-              // Create record for silo
-              await SiloRepository.create({
-                name: inputTokenSymbol,
-                address: siloChecksumAddress,
-                input_token_address: siloTokenChecksumAddress,
-                network: deploymentConfig.network,
-                deployment_id: deploymentConfig.id,
-                protocol_version: deploymentConfig.protocolVersion,
-              });
-              console.log(`Created silo record for ${siloChecksumAddress} (${inputTokenSymbol}), siloConfig: ${siloAddressToSiloConfigAddress[siloChecksumAddress]}`);
-            } else if (siloAddressToSiloConfigAddress[siloChecksumAddress]) {
-              await SiloRepository.update({
-                name: inputTokenSymbol,
-                address: siloChecksumAddress,
-                input_token_address: siloTokenChecksumAddress,
-                network: deploymentConfig.network,
-                deployment_id: deploymentConfig.id,
-                protocol_version: deploymentConfig.protocolVersion,
-                silo_config_v2: siloAddressToSiloConfigAddress[siloChecksumAddress]
-              }, siloRecord.id)
-              console.log(`Updated silo record for ${siloChecksumAddress} (${inputTokenSymbol}), siloConfig: ${siloAddressToSiloConfigAddress[siloChecksumAddress]}`);
-            }
+            if(!isBadDebtSilo) {
+              let siloTokenChecksumAddress = utils.getAddress(assetAddresses[siloIndex]);
+              let inputTokenSymbol = assetSymbols[siloIndex];
 
-            let tvlUsdSiloSpecificBN = new BigNumber(0);
-            if(siloAssetBalances[siloChecksumAddress]) {
-              tvlUsdSiloSpecificBN = Object.entries(siloAssetBalances[siloChecksumAddress]).reduce((acc, entry) => {
-                let tokenChecksumAddress = entry[1].tokenAddress;
-                // let subgraphTokenPrice = new BigNumber(tokenAddressToLastPrice[tokenChecksumAddress]);
-                let coingeckoPrice = new BigNumber(tokenAddressToCoingeckoPrice[tokenChecksumAddress]);
-                // let usePrice = coingeckoPrice.toNumber() > 0 ? coingeckoPrice : subgraphTokenPrice;
-                let usePrice = coingeckoPrice.toNumber() > 0 ? coingeckoPrice : new BigNumber(0);
-                let tokenBalance = new BigNumber(entry[1].balance);
-                if((isNaN(Number(coingeckoPrice)) || coingeckoPrice.toString() == '0') && tokenBalance.isGreaterThan(0)) {
-                  unrecognisedTokensCoingecko.push({
-                    network: deploymentConfig.network,
-                    siloAddress: siloChecksumAddress,
-                    tokenAddress: tokenChecksumAddress,
-                    symbol: inputTokenSymbol,
-                    balance: tokenBalance.toString(),
-                    coingeckoPrice: coingeckoPrice.toString(),
-                  });
-                }
-                if(usePrice.isGreaterThan(0) && tokenBalance.isGreaterThan(0)) {
-                  let usdValueOfAsset = tokenBalance.multipliedBy(usePrice);
-                  if(tvlUsdSiloAddressToAssetAddressBN[siloChecksumAddress]) {
-                    if(tvlUsdSiloAddressToAssetAddressBN[siloChecksumAddress][tokenChecksumAddress]) {
-                      tvlUsdSiloAddressToAssetAddressBN[siloChecksumAddress][tokenChecksumAddress] = tvlUsdSiloAddressToAssetAddressBN[siloChecksumAddress][tokenChecksumAddress].plus(usdValueOfAsset);
+              let siloRecord = await SiloRepository.getSiloByAddress(siloChecksumAddress, deploymentConfig.id);
+              if(!siloRecord) {
+                // Create record for silo
+                await SiloRepository.create({
+                  name: inputTokenSymbol,
+                  address: siloChecksumAddress,
+                  input_token_address: siloTokenChecksumAddress,
+                  network: deploymentConfig.network,
+                  deployment_id: deploymentConfig.id,
+                  protocol_version: deploymentConfig.protocolVersion,
+                });
+                console.log(`Created silo record for ${siloChecksumAddress} (${inputTokenSymbol}), siloConfig: ${siloAddressToSiloConfigAddress[siloChecksumAddress]}`);
+              } else if (siloAddressToSiloConfigAddress[siloChecksumAddress]) {
+                await SiloRepository.update({
+                  name: inputTokenSymbol,
+                  address: siloChecksumAddress,
+                  input_token_address: siloTokenChecksumAddress,
+                  network: deploymentConfig.network,
+                  deployment_id: deploymentConfig.id,
+                  protocol_version: deploymentConfig.protocolVersion,
+                  silo_config_v2: siloAddressToSiloConfigAddress[siloChecksumAddress]
+                }, siloRecord.id)
+                console.log(`Updated silo record for ${siloChecksumAddress} (${inputTokenSymbol}), siloConfig: ${siloAddressToSiloConfigAddress[siloChecksumAddress]}`);
+              }
+
+              let tvlUsdSiloSpecificBN = new BigNumber(0);
+              if(siloAssetBalances[siloChecksumAddress]) {
+                tvlUsdSiloSpecificBN = Object.entries(siloAssetBalances[siloChecksumAddress]).reduce((acc, entry) => {
+                  let tokenChecksumAddress = entry[1].tokenAddress;
+                  // let subgraphTokenPrice = new BigNumber(tokenAddressToLastPrice[tokenChecksumAddress]);
+                  let coingeckoPrice = new BigNumber(tokenAddressToCoingeckoPrice[tokenChecksumAddress]);
+                  // let usePrice = coingeckoPrice.toNumber() > 0 ? coingeckoPrice : subgraphTokenPrice;
+                  let usePrice = coingeckoPrice.toNumber() > 0 ? coingeckoPrice : new BigNumber(0);
+                  let tokenBalance = new BigNumber(entry[1].balance);
+                  if((isNaN(Number(coingeckoPrice)) || coingeckoPrice.toString() == '0') && tokenBalance.isGreaterThan(0)) {
+                    unrecognisedTokensCoingecko.push({
+                      network: deploymentConfig.network,
+                      siloAddress: siloChecksumAddress,
+                      tokenAddress: tokenChecksumAddress,
+                      symbol: inputTokenSymbol,
+                      balance: tokenBalance.toString(),
+                      coingeckoPrice: coingeckoPrice.toString(),
+                    });
+                  }
+                  if(usePrice.isGreaterThan(0) && tokenBalance.isGreaterThan(0)) {
+                    let usdValueOfAsset = tokenBalance.multipliedBy(usePrice);
+                    if(tvlUsdSiloAddressToAssetAddressBN[siloChecksumAddress]) {
+                      if(tvlUsdSiloAddressToAssetAddressBN[siloChecksumAddress][tokenChecksumAddress]) {
+                        tvlUsdSiloAddressToAssetAddressBN[siloChecksumAddress][tokenChecksumAddress] = tvlUsdSiloAddressToAssetAddressBN[siloChecksumAddress][tokenChecksumAddress].plus(usdValueOfAsset);
+                      } else {
+                        tvlUsdSiloAddressToAssetAddressBN[siloChecksumAddress][tokenChecksumAddress] = new BigNumber(usdValueOfAsset);
+                      }
                     } else {
+                      tvlUsdSiloAddressToAssetAddressBN[siloChecksumAddress] = {};
                       tvlUsdSiloAddressToAssetAddressBN[siloChecksumAddress][tokenChecksumAddress] = new BigNumber(usdValueOfAsset);
                     }
-                  } else {
-                    tvlUsdSiloAddressToAssetAddressBN[siloChecksumAddress] = {};
-                    tvlUsdSiloAddressToAssetAddressBN[siloChecksumAddress][tokenChecksumAddress] = new BigNumber(usdValueOfAsset);
+                    acc = acc.plus(usdValueOfAsset);
                   }
-                  acc = acc.plus(usdValueOfAsset);
-                }
-                return acc;
-              }, new BigNumber(0));
-            } else {
-              console.log({"could not process asset balances for": siloChecksumAddress});
-            }
+                  return acc;
+                }, new BigNumber(0));
+              } else {
+                console.log({"could not process asset balances for": siloChecksumAddress});
+              }
 
-            let borrowedUsdSiloSpecificBN = new BigNumber(0);
-            if(siloAssetBorrowedBalances[siloChecksumAddress]) {
-              borrowedUsdSiloSpecificBN = Object.entries(siloAssetBorrowedBalances[siloChecksumAddress]).reduce((acc, entry) => {
-                let tokenChecksumAddress = entry[1].tokenAddress;
-                // let subgraphTokenPrice = new BigNumber(tokenAddressToLastPrice[tokenChecksumAddress]);
-                let coingeckoPrice = new BigNumber(tokenAddressToCoingeckoPrice[tokenChecksumAddress]);
-                // let usePrice = coingeckoPrice.toNumber() > 0 ? coingeckoPrice : subgraphTokenPrice;
-                let usePrice = coingeckoPrice.toNumber() > 0 ? coingeckoPrice : new BigNumber(0);
-                let tokenBalance = new BigNumber(entry[1].balance);
-                if(usePrice.isGreaterThan(0) && tokenBalance.isGreaterThan(0)) {
-                  let usdValueOfAsset = tokenBalance.multipliedBy(usePrice);
-                  if(borrowedUsdSiloAddressToAssetAddressBN[siloChecksumAddress]) {
-                    if(borrowedUsdSiloAddressToAssetAddressBN[siloChecksumAddress][tokenChecksumAddress]) {
-                      borrowedUsdSiloAddressToAssetAddressBN[siloChecksumAddress][tokenChecksumAddress] = borrowedUsdSiloAddressToAssetAddressBN[siloChecksumAddress][tokenChecksumAddress].plus(usdValueOfAsset);
+              let borrowedUsdSiloSpecificBN = new BigNumber(0);
+              if(siloAssetBorrowedBalances[siloChecksumAddress]) {
+                borrowedUsdSiloSpecificBN = Object.entries(siloAssetBorrowedBalances[siloChecksumAddress]).reduce((acc, entry) => {
+                  let tokenChecksumAddress = entry[1].tokenAddress;
+                  // let subgraphTokenPrice = new BigNumber(tokenAddressToLastPrice[tokenChecksumAddress]);
+                  let coingeckoPrice = new BigNumber(tokenAddressToCoingeckoPrice[tokenChecksumAddress]);
+                  // let usePrice = coingeckoPrice.toNumber() > 0 ? coingeckoPrice : subgraphTokenPrice;
+                  let usePrice = coingeckoPrice.toNumber() > 0 ? coingeckoPrice : new BigNumber(0);
+                  let tokenBalance = new BigNumber(entry[1].balance);
+                  if(usePrice.isGreaterThan(0) && tokenBalance.isGreaterThan(0)) {
+                    let usdValueOfAsset = tokenBalance.multipliedBy(usePrice);
+                    if(borrowedUsdSiloAddressToAssetAddressBN[siloChecksumAddress]) {
+                      if(borrowedUsdSiloAddressToAssetAddressBN[siloChecksumAddress][tokenChecksumAddress]) {
+                        borrowedUsdSiloAddressToAssetAddressBN[siloChecksumAddress][tokenChecksumAddress] = borrowedUsdSiloAddressToAssetAddressBN[siloChecksumAddress][tokenChecksumAddress].plus(usdValueOfAsset);
+                      } else {
+                        borrowedUsdSiloAddressToAssetAddressBN[siloChecksumAddress][tokenChecksumAddress] = new BigNumber(usdValueOfAsset);
+                      }
                     } else {
+                      borrowedUsdSiloAddressToAssetAddressBN[siloChecksumAddress] = {};
                       borrowedUsdSiloAddressToAssetAddressBN[siloChecksumAddress][tokenChecksumAddress] = new BigNumber(usdValueOfAsset);
                     }
-                  } else {
-                    borrowedUsdSiloAddressToAssetAddressBN[siloChecksumAddress] = {};
-                    borrowedUsdSiloAddressToAssetAddressBN[siloChecksumAddress][tokenChecksumAddress] = new BigNumber(usdValueOfAsset);
+                    acc = acc.plus(usdValueOfAsset);
                   }
-                  acc = acc.plus(usdValueOfAsset);
-                }
-                return acc;
-              }, new BigNumber(0));
-            } else {
-              console.log({"could not process asset borrowed balances for": siloChecksumAddress});
-            }
+                  return acc;
+                }, new BigNumber(0));
+              } else {
+                console.log({"could not process asset borrowed balances for": siloChecksumAddress});
+              }
 
-            if(!hasCountedSiloTVL?.[siloChecksumAddress]) {
-              tvlUsdAllSilosBN = tvlUsdAllSilosBN.plus(tvlUsdSiloSpecificBN);
-              hasCountedSiloTVL[siloChecksumAddress] = true;
-            }
-            if(!hasCountedSiloBorrowed?.[siloChecksumAddress]) {
-              borrowedUsdAllSilosBN = borrowedUsdAllSilosBN.plus(borrowedUsdSiloSpecificBN);
-              hasCountedSiloBorrowed[siloChecksumAddress] = true;
-            }
+              if(!hasCountedSiloTVL?.[siloChecksumAddress]) {
+                tvlUsdAllSilosBN = tvlUsdAllSilosBN.plus(tvlUsdSiloSpecificBN);
+                hasCountedSiloTVL[siloChecksumAddress] = true;
+              }
+              if(!hasCountedSiloBorrowed?.[siloChecksumAddress]) {
+                borrowedUsdAllSilosBN = borrowedUsdAllSilosBN.plus(borrowedUsdSiloSpecificBN);
+                hasCountedSiloBorrowed[siloChecksumAddress] = true;
+              }
 
-            if (enableTvlSync) {
-              await TvlMinutelyRepository.create({
-                silo_address: siloChecksumAddress,
-                tvl: tvlUsdSiloSpecificBN.toNumber(),
-                timestamp: useTimestampPostgres,
-                network: deploymentConfig.network,
-                deployment_id: deploymentConfig.id,
-                protocol_version: deploymentConfig.protocolVersion,
-              });
-              await SiloRepository.query().update({
-                tvl: tvlUsdSiloSpecificBN.toNumber(),
-              }).where("address", siloChecksumAddress);
-            }
-  
-            if(enableBorrowedSync) {
-              await BorrowedMinutelyRepository.create({
-                silo_address: siloChecksumAddress,
-                borrowed: borrowedUsdSiloSpecificBN.toNumber(),
-                timestamp: useTimestampPostgres,
-                network: deploymentConfig.network,
-                deployment_id: deploymentConfig.id,
-                protocol_version: deploymentConfig.protocolVersion,
-              });
-              await SiloRepository.query().update({
-                borrowed: borrowedUsdSiloSpecificBN.toNumber(),
-              }).where("address", siloChecksumAddress);
-            }
-  
-            if(isHourlyMoment) {
               if (enableTvlSync) {
-                await TvlHourlyRepository.create({
+                await TvlMinutelyRepository.create({
                   silo_address: siloChecksumAddress,
                   tvl: tvlUsdSiloSpecificBN.toNumber(),
                   timestamp: useTimestampPostgres,
@@ -907,9 +881,13 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
                   deployment_id: deploymentConfig.id,
                   protocol_version: deploymentConfig.protocolVersion,
                 });
+                await SiloRepository.query().update({
+                  tvl: tvlUsdSiloSpecificBN.toNumber(),
+                }).where("address", siloChecksumAddress);
               }
+    
               if(enableBorrowedSync) {
-                await BorrowedHourlyRepository.create({
+                await BorrowedMinutelyRepository.create({
                   silo_address: siloChecksumAddress,
                   borrowed: borrowedUsdSiloSpecificBN.toNumber(),
                   timestamp: useTimestampPostgres,
@@ -917,6 +895,32 @@ const periodicSiloDataTracker = async (useTimestampUnix: number, startTime: numb
                   deployment_id: deploymentConfig.id,
                   protocol_version: deploymentConfig.protocolVersion,
                 });
+                await SiloRepository.query().update({
+                  borrowed: borrowedUsdSiloSpecificBN.toNumber(),
+                }).where("address", siloChecksumAddress);
+              }
+    
+              if(isHourlyMoment) {
+                if (enableTvlSync) {
+                  await TvlHourlyRepository.create({
+                    silo_address: siloChecksumAddress,
+                    tvl: tvlUsdSiloSpecificBN.toNumber(),
+                    timestamp: useTimestampPostgres,
+                    network: deploymentConfig.network,
+                    deployment_id: deploymentConfig.id,
+                    protocol_version: deploymentConfig.protocolVersion,
+                  });
+                }
+                if(enableBorrowedSync) {
+                  await BorrowedHourlyRepository.create({
+                    silo_address: siloChecksumAddress,
+                    borrowed: borrowedUsdSiloSpecificBN.toNumber(),
+                    timestamp: useTimestampPostgres,
+                    network: deploymentConfig.network,
+                    deployment_id: deploymentConfig.id,
+                    protocol_version: deploymentConfig.protocolVersion,
+                  });
+                }
               }
             }
 
